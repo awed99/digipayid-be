@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" beStrictAboutTestsThatDoNotTestAnything="false" bootstrap="vendor/autoload.php" colors="true" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
+  <coverage includeUncoveredFiles="false">
+    <include>
+      <directory suffix=".php">iPaymu/</directory>
+    </include>
+    <exclude>
+      <file>iPaymu/Console/Kernel.php</file>
+      <file>iPaymu/Exceptions/Handler.php</file>
+    </exclude>
+  </coverage>
+  <testsuites>
+    <testsuite name="iPaymu Test Suite">
+      <directory suffix="Test.php">./tests/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <server name="production" value="false"/>
+    <server name="apiKey" value="QbGcoO0Qds9sQFDmY0MWg1Tq.xtuh1"/>
+    <server name="va" value="1179000899"/>
+  </php>
+</phpunit>
