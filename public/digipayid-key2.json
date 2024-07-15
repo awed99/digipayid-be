@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "digipayid",
+  "private_key_id": "1a2e00aaf5b81ba87ba9fa4b23ac6b96fe7f38f2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDDo8Pr8Se7uVc0\nD5YZ7tDGQPgViEAn9GNW4n9/0aO+KsofNAQQcAATdGVkgXoMTq498sT2ap5LS0kj\njIyKyVQpefBbUgquqFOB4s/mFi5TzBJ3dBQHLh1+TIlwBHxgNgbflNO2aAaom7DV\nJ3GKe2dKj3U/0XpnFPrEzDyhxgmtcWuxOQrcFvSJmIHbV2CtLwmiEc5WRNbCmBNs\nrT90vn0cc5HuMjWYLBDW7vWfp0/Tr89ZTEB6g5YXQp8nbLNMfB1Ggpbau40orJT0\nMDCQ6vMPo/bvHVIo/7KYWG8Z4ivO8ZURbyn0RZM7v/EHup0INX2+rj4flE54RIgk\n5fs5erV/AgMBAAECggEABVPg3BYbOTGXZ9hvnUr55+Q3o7J43zDfDnjCWxmhsv+/\ngfEGYuibf+wg1LqLHdAVggqQUluRIWDH+Zr0VG7RU9EGLbgPiJxJ33tTPDzo/w9k\n7PIKysh2zvLIbVxmtkhr9uVUWWvLMdOnkaGhpgR6FoQ1ZhfPLjgNvWBu23YlDlJZ\n/bgdUyl6DgDV8G7k5miS8t4tiDniiheZy0Xxbcg/W1yi5lfDGJTnQdqC7k8piY+w\n54sd+to+Vb80sF6cncyp4NuKwwyZEHukpRpErwskSiiFfCK3ifnOqePuQ5jGQ1Et\nct751oV3a/O9NTqF/4smhexwEGKAJtaHAI9yCwyM2QKBgQD/wlBk0jS6Tp9QGJmO\nORy7OxPTgTfnMNGYZ4phTNM1EIkrg7fig7HtJA393mYOFup3f+/JyoVuds4UTRFd\noHQ8xE4tFcHpKXUCGtley0FU1KOIq11vde7BsWAABuIDNwb0j1kfIT5mKkw683qK\noXZQukbbKoi70owqtUBRhtIKmQKBgQDD0vOD38w4nMJDuVsLJB72xJV35fW3s8eO\n7vgbi5Xp7umo4BdJdo/+jbezsF9xzR5/OAPe7kWPz0h1KwrhXjd1r0kUjVcIjVon\nQuVUmnf7igWhpsuuGbwlqQwtj4CWZipKjRH3ni79Pfta8ObcnZPVJg+SzlmK2loT\nPFEh37qn1wKBgCLucDqE90ym5l1zLq3dIQ51cCzIDlGWOlo9cgn+Cy7JNmLqF5hp\ncki4TuzojjnIaXeu0ppV/clrkpP1PrTx8E5IZYEE4rosvl1uO1gWHLMwY7GL7jQG\nAHkV982pIv9baajHV13IFZSwnD7E+GysxtMZzgmrEofMpvZCUSmRZ2ipAoGBALCu\n1e5nb4Co15J5XA7qUVG/P0kF4DUWbXimXo+j2uhOGt63CevLoNJBFb135jXsp5aL\neNqcy4CcuriU1GVRN+Lj+6EigaOCvhPshLRYBueaucgHkYCNUbf9FbLJ5nBMz92h\n+NMdEzKEyRRdhT8KokbP539C1YG1z03Jvz47+dLTAoGBAKob7oiJSb8jY2f4sGC+\nF0uSusSOVvc1qXDbx9wQOFcDtnTZIKe8Oz0Ijdn7lkTyMiHHh8orLDXd1n/yp1t4\nmBw/aFtlXlkvCXI21GEGpaPPSEx1rH66eVvHSenfEXKQW3VqkC9GAGdkvdAwXULq\nh7/CpJATOLJdXbC0DMKWZv78\n-----END PRIVATE KEY-----\n",
+  "client_email": "digipayid@digipayid.iam.gserviceaccount.com",
+  "client_id": "100130755884405648398",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/digipayid%40digipayid.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

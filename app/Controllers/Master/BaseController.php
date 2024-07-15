@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers\Master;
-date_default_timezone_set("Asia/Bangkok");
+date_default_timezone_set('Asia/Jakarta');
 
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;

@@ -63,10 +63,54 @@ class Product extends BaseController
     public function postList()
     {   
         $request = request();
-        $dataPost = $request->getJSON();
+        $dataPost = $request->getJSON(true);
         $user = cekValidation('/master/product/list');
         $db = db_connect();
-        $builder = $db->table('app_product_'.$user->id_user)->where('product_status', 1)->get()->getResult();
+
+        if ($dataPost['search']) {
+
+            if ((int)$user->id_user_parent > 0) {
+
+                // print_r(1);
+                // print_r(json_encode($user));
+                $builder = $db->table('app_product_'.$user->id_user_parent)
+                ->groupStart()
+                ->where('product_status', 1)
+                ->where('1 = 1')
+                ->groupEnd()
+                ->groupStart()
+                ->orLike('product_code', $dataPost['search'])
+                ->orLike('product_barcode', $dataPost['search'])
+                ->orLike('product_name', $dataPost['search'])
+                ->groupEnd()
+                ->get()->getResult();
+            } else {
+
+                // print_r(2);
+                // print_r(json_encode($user));
+                $builder = $db->table('app_product_'.$user->id_user)
+                ->groupStart()
+                ->where('product_status', 1)
+                ->where('1 = 1')
+                ->groupEnd()
+                ->groupStart()
+                ->orLike('product_code', $dataPost['search'])
+                ->orLike('product_barcode', $dataPost['search'])
+                ->orLike('product_name', $dataPost['search'])
+                ->groupEnd()
+                ->get()->getResult();
+            }
+
+        } else {
+
+            if ((int)$user->id_user_parent > 0) {
+                $builder = $db->table('app_product_'.$user->id_user_parent)->where('product_status', 1)->get()->getResult();
+            } else {
+                $builder = $db->table('app_product_'.$user->id_user)->where('product_status', 1)->get()->getResult();
+            }
+
+        }
+
         $db->close();
         $finalData = json_encode($builder);
         echo '{
@@ -80,7 +124,8 @@ class Product extends BaseController
     public function postCreate()
     {   
         $request = request();
-        $dataPost = $request->getJSON();
+        $dataPost = $request->getPost();
+        $dataPost['product_image_url'] = upload_file($request);
         $user = cekValidation('/master/product/create');
         $db = db_connect();
         $builder = $db->table('app_product_'.$user->id_user);
@@ -99,11 +144,12 @@ class Product extends BaseController
     public function postUpdate()
     {   
         $request = request();
-        $dataPost = $request->getJSON();
+        $dataPost = $request->getPost();
+        $dataPost['product_image_url'] = upload_file($request);
         $user = cekValidation('/master/product/update');
         $db = db_connect();
         $builder = $db->table('app_product_'.$user->id_user);
-        $query = $builder->where('id_product', $dataPost->id_product);
+        $query = $builder->where('id_product', $dataPost['id_product']);
         $query->update($dataPost);
         $dataFinal = $query->get()->getResult();
         $db->close();

@@ -93,5 +93,5 @@ class Autoload extends AutoloadConfig
      * @var string[]
      * @phpstan-var list<string>
      */
-    public $helpers = ['my_helper', 'tokopay_helper', 'brick_helper', 'email_templates_forgot_password_helper'];
+    public $helpers = ['my_helper', 'tokopay_helper', 'brick_helper', 'email_templates_forgot_password_helper', 'send_receipt_helper', 'gdrive_helper', 'normalize_helper'];
 }

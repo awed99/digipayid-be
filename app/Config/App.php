@@ -20,7 +20,8 @@ class App extends BaseConfig
      */
     // public string $baseURL = '';
     // public string $baseURL = getenv('API_DOMAIN_BASE_URL');
-    public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'https://be.digipayid.com/';
+    // public string $baseURL = 'http://192.168.1.11:443/digipay-be/public/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
@@ -45,7 +46,7 @@ class App extends BaseConfig
      * something else. If you are using mod_rewrite to remove the page set this
      * variable so that it is blank.
      */
-    public string $indexPage = 'index.php';
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------

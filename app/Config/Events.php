@@ -36,10 +36,33 @@ Events::on('pre_system', static function () {
         ob_start(static fn ($buffer) => $buffer);
     } else if (ENVIRONMENT === 'development') {
         Services::routes()->get('__hot-reload', static function () {
-    (new HotReloader())->run();
+            (new HotReloader())->run();
         });
     }
 
+    Events::on('post_controller_constructor', function () {
+        // \Sentry\init(['dsn' => 'YOUR_DSN' ]);
+        \Sentry\init([
+            'dsn' => getenv('DSN_SENTRY'),
+            // Specify a fixed sample rate
+            'traces_sample_rate' => (float)getenv('DSN_SENTRY_TRACES_SAMPLE_RATE'),
+            // Set a sampling rate for profiling - this is relative to traces_sample_rate
+            'profiles_sample_rate' => (float)getenv('DSN_SENTRY_PROFILES_SAMPLE_RATE'),
+          ]);
+    });
+
+
+    Events::on('DBQuery', function () {
+        // \Sentry\init(['dsn' => 'YOUR_DSN' ]);
+        \Sentry\init([
+            'dsn' => getenv('DSN_SENTRY'),
+            // Specify a fixed sample rate
+            'traces_sample_rate' => (float)getenv('DSN_SENTRY_TRACES_SAMPLE_RATE'),
+            // Set a sampling rate for profiling - this is relative to traces_sample_rate
+            'profiles_sample_rate' => (float)getenv('DSN_SENTRY_PROFILES_SAMPLE_RATE'),
+          ]);
+    });
+    
     /*
      * --------------------------------------------------------------------
      * Debug Toolbar Listeners.
