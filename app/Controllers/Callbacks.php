@@ -195,12 +195,15 @@ class Callbacks extends BaseController
                 "updated_at": "2024-10-05 14:38:47"
             },
             "reference": "TP231005NPNX005088",
-            "reff_id": "DIGIPAYID-40-0FD5644D",
+            "reff_id": "DIGIPAYID-40-E987CFD6",
             "signature": "f7ab1cca0f6919efd3c9a4868a75ba60",
-            "status": "success"
+            "status": "completed"
         }';
         $dt = json_decode($sampleJSON, true);
         // print_r($dt);
+
+        // $status = 'success';
+        // $status = 'completed';
 
         // $rawRequestInput = file_get_contents("php://input");
 
