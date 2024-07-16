@@ -13,7 +13,7 @@ function normalize()
     $statusTRX['time_transaction_failed'] = date('Y-m-d H:i:s');
     $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 2)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
     foreach ($users as $user) {
-        $db->table("app_journal_finance_" . $user->id_user)->where('status', 0)->where("(NOW() - INTERVAL 10 MINUTE) >= time_transaction")->update($status);
+        $db->table("app_journal_finance_" . $user->id_user)->where('status', 0)->where("(NOW() - INTERVAL 10 MINUTE) >= created_at")->update($status);
         $db->table("app_transactions_" . $user->id_user)->where('status_transaction', 0)->where("(NOW() - INTERVAL 10 MINUTE) >= time_transaction")->update($statusTRX);
     }
 
@@ -33,7 +33,7 @@ function normalize2()
     $statusTRX['time_transaction_failed'] = date('Y-m-d H:i:s');
     $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 2)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
     foreach ($users as $user) {
-        $db->table("app_journal_finance_" . $user->id_user)->where("(NOW() - INTERVAL 10 MINUTE) >= time_transaction")->update($status);
+        $db->table("app_journal_finance_" . $user->id_user)->where("(NOW() - INTERVAL 10 MINUTE) >= created_at")->update($status);
         $db->table("app_transactions_" . $user->id_user)->where("(NOW() - INTERVAL 10 MINUTE) >= time_transaction")->update($statusTRX);
     }
 
