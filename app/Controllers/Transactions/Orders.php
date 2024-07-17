@@ -446,6 +446,7 @@ class Orders extends BaseController
     "code": ' . $code . ',
     "error": "",
     "message": "",
+    "reff_id": "' . $dataPost['invoice_number'] . '",
     "data": ' . $finalData . ',
     "payment": ' . $paymentJSON . '
 }';
@@ -494,6 +495,31 @@ class Orders extends BaseController
         // ob_flush();
         // flush();
         // ob_end_clean();
+    }
+
+    public function postCheck_status()
+    {
+        $user = cekValidation('/transactions/orders/check_status');
+        $request = request();
+        $dataPost = $request->getJSON(true);
+
+        $db = db_connect();
+
+        if ((int)$user->id_user_parent > 0) {
+            $trx = $db->table('app_transactions_' . $user->id_user_parent)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+        } else {
+            $trx = $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+        }
+
+        $db->close();
+
+        echo '{
+            "code": 1,
+            "error": "",
+            "message": "",
+            "data": [],
+            "status": ' . (int)$trx->status_payment . '
+        }';
     }
 
     public function postResend_billing()
