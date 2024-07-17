@@ -259,7 +259,7 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2000); //timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 20000); //timeout in seconds
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     } else {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
