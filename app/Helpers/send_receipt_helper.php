@@ -57,9 +57,9 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee) . '</strong></span>
                                     </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
@@ -67,6 +67,12 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
                                         IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
                                     </span></td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+                                    </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
@@ -109,17 +115,17 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
             </div>
             ';
 
-    $urlIMG = "billings/" . $dataPost['invoice_number'] . ".png";
+    $urlIMG = "receipts/" . $dataPost['invoice_number'] . ".png";
 
     $img = htmlToImage($htmlBody);
 
     // file_put_contents($urlIMG, file_get_contents($img));
-    // grab_image($img, $urlIMG);
+    grab_image($img, $urlIMG);
 
     // die();
 
     $db = db_connect();
-    $update['url_file_billing'] = $img;
+    $update['url_file_receipt'] = $img;
 
     if ((int)$user->id_user_parent > 0) {
         $db->table('app_transactions_' . $user->id_user_parent)->where('invoice_number', $dataPost['invoice_number'])->update($update);
@@ -133,17 +139,16 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
     }
 
     if ($type === 'whatsapp') {
-        if (isset($payment->res->data->qr_link)) {
-            $file = $payment->res->data->qr_link;
-        } else {
-            $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
-        }
+        $file =  $img;
+        // if (isset($payment->res->data->qr_link)) {
+        //     $file = $payment->res->data->qr_link;
+        // } else {
+        //     $file =  $img;
+        //     // $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
+        // }
 
-        $message = '*DIGIPAYID - Bukti Bayar*
-        
-*' . $dataPost['invoice_number'] . '*
-SIlakan klik untuk download bukti bayar. 
-' . $file;
+        $message = '
+*Bukti Bayar - ' . $dataPost['invoice_number'] . '*';
         sendWhatsapp($dataPost['wa_customer'], $message, $file);
     }
 }
@@ -217,9 +222,9 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee) . '</strong></span>
                                     </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
@@ -227,6 +232,12 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
                                         IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
                                     </span></td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+                                    </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
@@ -275,7 +286,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
     $img = htmlToImage($htmlBody);
 
     // file_put_contents($urlIMG, file_get_contents($img));
-    // grab_image($img, $urlIMG);
+    grab_image($img, $urlIMG);
 
     $db = db_connect();
     $update['url_file_billing'] = $img;
@@ -309,7 +320,8 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         if (isset($payment->res->data->qr_link)) {
             $file = $payment->res->data->qr_link;
         } else {
-            $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
+            $file =  $img;
+            // $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
         }
 
         $message = '*TAGIHAN ' . $dataPost['invoice_number'] . '*

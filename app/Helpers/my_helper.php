@@ -242,7 +242,7 @@ function format_rupiah($angka)
 
 function curl($url, $isPost = false, $postFields = false, $headers = false, $async = false)
 {
-    set_time_limit(120);
+    set_time_limit(20);
     ignore_user_abort(false);
     $ch = curl_init();
 
@@ -546,14 +546,15 @@ function sendWhatsapp($phone, $message, $file = false)
         if (strpos($file, 'spoo.me') > 0) {
             $data['file'] = $file;
         } else {
-            $data['file'] = urlShortener($file) . '?data.pdf';
+            $data['file'] = $file;
+            // $data['file'] = urlShortener($file) . '?data.pdf';
         }
         // $data['file'] = urlShortener($file) . '?data.pdf';
     }
     $res = curl('https://app.wapanels.com/api/create-message', true, $data, false, true);
     // print_r($res);
     // die();
-    return $res;
+    // return $res;
 }
 
 function sendWA($phone, $message, $imageLink = null)
