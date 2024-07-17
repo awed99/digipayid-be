@@ -113,7 +113,8 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
 
     $img = htmlToImage($htmlBody);
 
-    file_put_contents($urlIMG, file_get_contents($img));
+    // file_put_contents($urlIMG, file_get_contents($img));
+    // grab_image($img, $urlIMG);
 
     // die();
 
@@ -273,7 +274,8 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
 
     $img = htmlToImage($htmlBody);
 
-    file_put_contents($urlIMG, file_get_contents($img));
+    // file_put_contents($urlIMG, file_get_contents($img));
+    // grab_image($img, $urlIMG);
 
     $db = db_connect();
     $update['url_file_billing'] = $img;
