@@ -73,28 +73,22 @@ class Journal extends BaseController
             $builder
                 ->groupStart()
                 ->where('created_at >=', $dataPost->start_date . ' 00:00:00')
-                ->groupEnd()
-                ->groupStart()
-                ->where('accounting_type', 1001)
-                ->orWhere('accounting_type', 2001)
-                ->orWhere('accounting_type', 3001)
-                ->orWhere('accounting_type', 4)
-                ->orWhere('accounting_type', 4002)
                 ->groupEnd();
         }
         if (isset($dataPost->end_date)) {
             $builder
                 ->groupStart()
                 ->where('created_at <=', $dataPost->end_date . ' 23:59:59')
-                ->groupEnd()
-                ->groupStart()
-                ->where('accounting_type', 1001)
-                ->orWhere('accounting_type', 2001)
-                ->orWhere('accounting_type', 3001)
-                ->orWhere('accounting_type', 4)
-                ->orWhere('accounting_type', 4002)
                 ->groupEnd();
         }
+        $builder
+            ->groupStart()
+            ->where('accounting_type', 1001)
+            ->orWhere('accounting_type', 2001)
+            ->orWhere('accounting_type', 3001)
+            ->orWhere('accounting_type', 4)
+            ->orWhere('accounting_type', 4002)
+            ->groupEnd();
         $result = $builder->orderBy('id', 'desc')->get()->getResult();
 
         $db->close();
@@ -146,28 +140,22 @@ class Journal extends BaseController
             $builder
                 ->groupStart()
                 ->where('created_at >=', $dataPost['start_date'] . ' 00:00:00')
-                ->groupEnd()
-                ->groupStart()
-                ->where('accounting_type', 1001)
-                ->orWhere('accounting_type', 2001)
-                ->orWhere('accounting_type', 3001)
-                ->orWhere('accounting_type', 4)
-                ->orWhere('accounting_type', 4002)
                 ->groupEnd();
         }
         if (isset($dataPost['end_date'])) {
             $builder
                 ->groupStart()
                 ->where('created_at <=', $dataPost['end_date'] . ' 23:59:59')
-                ->groupEnd()
-                ->groupStart()
-                ->where('accounting_type', 1001)
-                ->orWhere('accounting_type', 2001)
-                ->orWhere('accounting_type', 3001)
-                ->orWhere('accounting_type', 4)
-                ->orWhere('accounting_type', 4002)
                 ->groupEnd();
         }
+        $builder
+            ->groupStart()
+            ->where('accounting_type', 1001)
+            ->orWhere('accounting_type', 2001)
+            ->orWhere('accounting_type', 3001)
+            ->orWhere('accounting_type', 4)
+            ->orWhere('accounting_type', 4002)
+            ->groupEnd();
         $result = $builder->orderBy('id', 'desc')->get()->getResult();
 
         $db->close();
