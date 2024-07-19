@@ -22,6 +22,7 @@ class Session extends BaseConfig
      *
      * @phpstan-var class-string<BaseHandler>
      */
+    // public string $driver = 'CodeIgniter\Session\Handlers\FileHandler';
     // public string $driver = FileHandler::class;
     public string $driver = DatabaseHandler::class;
 
@@ -32,7 +33,7 @@ class Session extends BaseConfig
      *
      * The session cookie name, must contain only [0-9a-z_-] characters
      */
-    public string $cookieName = 'ci_session';
+    public string $cookieName = 'digipayid_';
 
     /**
      * --------------------------------------------------------------------------
@@ -42,7 +43,7 @@ class Session extends BaseConfig
      * The number of SECONDS you want the session to last.
      * Setting to 0 (zero) means expire when the browser is closed.
      */
-    public int $expiration = 7200;
+    public int $expiration = 3600000;
 
     /**
      * --------------------------------------------------------------------------
@@ -60,7 +61,7 @@ class Session extends BaseConfig
      * IMPORTANT: You are REQUIRED to set a valid save path!
      */
     // public string $savePath = WRITEPATH . 'session';
-    public string $savePath = 'ci_sessions';
+    public string $savePath = WRITEPATH . 'session';
 
     /**
      * --------------------------------------------------------------------------
@@ -72,7 +73,7 @@ class Session extends BaseConfig
      * WARNING: If you're using the database driver, don't forget to update
      *          your session table's PRIMARY KEY when changing this setting.
      */
-    public bool $matchIP = true;
+    public bool $matchIP = false;
 
     /**
      * --------------------------------------------------------------------------
