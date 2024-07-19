@@ -75,7 +75,7 @@ class Users extends BaseController
         }
 
         if ($dataFinal) {
-            $session = session();
+            // $session = session();
 
             // $loc = json_decode(curl(getenv('API_LOGS').'logs/create_log_login', 1, 'ip='.$this->get_client_ip()));
             $update["token_login"] = hash('sha256', $email . date('YmdHis'));
@@ -92,9 +92,9 @@ class Users extends BaseController
             if (isset($loc['city'])) {
                 $update["last_ip_location"] = $loc['city'] . ', ' . $loc['region_name'] . ', ' . $loc['country_name'];
             }
-            $session->set('login', $dataFinal);
-            $session->set('last_login', date('Y-m-d H:i:s'));
-            $session->set('token_login', $update["token_login"]);
+            // $session->set('login', $dataFinal);
+            // $session->set('last_login', date('Y-m-d H:i:s'));
+            // $session->set('token_login', $update["token_login"]);
             $builder->where('email', $email);
             $builder->update($update);
             $builder->where('email', $email);

@@ -256,7 +256,7 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
     }
 
     if ($async) {
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, 20000); //timeout in seconds

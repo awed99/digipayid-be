@@ -20,8 +20,9 @@ class App extends BaseConfig
      */
     // public string $baseURL = '';
     // public string $baseURL = getenv('API_DOMAIN_BASE_URL');
-    public string $baseURL = 'https://be.digipayid.com/';
+    // public string $baseURL = 'https://be.digipayid.com/';
     // public string $baseURL = 'http://192.168.1.11:443/digipay-be/public/';
+    public string $baseURL = 'https://localhost/digipay-be/public/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
@@ -155,6 +156,7 @@ class App extends BaseConfig
      */
     // public string $driver = FileHandler::class;
     public string $sessionDriver = DatabaseHandler::class;
+    // public string $sessionDriver = FileHandler::class;
 
     /**
      * --------------------------------------------------------------------------
