@@ -438,10 +438,10 @@ class Orders extends BaseController
 
         $code = ($dataPost['id_payment_method'] === 0) ? 0 : 1;
 
-        ob_end_clean();
-        // header("Connection: close");
-        ignore_user_abort(true);
-        ob_start();
+        // ob_end_clean();
+        // // header("Connection: close");
+        // ignore_user_abort(true);
+        // ob_start();
         echo '{
     "code": ' . $code . ',
     "error": "",
@@ -450,28 +450,28 @@ class Orders extends BaseController
     "data": ' . $finalData . ',
     "payment": ' . $paymentJSON . '
 }';
-        session_write_close(); //close session file on server side to avoid blocking other requests
+        // session_write_close(); //close session file on server side to avoid blocking other requests
 
-        header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
-        header("Content-Length: " . ob_get_length()); //send length header
-        header("Connection: close"); //or redirect to some url: header('Location: http://www.google.com');
-        // $size = ob_get_length();
-        // header("Content-Length: $size");
-        ob_end_flush(); // All output buffers must be flushed here  // Strange behaviour, will not work
-        flush(); // Unless both are called !
+        // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
+        // header("Content-Length: " . ob_get_length()); //send length header
+        // header("Connection: close"); //or redirect to some url: header('Location: http://www.google.com');
+        // // $size = ob_get_length();
+        // // header("Content-Length: $size");
+        // ob_end_flush(); // All output buffers must be flushed here  // Strange behaviour, will not work
+        // flush(); // Unless both are called !
 
-        // fastcgi_finish_request();
-        // if (function_exists('fastcgi_finish_request')) {
-        //     fastcgi_finish_request();
-        // } else {
-        //     // echo '<p style="color: red;">This server does not support <code>fastcgi_finish_request()</code> function.</p>' . PHP_EOL;
-        //     // echo 'Exit now.<br>' . PHP_EOL;
-        //     exit();
-        // }
+        // // fastcgi_finish_request();
+        // // if (function_exists('fastcgi_finish_request')) {
+        // //     fastcgi_finish_request();
+        // // } else {
+        // //     // echo '<p style="color: red;">This server does not support <code>fastcgi_finish_request()</code> function.</p>' . PHP_EOL;
+        // //     // echo 'Exit now.<br>' . PHP_EOL;
+        // //     exit();
+        // // }
 
-        // sleep(30);
+        // // sleep(30);
 
-        ob_start();
+        // ob_start();
         if (((int)$dataPost['id_payment_method'] < 1)) {
             if (($dataPost['email_customer'] != '')) {
                 sendReceipt('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
@@ -489,7 +489,7 @@ class Orders extends BaseController
                 sendBilling('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
             }
         }
-        ob_end_clean();
+        // ob_end_clean();
 
         // ob_end_flush();
         // ob_flush();
@@ -566,10 +566,10 @@ class Orders extends BaseController
 
         $code = ((int)$trx->id_payment_method === 0) ? 0 : 1;
 
-        ob_end_clean();
-        // header("Connection: close");
-        ignore_user_abort(true);
-        ob_start();
+        // ob_end_clean();
+        // // header("Connection: close");
+        // ignore_user_abort(true);
+        // ob_start();
         echo '{
     "code": ' . $code . ',
     "error": "",
@@ -577,28 +577,28 @@ class Orders extends BaseController
     "data": [],
     "payment": ' . $paymentJSON . '
 }';
-        session_write_close(); //close session file on server side to avoid blocking other requests
+        // session_write_close(); //close session file on server side to avoid blocking other requests
 
-        header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
-        header("Content-Length: " . ob_get_length()); //send length header
-        header("Connection: close"); //or redirect to some url: header('Location: http://www.google.com');
-        // $size = ob_get_length();
-        // header("Content-Length: $size");
-        ob_end_flush(); // All output buffers must be flushed here  // Strange behaviour, will not work
-        flush(); // Unless both are called !
+        // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
+        // header("Content-Length: " . ob_get_length()); //send length header
+        // header("Connection: close"); //or redirect to some url: header('Location: http://www.google.com');
+        // // $size = ob_get_length();
+        // // header("Content-Length: $size");
+        // ob_end_flush(); // All output buffers must be flushed here  // Strange behaviour, will not work
+        // flush(); // Unless both are called !
 
-        // fastcgi_finish_request();
-        // if (function_exists('fastcgi_finish_request')) {
-        //     fastcgi_finish_request();
-        // } else {
-        //     // echo '<p style="color: red;">This server does not support <code>fastcgi_finish_request()</code> function.</p>' . PHP_EOL;
-        //     // echo 'Exit now.<br>' . PHP_EOL;
-        //     exit();
-        // }
+        // // fastcgi_finish_request();
+        // // if (function_exists('fastcgi_finish_request')) {
+        // //     fastcgi_finish_request();
+        // // } else {
+        // //     // echo '<p style="color: red;">This server does not support <code>fastcgi_finish_request()</code> function.</p>' . PHP_EOL;
+        // //     // echo 'Exit now.<br>' . PHP_EOL;
+        // //     exit();
+        // // }
 
-        // sleep(30);
+        // // sleep(30);
 
-        ob_start();
+        // ob_start();
         if (((int)$trx->id_payment_method < 1)) {
             if (($dataPost['email_customer'] != '' && $dataPost['email_customer'])) {
                 sendReceipt('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
@@ -616,7 +616,7 @@ class Orders extends BaseController
                 sendBilling('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }
         }
-        ob_end_clean();
+        // ob_end_clean();
 
         // ob_end_flush();
         // ob_flush();
