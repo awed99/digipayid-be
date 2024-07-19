@@ -22,7 +22,6 @@ class Auth extends BaseController
     public function postSet_storage()
     {
 
-        session_start();
         $request = request();
         $postData = $request->getJSON(true);
 
