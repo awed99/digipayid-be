@@ -551,6 +551,7 @@ function sendWhatsapp($phone, $message, $file = false)
         }
         // $data['file'] = urlShortener($file) . '?data.pdf';
     }
+    // print_r($data);
     $res = curl('https://app.wapanels.com/api/create-message', true, $data, false, true);
     // print_r($res);
     // die();

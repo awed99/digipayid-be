@@ -169,7 +169,7 @@ class Database extends Config
         'DBDriver'    => 'SQLite3',
         'DBPrefix'    => 'db_',  // Needed to ensure we're working correctly with prefixes live. DO NOT REMOVE FOR CI DEVS
         'pConnect'    => false,
-        'DBDebug'     => true,
+        'DBDebug'     => false,
         'charset'     => 'utf8',
         'DBCollat'    => '',
         'swapPre'     => '',
