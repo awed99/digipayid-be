@@ -16,6 +16,12 @@ class Crons extends BaseController
         // return view('welcome_message');
     }
 
+    public function cliIndex2()
+    {
+        normalize();
+        // return view('welcome_message');
+    }
+
     public function postNormalize()
     {
         normalize();
