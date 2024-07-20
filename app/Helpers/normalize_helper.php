@@ -17,6 +17,39 @@ function normalize()
         $db->table("app_transactions_" . $user->id_user)->where('status_transaction', 0)->where("(NOW() - INTERVAL 10 MINUTE) >= time_transaction")->update($statusTRX);
     }
 
+
+    // $users = $db->table('app_users')->where('id_user_parent', 1)->where('user_role', 2)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
+    foreach ($users as $user) {
+        $trxs = $db->table("app_transactions_" . $user->id_user . " atx")
+            ->join("app_payment_method_" . $user->id_user . " apmx", "apmx.id_payment_method = atx.id_payment_method", 'left')
+            ->join("master_payment_method mpmx", "apmx.id_payment_method = mpmx.id_payment_method", 'left')
+            ->where('atx.status_transaction', 1)->get()->getResult();
+
+        foreach ($trxs as $trx) {
+            if ((int)$trx->settlement_day === 0) {
+                // print_r($trx);
+                // die();
+                $status['status'] = 2;
+                $status['updated_at'] = date('Y-m-d H:i:s');
+                $statusTRX['status_transaction'] = 2;
+                $statusTRX['status_payment'] = 2;
+                $statusTRX['time_transaction_failed'] = date('Y-m-d H:i:s');
+                $db->table("admin_journal_finance")->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= created_at")->update($status);
+                $db->table("app_journal_finance_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= created_at")->update($status);
+                $db->table("app_transactions_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status_transaction', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= time_transaction")->update($statusTRX);
+            } elseif ((int)$trx->settlement_day > 0) {
+                $status['status'] = 2;
+                $status['updated_at'] = date('Y-m-d H:i:s');
+                $statusTRX['status_transaction'] = 2;
+                $statusTRX['status_payment'] = 2;
+                $statusTRX['time_transaction_failed'] = date('Y-m-d H:i:s');
+                $db->table("admin_journal_finance")->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL " . $trx->settlement_day . " DAY) >= created_at")->update($status);
+                $db->table("app_journal_finance_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL " . $trx->settlement_day . " DAY) >= created_at")->update($status);
+                $db->table("app_transactions_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status_transaction', 1)->where("(NOW() - INTERVAL " . $trx->settlement_day . " DAY) >= time_transaction")->update($statusTRX);
+            }
+        }
+    }
+
     $db->close();
 }
 
