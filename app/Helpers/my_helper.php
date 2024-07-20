@@ -248,7 +248,7 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
 
     curl_setopt($ch, CURLOPT_URL, $url);
     // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
-    curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
+    // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
     curl_setopt($ch, CURLOPT_ENCODING, '');
     if ($isPost) {
         curl_setopt($ch, CURLOPT_POST, $isPost);
@@ -552,7 +552,7 @@ function sendWhatsapp($phone, $message, $file = false)
         // $data['file'] = urlShortener($file) . '?data.pdf';
     }
     // print_r($data);
-    $res = curl('https://app.wapanels.com/api/create-message', true, $data, false, true);
+    $res = curl('https://app.wapanels.com/api/create-message', true, $data, false, false);
     // print_r($res);
     // die();
     // return $res;
@@ -566,7 +566,7 @@ function sendWA($phone, $message, $imageLink = null)
     curl_setopt_array($curl, array(
         CURLOPT_URL => 'https://app.wapanels.com/api/create-message',
         // CURLOPT_RESOLVE => ['https://app.wapanels.com/api/create-message'],
-        CURLOPT_TCP_FASTOPEN => true,
+        // CURLOPT_TCP_FASTOPEN => true,
         CURLOPT_ENCODING  => '',
         CURLOPT_RETURNTRANSFER => false,
         CURLOPT_ENCODING => '',
@@ -619,22 +619,37 @@ function htmlToImage($html)
     // $url = 'https://api.pictify.io/image';
     $data = json_encode(array('html' => $html));
     $header = array(
-        'Authorization: Bearer e68392241bd1dbda9343c4f56d5c03c0c0423bedded2e0b5eccc346d1eca922d',
-        'Content-Type: application/json'
+        'content-type: application/json',
+        'Accept: application/json',
+        'Origin: https://pictify.io',
+        'Referer: https://pictify.io/',
+        // 'Cookie: auth-token=HTN1J8XP5M; sessionid=k22k174q4o0b0w8crltaiks5jv90xt3x; ph_phc_3ecva80rtrdIJiDyYVwsqjy2YI7CbhbAydPApERhNtU_posthog=%7B%22distinct_id%22%3A%220190ac97-27bc-77aa-a49e-bd729c4865bd%22%2C%22%24sesid%22%3A%5B1721400722933%2C%220190cb7a-42e6-7357-a827-e552e3256733%22%2C1721400705766%5D%7D',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
     );
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
+    // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
     curl_setopt($ch, CURLOPT_ENCODING, '');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
+
+    // print_r($response);
+    // die();
+
+    $info = curl_getinfo($ch);
+    // print_r($info);
     curl_close($ch);
+
+    // $res = curl( $url, true, $data, $header, true);
+
+    // print_r($response);
+    // die();
 
     $res = json_decode($response);
 
