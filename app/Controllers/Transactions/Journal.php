@@ -140,7 +140,7 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->orWhere('id_user_parent', $user->id_user)->get()->getRow();
 
         if ((int)$user->id_user_parent > 0) {
-            $builder = $db->table('app_journal_finance_' . $user->id_user_parent);
+            $builder = $db->table('app_journal_finance_' . $user->id_user_parent)->where('(id_payment_method > 0 AND accounting_type > 1)');
             // ->groupStart()
             // ->where('id_payment_method = 0 AND accounting_type = 101')
             // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
@@ -157,7 +157,7 @@ class Journal extends BaseController
 
             // $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $user->id_user_parent . "` where status = 1) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $user->id_user_parent . "` where status = 1) as saldo")->getRow()->saldo;
         } else {
-            $builder = $db->table('app_journal_finance_' . $user->id_user);
+            $builder = $db->table('app_journal_finance_' . $user->id_user)->where('(id_payment_method > 0 AND accounting_type > 1)');
             // ->groupStart()
             // ->where('id_payment_method = 0 AND accounting_type = 101')
             // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
@@ -292,12 +292,12 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->orWhere('id_user_parent', $user->id_user)->get()->getRow();
 
         if ((int)$user->id_user_parent > 0) {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
         } else {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
@@ -451,12 +451,12 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->orWhere('id_user_parent', $user->id_user)->get()->getRow();
 
         if ((int)$user->id_user_parent > 0) {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
         } else {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
@@ -491,12 +491,12 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->orWhere('id_user_parent', $user->id_user)->get()->getRow();
 
         if ((int)$user->id_user_parent > 0) {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user_parent)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
         } else {
-            $builderX = $db->table('app_journal_finance_' . $user->id_user)
+            $builderX = $db->table('app_journal_finance_' . $user->id_user)->where('(id_payment_method > 0 AND accounting_type > 1)')
                 ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
                 ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59');
             $result = $builderX->orderBy('id', 'desc')->get()->getResult();
