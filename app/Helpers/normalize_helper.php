@@ -34,6 +34,11 @@ function normalize()
                 $statusTRX['status_transaction'] = 2;
                 $statusTRX['status_payment'] = 2;
                 $statusTRX['time_transaction_failed'] = date('Y-m-d H:i:s');
+
+                $db->table("admin_journal_finance")->where('invoice_number', $trx->invoice_number)->where('status', 1)->where('id_payment_method', 0)->update($status);
+                $db->table("app_journal_finance_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status', 1)->where('id_payment_method', 0)->update($status);
+                $db->table("app_transactions_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status_transaction', 1)->where('id_payment_method', 0)->update($statusTRX);
+
                 $db->table("admin_journal_finance")->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= created_at")->update($status);
                 $db->table("app_journal_finance_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= created_at")->update($status);
                 $db->table("app_transactions_" . $user->id_user)->where('invoice_number', $trx->invoice_number)->where('status_transaction', 1)->where("(NOW() - INTERVAL 20 MINUTE) >= time_transaction")->update($statusTRX);
