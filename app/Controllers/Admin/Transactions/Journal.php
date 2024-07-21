@@ -255,7 +255,7 @@ class Journal extends BaseController
         $dataPost = $request->getJSON();
         $db = db_connect();
 
-        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant)->where('(id_payment_method > 0 AND accounting_type > 1)');
+        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
         // ->groupStart()
         // ->where('id_payment_method = 0 AND accounting_type = 101')
         // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
@@ -267,9 +267,10 @@ class Journal extends BaseController
         if (isset($dataPost->end_date)) {
             $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
         }
+        $builder->where('NOT (id_payment_method = 0 AND accounting_type = 1)');
 
         $result = $builder->orderBy('id', 'desc')->get()->getResult();
-        $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1) as saldo")->getRow()->saldo ?? 0;
+        $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1 NOT (id_payment_method = 0 AND accounting_type = 1)) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1 NOT (id_payment_method = 0 AND accounting_type = 1)) as saldo")->getRow()->saldo ?? 0;
 
         $db->close();
         $finalData = json_encode($result);
@@ -358,9 +359,9 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $dataPost['id_merchant'])->orWhere('id_user_parent', $dataPost['id_merchant'])->get()->getRow();
 
         $builder = $db->table('app_journal_finance_' . $dataPost['id_merchant'])
-            ->where('(id_payment_method > 0 AND accounting_type > 1)')
             ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
             ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59')
+            ->where('NOT (id_payment_method = 0 AND accounting_type = 1)')
             ->orderBy('id', 'desc')->get()->getResult();
 
         $db->close();
