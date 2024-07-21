@@ -255,7 +255,7 @@ class Journal extends BaseController
         $dataPost = $request->getJSON();
         $db = db_connect();
 
-        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
+        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant)->where('(id_payment_method > 0 AND accounting_type > 1)');
         // ->groupStart()
         // ->where('id_payment_method = 0 AND accounting_type = 101')
         // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
@@ -358,6 +358,7 @@ class Journal extends BaseController
         $dataBankUser = $db->table('app_users')->where('id_user', $dataPost['id_merchant'])->orWhere('id_user_parent', $dataPost['id_merchant'])->get()->getRow();
 
         $builder = $db->table('app_journal_finance_' . $dataPost['id_merchant'])
+            ->where('(id_payment_method > 0 AND accounting_type > 1)')
             ->where('created_at >=', date("Y-m-01", strtotime(date("Y-m-d"))) . ' 00:00:00')
             ->where('created_at <=', date("Y-m-t", strtotime(date("Y-m-d"))) . ' 23:59:59')
             ->orderBy('id', 'desc')->get()->getResult();
