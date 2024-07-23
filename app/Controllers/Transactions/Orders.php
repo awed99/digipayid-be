@@ -385,7 +385,9 @@ class Orders extends BaseController
             $journal_insert_admin2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert_admin2['description'] = 'Fee PG ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin2);
+        }
 
+        if ((float)$dataPost['amount_tax'] > 0) {
             $journal_insert_admin3['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin3['id_user'] = $user->id_user;
             $journal_insert_admin3['id_user_parent'] = $user->id_user_parent;
