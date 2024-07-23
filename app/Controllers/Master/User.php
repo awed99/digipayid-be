@@ -39,7 +39,11 @@ class User extends BaseController
         $db = db_connect();
         $builder = $db->table('app_users au');
         $query = $builder->where('au.id_user', $dataPost['id_user'])->orWhere('au.id_user_parent', $user->id_user);
-        $query->update(['merchant_name' => $dataPost['merchant_name']]);
+        $update['merchant_name'] = $dataPost['merchant_name'];
+        $update['merchant_address'] = $dataPost['merchant_address'];
+        $update['merchant_wa'] = $dataPost['merchant_wa'];
+        $update['tax_percentage'] = $dataPost['tax_percentage'];
+        $query->update($update);
         $dataFinal = $query->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->orderBy('id_user', 'asc')->limit(1)->get()->getRow();
         $db->close();
         $finalData = json_encode($dataFinal);
