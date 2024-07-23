@@ -59,7 +59,13 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee) . '</strong></span>
+                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</strong></span>
+                                    </td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        IDR ' . format_rupiah($transaction->amount_tax) . '</span>
                                     </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
@@ -224,7 +230,13 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee) . '</strong></span>
+                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee - (int)$transaction->amount_tax) . '</strong></span>
+                                    </td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        IDR ' . format_rupiah($transaction->amount_tax) . '</span>
                                     </td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
