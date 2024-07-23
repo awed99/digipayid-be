@@ -126,7 +126,8 @@ class Orders extends BaseController
             "error": "",
             "message": "",
             "data": ' . $finalData . ',
-            "saldo": ' . $user->saldo . '
+            "saldo": ' . $user->saldo . ',
+            "tax_percentage": ' . $user->tax_percentage . '
         }';
     }
 
@@ -258,13 +259,18 @@ class Orders extends BaseController
         // header('Content-type: text/plain', true);
         // header('Content-type: application/json', true);
         $user = cekValidation('/transactions/orders/create');
+        $tax_percentage = (int)$user->tax_percentage;
         $request = request();
         $dataPost = $request->getJSON(true);
         $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
         $dataPost['external_id'] = $dataPost['invoice_number'];
         $dataPost['id_user'] = $user->id_user;
+        $dataPost['tax_percentage'] = $tax_percentage;
+        $dataPost['amount_tax'] = (int)$dataPost['amount_tax'];
+        $dataPost['amount'] = (int)$dataPost['amount'];
+        $dataPost['amount_to_pay'] = (int)$dataPost['amount_to_pay'];
         $dataPost['amount_to_back'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount'];
-        $dataPost['amount_to_receive'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount_to_back'] - (int)$dataPost['fee'];
+        $dataPost['amount_to_receive'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount_to_back'] - (int)$dataPost['fee'] - $dataPost['amount_tax'];
         if ((int)$dataPost['id_payment_method'] == 0) {
             $dataPost['status_transaction'] = 1;
             $dataPost['status_payment'] = 1;
@@ -307,7 +313,7 @@ class Orders extends BaseController
         $journal_insert_admin = array();
 
         $journal_insert0['invoice_number'] = $dataPost['invoice_number'];
-        $journal_insert0['amount_credit'] = $dataPost['amount_to_receive'];
+        $journal_insert0['amount_credit'] = $dataPost['amount'];
         $journal_insert0['amount_debet'] = 0;
         $journal_insert0['accounting_type'] = 1;
         $journal_insert0['id_payment_method'] = (int)$dataPost['id_payment_method'];
@@ -324,6 +330,15 @@ class Orders extends BaseController
         $journal_insert1['description'] = 'Fee ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert1);
 
+        $journal_insert2['invoice_number'] = $dataPost['invoice_number'];
+        $journal_insert2['amount_credit'] = 0;
+        $journal_insert2['amount_debet'] = (int)$dataPost['amount_tax'];
+        $journal_insert2['accounting_type'] = 5;
+        $journal_insert2['id_payment_method'] = (int)$dataPost['id_payment_method'];
+        $journal_insert2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert2['description'] = 'Tax ' . $dataPost['invoice_number'];
+        array_push($journal_insert, $journal_insert2);
+
 
         // $journal_insert_admin0['invoice_number'] = $dataPost['invoice_number'];
         // $journal_insert_admin0['id_user'] = $user->id_user;
@@ -339,7 +354,7 @@ class Orders extends BaseController
             $journal_insert_admin0['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin0['id_user'] = $user->id_user;
             $journal_insert_admin0['id_user_parent'] = $user->id_user_parent;
-            $journal_insert_admin0['amount_credit'] = (float)$dataPost['amount_to_receive'];
+            $journal_insert_admin0['amount_credit'] = (float)$dataPost['amount'];
             $journal_insert_admin0['amount_debet'] = 0;
             $journal_insert_admin0['accounting_type'] = 1;
             $journal_insert_admin0['id_payment_method'] = (int)$dataPost['id_payment_method'];
@@ -370,6 +385,17 @@ class Orders extends BaseController
             $journal_insert_admin2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert_admin2['description'] = 'Fee PG ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin2);
+
+            $journal_insert_admin3['invoice_number'] = $dataPost['invoice_number'];
+            $journal_insert_admin3['id_user'] = $user->id_user;
+            $journal_insert_admin3['id_user_parent'] = $user->id_user_parent;
+            $journal_insert_admin3['amount_credit'] = 0;
+            $journal_insert_admin3['amount_debet'] = (float)$dataPost['amount_tax'];
+            $journal_insert_admin3['accounting_type'] = 5;
+            $journal_insert_admin3['id_payment_method'] = (int)$dataPost['id_payment_method'];
+            $journal_insert_admin3['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert_admin3['description'] = 'Tax ' . $dataPost['invoice_number'];
+            array_push($journal_insert_admin, $journal_insert_admin3);
         }
 
         $builder2->insertBatch($journal_insert);
