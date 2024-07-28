@@ -261,7 +261,7 @@ class Callbacks extends BaseController
             $builder1 = $db->table('app_transaction_products_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $dataTRX = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get()->getRowArray();
 
-            $payment = ((int)$dataTRX['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataTRX['amount_to_pay'], $dataTRX['payment_method_code'], $dataTRX['invoice_number']));
+            $payment = ((int)$dataTRX['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataTRX['amount_to_pay'], $dataTRX['payment_method_code'], $dataTRX['invoice_number'], $user));
             $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
 
             if (($dataTRX['email_customer'] != '')) {
