@@ -35,7 +35,7 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
     $htmlBody = '
             <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
             <br/>
-                <h3 style="text-align:center;"><b>DIGIPAY-ID</b></h3>
+                <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
                 <hr>
                 <p style="text-align:center;"><span style="font-size:12px;">Struk Pembayaran</span></p>
                 <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
@@ -231,7 +231,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
     $htmlBody = '
             <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
             <br/>
-                <h3 style="text-align:center;"><b>DIGIPAY-ID</b></h3>
+                <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
                 <hr>
                 <p style="text-align:center;"><span style="font-size:12px;">Detail Tagihan</span></p>
                 <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
@@ -335,7 +335,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
     }
 
     if ($type === 'email') {
-        // sendEmail($dataPost['email_customer'], 'DIGIPAY-ID TAGIHAN - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+        // sendEmail($dataPost['email_customer'], 'DIGIPAYID TAGIHAN - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
 
         $id_user = (int)$user->id_user;
         if ((int)$user->id_user_parent > 0) {
@@ -345,7 +345,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
             'id_user' => $id_user,
             'type' => 1,
             'destination' => $dataPost['email_customer'],
-            'subject' => 'DIGIPAY-ID TAGIHAN - ' . $dataPost['invoice_number'],
+            'subject' => 'DIGIPAYID TAGIHAN - ' . $dataPost['invoice_number'],
             'text_message' => $htmlBody,
             'attachment_url' => $urlIMG,
         ]);
@@ -401,7 +401,7 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
     $htmlBody = '
             <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
             <br/>
-                <h3 style="text-align:center;"><b>DIGIPAY-ID</b></h3>
+                <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
                 <hr>
                 <p style="text-align:center;"><span style="font-size:12px;">Struk Topup Merchant</span></p>
                 <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
