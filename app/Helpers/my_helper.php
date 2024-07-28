@@ -528,7 +528,9 @@ function sendEmail($toMail = false, $subject = '', $message = '', $linkAttachmen
     $data['to'] = $toMail;
     $data['subject'] = $subject;
     $data['message'] = $message;
-    $data['link_attachment'] = $linkAttachment;
+    if ($linkAttachment) {
+        $data['link_attachment'] = $linkAttachment;
+    }
     curl(getenv('API_DOMAIN_BASE_URL') . 'notifications/send_email', true, http_build_query($data), false, true);
 }
 
