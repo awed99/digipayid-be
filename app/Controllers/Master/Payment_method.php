@@ -33,7 +33,7 @@ class Payment_method extends BaseController
         $dataPost = $request->getJSON();
         $user = cekValidation('/master/payment_method/list');
         $db = db_connect();
-        $builder = $db->table('app_payment_method_' . $user->id_user)->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')->where('payment_method_id_pg', 1)->where('status', 1)->where('status_admin', 1)->get()->getResult();
+        $builder = $db->table('app_payment_method_' . $user->id_user)->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')->where('payment_method_id_pg', 1)->where('status', 1)->where('is_active', 1)->where('status_admin', 1)->get()->getResult();
         $db->close();
         $finalData = json_encode($builder);
         echo '{
@@ -50,7 +50,7 @@ class Payment_method extends BaseController
         $dataPost = $request->getJSON();
         $user = cekValidation('/master/payment_method/lists');
         $db = db_connect();
-        $builder = $db->table('app_payment_method_' . $user->id_user)->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')->where('payment_method_id_pg', 1)->where('status_admin', 1)->get()->getResult();
+        $builder = $db->table('app_payment_method_' . $user->id_user)->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')->where('payment_method_id_pg', 1)->where('status', 1)->where('status_admin', 1)->get()->getResult();
         $db->close();
         $finalData = json_encode($builder);
         echo '{

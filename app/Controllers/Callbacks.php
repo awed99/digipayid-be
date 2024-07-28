@@ -253,7 +253,7 @@ class Callbacks extends BaseController
         $updateTrxUser['status_payment'] = $status;
         $updateTrxUser['time_transaction_success'] = date('Y-m-d H:i:s');
         $user = $db->table('app_users')->where('id_user', $idUser)->get()->getRow();
-        $updated = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
+        $updated = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get()->getRow();
 
         if ($status === 1 && $updated) {
             $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateTrxUser);
@@ -281,7 +281,7 @@ class Callbacks extends BaseController
             $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
         } else {
             $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_debet', 0)->get();
-            $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_credit', 0)->get()->amount_debet;
+            $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_credit', 0)->get()->getRow()->amount_debet;
             // $payment = json_encode(tokopay_generate_qris((int)$dt['data']['total_dibayar'], $dt['data']['payment_channel'], $dt['reff_id']));
             // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
             if (($user->email != '')) {
