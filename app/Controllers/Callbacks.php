@@ -252,10 +252,11 @@ class Callbacks extends BaseController
         $updateTrxUser['status_transaction'] = $status;
         $updateTrxUser['status_payment'] = $status;
         $updateTrxUser['time_transaction_success'] = date('Y-m-d H:i:s');
-        $updated = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateTrxUser);
         $user = $db->table('app_users')->where('id_user', $idUser)->get()->getRow();
+        $updated = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
 
         if ($status === 1 && $updated) {
+            $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateTrxUser);
             $builder = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $builder1 = $db->table('app_transaction_products_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $dataTRX = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get()->getRowArray();
