@@ -265,6 +265,19 @@ class Orders extends BaseController
         // header('Content-type: text/plain', true);
         // header('Content-type: application/json', true);
         $user = cekValidation('/transactions/orders/create');
+
+        if ((int)$user->saldo < 1000) {
+            echo '{
+                "code": 99,
+                "error": "Saldo anda kurang dari IDR 1.000, silahkan top up terlebih dahulu.",
+                "message": "Saldo anda kurang dari IDR 1.000, silahkan top up terlebih dahulu.",
+                "reff_id": "",
+                "data": [],
+                "payment": []
+            }';
+            die();
+        }
+
         $tax_percentage = (int)$user->tax_percentage;
         $request = request();
         $dataPost = $request->getJSON(true);
