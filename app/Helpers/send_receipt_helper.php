@@ -344,3 +344,83 @@ Link Bayar : *' . $caraBayar . '*';
         sendWhatsapp($dataPost['wa_customer'], $message, $file);
     }
 }
+
+
+function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $user, $dt)
+{
+    $htmlBody = '
+            <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
+            <br/>
+                <h3 style="text-align:center;"><b>DIGIPAY-ID</b></h3>
+                <hr>
+                <p style="text-align:center;"><span style="font-size:12px;">Struk Topup Merchant</span></p>
+                <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
+                <p style="text-align:center;"><span style="font-size:12px;">WA :' . $user->merchant_wa . '</span></p>
+                <p style="text-align:center;"><span style="font-size:12px;">' . $user->merchant_address . '</span></p>
+                <hr>
+                <p style="text-align:center;"><span style="font-size:14px;"><strong>' . $invoice_number . '</strong></span></p>
+                <p style="text-align:center;"><u>' . date('l, d F Y H:i', strtotime($dataJournal->created_at)) . '</u></p>
+                <p>&nbsp;</p>
+                <div align="center" style="width:50%;text-align:center;">
+                        <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
+                            <tbody>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$dataJournal->status === 2) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Total</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        <strong>IDR ' . format_rupiah((int)$dt['data']['total_dibayar']) . '</strong></span>
+                                    </td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Biaya Penanganan</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        IDR -' . format_rupiah($amountDebet) . '</span>
+                                    </span></td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Uang Diterima</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+                                        <strong>IDR ' . format_rupiah((int)$dt['data']['total_dibayar'] - (int)$amountDebet) . '</strong></span>
+                                    </td>
+                                </tr>
+                                <tr style="border: 1px solid black;border-collapse: collapse;">
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Metode Bayar</span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $dt['data']['payment_channel'] . '</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                </div>
+                </div>
+            </div>
+            ';
+
+    $urlIMG = "receipts/" . $invoice_number . ".png";
+
+    $img = htmlToImage($htmlBody);
+
+    // file_put_contents($urlIMG, file_get_contents($img));
+    grab_image($img, $urlIMG);
+
+    // die();
+
+    if ($type === 'email') {
+        sendEmail($user->email, 'Struk Topup Saldo - ' . $invoice_number, $htmlBody, $urlIMG);
+    }
+
+    if ($type === 'whatsapp') {
+        $file =  $img;
+        // if (isset($payment->res->data->qr_link)) {
+        //     $file = $payment->res->data->qr_link;
+        // } else {
+        //     $file =  $img;
+        //     // $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
+        // }
+
+        $message = '
+*Bukti Bayar - ' . $invoice_number . '*';
+        sendWhatsapp($user->merchant_wa, $message, $file);
+    }
+}
