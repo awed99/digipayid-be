@@ -272,7 +272,7 @@ class Orders extends BaseController
             array_push($data, $_data);
         }
 
-        $payment = ((int)$dataPost['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number']));
+        $payment = ((int)$dataPost['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
 
         $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
         $dataPost['payment_response'] = ((int)$dataPost['id_payment_method'] === 0) ? null : $paymentJSON;
@@ -425,7 +425,7 @@ class Orders extends BaseController
             array_push($data, $_data);
         }
 
-        $payment = ($dataPost['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number']));
+        $payment = ($dataPost['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
 
         $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
         $dataPost['payment_response'] = $paymentJSON;
