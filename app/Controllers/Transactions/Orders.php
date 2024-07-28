@@ -330,14 +330,16 @@ class Orders extends BaseController
         $journal_insert1['description'] = 'Fee ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert1);
 
-        $journal_insert2['invoice_number'] = $dataPost['invoice_number'];
-        $journal_insert2['amount_credit'] = 0;
-        $journal_insert2['amount_debet'] = (int)$dataPost['amount_tax'];
-        $journal_insert2['accounting_type'] = 5;
-        $journal_insert2['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
-        $journal_insert2['description'] = 'Tax ' . $dataPost['invoice_number'];
-        array_push($journal_insert, $journal_insert2);
+        if ((float)$dataPost['amount_tax'] > 0) {
+            $journal_insert2['invoice_number'] = $dataPost['invoice_number'];
+            $journal_insert2['amount_credit'] = 0;
+            $journal_insert2['amount_debet'] = (int)$dataPost['amount_tax'];
+            $journal_insert2['accounting_type'] = 5;
+            $journal_insert2['id_payment_method'] = (int)$dataPost['id_payment_method'];
+            $journal_insert2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert2['description'] = 'Tax ' . $dataPost['invoice_number'];
+            array_push($journal_insert, $journal_insert2);
+        }
 
 
         // $journal_insert_admin0['invoice_number'] = $dataPost['invoice_number'];
