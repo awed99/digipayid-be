@@ -270,7 +270,7 @@ class Journal extends BaseController
         $builder->where('NOT (id_payment_method = 0 AND accounting_type = 1)');
 
         $result = $builder->orderBy('id', 'desc')->get()->getResult();
-        $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1 NOT (id_payment_method = 0 AND accounting_type = 1)) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status > 1 NOT (id_payment_method = 0 AND accounting_type = 1)) as saldo")->getRow()->saldo ?? 0;
+        $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) as saldo")->getRow()->saldo ?? 0;
 
         $db->close();
         $finalData = json_encode($result);
