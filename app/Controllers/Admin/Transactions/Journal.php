@@ -353,7 +353,7 @@ class Journal extends BaseController
         $db = db_connect();
 
         $dataPost['invoice_number'] = isset($dataPost['invoice_number']) ? $dataPost['invoice_number'] : 'DEPOSIT-' . $dataPost['id_merchant'] . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
-        $payment = json_encode(tokopay_generate_qris((int)$dataPost['amount'], $dataPost['payment_method'], $dataPost['invoice_number']));
+        $payment = json_encode(tokopay_generate_qris((int)$dataPost['amount'], $dataPost['payment_method'], $dataPost['invoice_number'], $user));
 
 
         $dataBankUser = $db->table('app_users')->where('id_user', $dataPost['id_merchant'])->orWhere('id_user_parent', $dataPost['id_merchant'])->get()->getRow();
