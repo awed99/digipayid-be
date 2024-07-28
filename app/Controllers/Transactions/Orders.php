@@ -82,13 +82,19 @@ class Orders extends BaseController
         $dataPost = $request->getJSON();
         $db = db_connect();
 
+        $status['status'] = 9;
+        $status['updated_at'] = date('Y-m-d H:i:s');
+        $db->table("admin_journal_finance")->where('invoice_number', $dataPost->invoice_number)->update($status);
+
         if ((int)$user->id_user_parent > 0) {
+            $db->table("app_journal_finance_" . $user->id_user_parent)->where('invoice_number', $dataPost->invoice_number)->update($status);
             $builder = $db->table('app_transactions_' . $user->id_user_parent);
             if (isset($dataPost->invoice_number)) {
                 $builder->where('invoice_number', $dataPost->invoice_number)->update(['status_transaction' => 9]);
             }
             $result = $builder->orderBy('id_transaction ', 'desc')->get()->getResult();
         } else {
+            $db->table("app_journal_finance_" . $user->id_user)->where('invoice_number', $dataPost->invoice_number)->update($status);
             $builder = $db->table('app_transactions_' . $user->id_user);
             if (isset($dataPost->invoice_number)) {
                 $builder->where('invoice_number', $dataPost->invoice_number)->update(['status_transaction' => 9]);
