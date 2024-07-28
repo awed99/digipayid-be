@@ -8,7 +8,7 @@ use Endroid\QrCode\Label\Font\NotoSans;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 
-function tokopay_generate_qris($amount, $channel, $reff_id)
+function tokopay_generate_qris($amount, $channel, $reff_id, $user = null)
 {
     $url = getenv('TOKOPAY_HOST_URL') . 'v1/order'; // url
     // $reff_id = 'DIGIPAYID-'.strtoupper(substr(md5(Date('YmdHis')), 5, 8)); // kode unik untuk transaksi
@@ -16,7 +16,22 @@ function tokopay_generate_qris($amount, $channel, $reff_id)
         'Accept: application/json',
         'Content-Type: application/json',
     ];
-    $res = curl($url . '?merchant=' . getenv('TOKOPAY_MERCHANT_ID') . '&secret=' . getenv('TOKOPAY_SECRET_KEY') . '&metode=' . $channel . '&ref_id=' . $reff_id . '&nominal=' . $amount . '&redirect_url=https://digipayid.com/', false, false, $headers);
+
+    // $res = curl($url . '?merchant=' . getenv('TOKOPAY_MERCHANT_ID') . '&secret=' . getenv('TOKOPAY_SECRET_KEY') . '&metode=' . $channel . '&ref_id=' . $reff_id . '&nominal=' . $amount . '&redirect_url=https://digipayid.com/', false, false, $headers);
+
+    $req['merchant_id'] = getenv('TOKOPAY_MERCHANT_ID');
+    $req['kode_channel'] = $channel;
+    $req['reff_id'] = $reff_id;
+    $req['amount'] = $amount;
+    $req['redirect_url'] = 'https://digipayid.com/';
+    $req['expired_ts'] = 0;
+    $req['signature'] = md5($req['merchant_id'] . ':' . getenv('TOKOPAY_SECRET_KEY') . ':' . $req['reff_id']);
+    $req['customer_name'] = 'DIGIPAYID ' .  $user->merchant_name;
+    $req['customer_email'] = $user->email;
+    $req['customer_phone'] = $user->merchant_wa;
+    $bodyReq = json_encode($req);
+
+    $res = curl($url, true, $bodyReq, $headers);
     $resOBJ = json_decode($res);
     unset($resOBJ->data->other);
     unset($resOBJ->data->panduan_pembayaran);
