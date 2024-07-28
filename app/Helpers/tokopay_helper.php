@@ -29,6 +29,7 @@ function tokopay_generate_qris($amount, $channel, $reff_id, $user = null)
     $req['customer_name'] = 'DIGIPAYID ' .  $user->merchant_name;
     $req['customer_email'] = $user->email;
     $req['customer_phone'] = $user->merchant_wa;
+    $req['items'] = [];
     $bodyReq = json_encode($req);
 
     $res = curl($url, true, $bodyReq, $headers);
