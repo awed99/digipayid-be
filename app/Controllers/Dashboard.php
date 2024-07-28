@@ -44,7 +44,8 @@ class Dashboard extends BaseController
                 ->where('time_transaction >=', date('Y-01-01') . ' 00:00:00')
                 ->where('time_transaction <=', date('Y-12-t') . ' 23:59:59')
                 ->where('(status_transaction = 1 OR status_transaction = 2)')
-                ->groupBy('product_name')
+                // ->groupBy('product_name')
+                ->groupBy('product_name, product_code, product_image_url')
                 ->orderBy('qty', 'DESC')
                 ->limit(3)->get()->getResult();
 
@@ -105,7 +106,8 @@ class Dashboard extends BaseController
                 ->where('time_transaction >=', date('Y-01-01') . ' 00:00:00')
                 ->where('time_transaction <=', date('Y-12-t') . ' 23:59:59')
                 ->where('(status_transaction = 1 OR status_transaction = 2)')
-                ->groupBy('product_name')
+                // ->groupBy('product_name')
+                ->groupBy('product_name, product_code, product_image_url')
                 ->orderBy('qty', 'DESC')
                 ->limit(3)->get()->getResult();
 
