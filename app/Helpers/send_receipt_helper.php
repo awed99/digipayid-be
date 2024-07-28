@@ -366,7 +366,7 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
                             <tbody>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$dataJournal->status === 2) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . 'LUNAS' . '</strong></span></td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Total</span></td>
