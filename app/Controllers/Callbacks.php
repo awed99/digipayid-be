@@ -252,10 +252,10 @@ class Callbacks extends BaseController
         $updateTrxUser['status_transaction'] = $status;
         $updateTrxUser['status_payment'] = $status;
         $updateTrxUser['time_transaction_success'] = date('Y-m-d H:i:s');
-        $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateTrxUser);
+        $updated = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateTrxUser);
+        $user = $db->table('app_users')->where('id_user', $idUser)->get()->getRow();
 
-        if ($status === 1) {
-            $user = $db->table('app_users')->where('id_user', $idUser)->get()->getRow();
+        if ($status === 1 && $updated) {
             $builder = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $builder1 = $db->table('app_transaction_products_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $dataTRX = $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->get()->getRowArray();
@@ -270,16 +270,35 @@ class Callbacks extends BaseController
             if (($dataTRX['wa_customer'] != '')) {
                 sendReceipt('whatsapp', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON));
             }
+
+            $updateJournalUser['status'] = $status;
+            $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateJournalUser);
+
+            $updateJournalAdmin['status'] = $status;
+            $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
+        } else {
+            $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_debet', 0)->get();
+            $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_credit', 0)->get()->amount_debet;
+            // $payment = json_encode(tokopay_generate_qris((int)$dt['data']['total_dibayar'], $dt['data']['payment_channel'], $dt['reff_id']));
+            // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+            if (($user->email != '')) {
+                sendReceiptTopup('email', $dt['reff_id'], $builder->getRow(), $amountDebet, $user, $dt);
+            }
+
+            if (($user->merchant_wa != '')) {
+                sendReceiptTopup('whatsapp', $dt['reff_id'], $builder->getRow(), $amountDebet, $user, $dt);
+            }
+
+            $updateJournalUser['status'] = 2;
+            $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateJournalUser);
+
+            $updateJournalAdmin['status'] = 2;
+            $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
         }
-
-
-        $updateJournalUser['status'] = $status;
-        $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
-        $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateJournalUser);
-
-        $updateJournalAdmin['status'] = $status;
-        $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
-        $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
 
         $db->close();
     }
