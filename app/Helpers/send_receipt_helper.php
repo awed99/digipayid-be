@@ -138,10 +138,22 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
     } else {
         $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->update($update);
     }
-    $db->close();
 
     if ($type === 'email') {
-        sendEmail($dataPost['email_customer'], 'Struk Pembayaran - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+        // sendEmail($dataPost['email_customer'], 'Struk Pembayaran - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 1,
+            'destination' => $dataPost['email_customer'],
+            'subject' => 'Struk pembayaran - ' . $dataPost['invoice_number'],
+            'text_message' => $htmlBody,
+            'attachment_url' => $urlIMG,
+        ]);
     }
 
     if ($type === 'whatsapp') {
@@ -155,8 +167,21 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
 
         $message = '
 *Bukti Bayar - ' . $dataPost['invoice_number'] . '*';
-        sendWhatsapp($dataPost['wa_customer'], $message, $file);
+        // sendWhatsapp($dataPost['wa_customer'], $message, $file);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 2,
+            'destination' => $dataPost['wa_customer'],
+            'text_message' => $message,
+            'attachment_url' => $file,
+        ]);
     }
+    $db->close();
 }
 
 function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $payment)
@@ -308,10 +333,22 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
     } else {
         $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->update($update);
     }
-    $db->close();
 
     if ($type === 'email') {
-        sendEmail($dataPost['email_customer'], 'DIGIPAY-ID Struk Pembayaran - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+        // sendEmail($dataPost['email_customer'], 'DIGIPAY-ID TAGIHAN - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 1,
+            'destination' => $dataPost['email_customer'],
+            'subject' => 'DIGIPAY-ID TAGIHAN - ' . $dataPost['invoice_number'],
+            'text_message' => $htmlBody,
+            'attachment_url' => $urlIMG,
+        ]);
     }
 
     if ($type === 'whatsapp') {
@@ -341,8 +378,21 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
 Total Bayar : *IDR ' . format_rupiah($transaction->amount_to_pay) . '*
 Metode Bayar : *' . ($transaction->payment_method_name) . '*
 Link Bayar : *' . $caraBayar . '*';
-        sendWhatsapp($dataPost['wa_customer'], $message, $file);
+        // sendWhatsapp($dataPost['wa_customer'], $message, $file);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 2,
+            'destination' => $dataPost['wa_customer'],
+            'text_message' => $message,
+            'attachment_url' => $file,
+        ]);
     }
+    $db->close();
 }
 
 
@@ -366,7 +416,7 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
                             <tbody>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$dataJournal->status === 2) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
+                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . 'LUNAS' . '</strong></span></td>
                                 </tr>
                                 <tr style="border: 1px solid black;border-collapse: collapse;">
                                     <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Total</span></td>
@@ -406,8 +456,22 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
 
     // die();
 
+    $db = db_connect();
     if ($type === 'email') {
-        sendEmail($user->email, 'Struk Topup Saldo - ' . $invoice_number, $htmlBody, $urlIMG);
+        // sendEmail($user->email, 'Struk Topup Saldo - ' . $invoice_number, $htmlBody, $urlIMG);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 1,
+            'destination' => $user->email,
+            'subject' => 'DIGIPAYID Struk Topup Saldo - ' . $invoice_number,
+            'text_message' => $htmlBody,
+            'attachment_url' => $urlIMG,
+        ]);
     }
 
     if ($type === 'whatsapp') {
@@ -421,6 +485,19 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
 
         $message = '
 *Bukti Bayar - ' . $invoice_number . '*';
-        sendWhatsapp($user->merchant_wa, $message, $file);
+        // sendWhatsapp($user->merchant_wa, $message, $file);
+
+        $id_user = (int)$user->id_user;
+        if ((int)$user->id_user_parent > 0) {
+            $id_user = (int)$user->id_user_parent;
+        }
+        $db->table('app_notifications')->insert([
+            'id_user' => $id_user,
+            'type' => 2,
+            'destination' => $user->merchant_wa,
+            'text_message' => $message,
+            'attachment_url' => $file,
+        ]);
     }
+    $db->close();
 }

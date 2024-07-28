@@ -22,6 +22,12 @@ class Crons extends BaseController
         // return view('welcome_message');
     }
 
+    public function cliNotif()
+    {
+        normalize_notifications();
+        // return view('welcome_message');
+    }
+
     public function postNormalize()
     {
         normalize();

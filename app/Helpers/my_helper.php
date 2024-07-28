@@ -53,15 +53,15 @@ function cekValidation($uri)
 
         if ((int)$dataUser->user_role > 1) {
             if ((int)$dataUser->id_user_parent > 0) {
-                $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+                $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
             } else {
 
-                $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user . "` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user . "` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+                $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
             }
             $realSaldo = 0;
         } else {
-            $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status > 1 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
-            $realSaldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status > 1 AND (accounting_type = 1001 OR accounting_type = 2001 OR accounting_type = 3001) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status > 1 AND (accounting_type = 4 OR accounting_type = 4002) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo", 0)->getRow()->saldo;
+            $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+            $realSaldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status = 2 AND (accounting_type = 1001 OR accounting_type = 2001 OR accounting_type = 3001) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status = 2 AND (accounting_type = 4 OR accounting_type = 4002) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo", 0)->getRow()->saldo;
         }
 
         $dataUser->saldo = (int)$saldo;
