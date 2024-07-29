@@ -65,7 +65,7 @@ function normalize_notifications()
     $notifs = $db->table('app_notifications')->where('status', 0)->get()->getResult();
     foreach ($notifs as $notif) {
         if ((int)$notif->type == 1) {
-            sendEmail($notif->destination, $notif->subject, $notif->text_message, $notif->attachment_url ?? false);
+            sendMail($notif->destination, $notif->subject, $notif->text_message, $notif->attachment_url ?? false);
         } elseif ((int)$notif->type == 2) {
             sendWhatsapp($notif->destination, $notif->text_message, $notif->attachment_url ?? false);
         } else {
