@@ -140,7 +140,7 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
     }
 
     if ($type === 'email') {
-        sendMail($dataPost['email_customer'], 'Struk Pembayaran - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
+        // sendMail($dataPost['email_customer'], 'Struk Pembayaran - ' . $dataPost['invoice_number'], $htmlBody, $urlIMG);
 
         $id_user = (int)$user->id_user;
         if ((int)$user->id_user_parent > 0) {
