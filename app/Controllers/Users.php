@@ -539,7 +539,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
 
     public function postResend_otp()
     {
-        cekValidation('users/resend_otp');
+        // $user = cekValidation('users/resend_otp');
         $request = request();
         $json = $request->getJSON(true);
         $db = db_connect();
