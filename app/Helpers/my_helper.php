@@ -51,7 +51,7 @@ function cekValidation($uri)
         $builder = $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue());
         $dataUser = $builder->get()->getRow();
 
-        if ((int)$dataUser->user_role > 1) {
+        if (isset($dataUser->user_role) && (int)$dataUser->user_role > 1) {
             if ((int)$dataUser->id_user_parent > 0) {
                 $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
             } else {
