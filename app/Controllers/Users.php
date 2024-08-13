@@ -72,6 +72,16 @@ class Users extends BaseController
 
             $htmlBody = template_email_otp($update0['otp_email']);
             sendMail($email, 'DIGIPAY OTP Register', $htmlBody);
+        } else {
+            $otp_login = random_int(100000, 999999);
+            $update['otp_email'] = $otp_login;
+            $update['otp_wa'] = $otp_login;
+
+            $waMessage = "*DIGIPAYID* Kode OTP *Login Merchant " . $dataFinal->merchant_name . "* Adalah *" . $otp_login . "*";
+            sendWhatsapp($dataFinal->merchant_wa, $waMessage);
+
+            $htmlBody = template_email_otp($otp_login);
+            sendMail($email, 'DIGIPAY OTP Register', $htmlBody);
         }
 
         if ($dataFinal) {
@@ -597,6 +607,13 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 $update['otp_wa'] = null;
 
                 $db->table('app_users')->where($json)->update($update);
+            } elseif (($type) === 'otp_login') {
+                echo '{
+                    "code": 0,
+                    "error": "",
+                    "message": "OTP anda valid."
+                }';
+                die();
             }
             echo '{
                 "code": 0,

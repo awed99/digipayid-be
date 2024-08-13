@@ -87,10 +87,10 @@ class Auth extends BaseController
             $data = $db->table('ci_sessions')->where('id', $postData['email'])->get()->getRow()->data;
             $db->close();
         } else {
-            $data = null;
+            $data = false;
         }
 
-        $res['auth'] = json_decode($data);
+        $res['auth'] = ($data) ? json_decode($data) : null;
         $res['message'] = 'Store gotten successfully.';
         $res['data'] = ($postData);
         echo json_encode($res);
