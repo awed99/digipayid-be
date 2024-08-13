@@ -81,7 +81,7 @@ class Users extends BaseController
             sendWhatsapp($dataFinal->merchant_wa, $waMessage);
 
             $htmlBody = template_email_otp($otp_login);
-            sendMail($email, 'DIGIPAY OTP Register', $htmlBody);
+            sendMail($email, 'DIGIPAY OTP Login', $htmlBody);
         }
 
         if ($dataFinal) {
