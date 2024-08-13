@@ -181,6 +181,9 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
             'attachment_url' => $file,
         ]);
     }
+
+    normalize_notification($id_user);
+
     $db->close();
 }
 
@@ -392,6 +395,9 @@ Link Bayar : *' . $caraBayar . '*';
             'attachment_url' => $file,
         ]);
     }
+
+    normalize_notification($id_user);
+
     $db->close();
 }
 
@@ -499,5 +505,8 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
             'attachment_url' => $file,
         ]);
     }
+
+    normalize_notification($id_user);
+
     $db->close();
 }

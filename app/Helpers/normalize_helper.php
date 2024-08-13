@@ -77,6 +77,25 @@ function normalize_notifications()
     $db->close();
 }
 
+function normalize_notification($id_user)
+{
+    $db = db_connect();
+
+    $notifs = $db->table('app_notifications')->where('status', 0)->where('id_user', $id_user)->get()->getResult();
+    foreach ($notifs as $notif) {
+        if ((int)$notif->type == 1) {
+            sendMail($notif->destination, $notif->subject, $notif->text_message, $notif->attachment_url ?? false);
+        } elseif ((int)$notif->type == 2) {
+            sendWhatsapp($notif->destination, $notif->text_message, $notif->attachment_url ?? false);
+        } else {
+            sendWhatsapp($notif->destination, $notif->text_message, $notif->attachment_url ?? false);
+        }
+        $db->table("app_notifications")->where('id', $notif->id)->update(['status' => 1]);
+    }
+
+    $db->close();
+}
+
 function normalize2()
 {
     $db = db_connect();
