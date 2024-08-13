@@ -130,15 +130,15 @@ class Users extends BaseController
             $db->close();
 
 
-            $waMessage = "*INFO DIGIPAYID* 
-User *" . $dataFinal->email . "* telah login ke Akun DIGIPAYID Merchant *" . $dataFinal->merchant_name . "*";
-            sendWhatsapp($dataFinal->merchant_wa, $waMessage);
+            //             $waMessage = "*INFO DIGIPAYID* 
+            // User *" . $dataFinal->email . "* telah login ke Akun DIGIPAYID Merchant *" . $dataFinal->merchant_name . "*";
+            //             sendWhatsapp($dataFinal->merchant_wa, $waMessage);
 
-            if ($dataOwner) {
-                $waMessage = "*INFO DIGIPAYID* 
-User *" . $dataFinal->email . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOwner->merchant_name . "*";
-                sendWhatsapp($dataOwner->merchant_wa, $waMessage);
-            }
+            //             if ($dataOwner) {
+            //                 $waMessage = "*INFO DIGIPAYID* 
+            // User *" . $dataFinal->email . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOwner->merchant_name . "*";
+            //                 sendWhatsapp($dataOwner->merchant_wa, $waMessage);
+            //             }
 
             $finalData = json_encode($dataFinal2);
             // $finalData3 = json_encode($dataFinal3);
@@ -591,6 +591,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
         unset($json['type']);
 
         $res = $db->table('app_users')->where($json)->get()->getRowArray();
+        $dataOwner = $db->table('app_users')->where('id_user', $res['id_user_parent'])->get()->getRow();
 
         $db->close();
         if ($res) {
@@ -608,6 +609,16 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
 
                 $db->table('app_users')->where($json)->update($update);
             } elseif (($type) === 'otp_login') {
+                $waMessage = "*INFO DIGIPAYID* 
+User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $res['merchant_name'] . "*";
+                sendWhatsapp($res['merchant_wa'], $waMessage);
+
+                if ($dataOwner) {
+                    $waMessage = "*INFO DIGIPAYID* 
+User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOwner->merchant_name . "*";
+                    sendWhatsapp($dataOwner->merchant_wa, $waMessage);
+                }
+
                 echo '{
                     "code": 0,
                     "error": "",
