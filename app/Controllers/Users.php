@@ -126,7 +126,7 @@ class Users extends BaseController
                 $dataFinal2->api_key = $api_key;
             }
 
-            $dataOwner = $db->table('app_users')->where('id_user', $dataFinal->id_user_parent)->get()->getRow();
+            // $dataOwner = $db->table('app_users')->where('id_user', $dataFinal->id_user_parent)->get()->getRow();
             $db->close();
 
 
@@ -565,6 +565,12 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 sendMail($res['email'], 'DIGIPAY OTP Register', $htmlBody);
             } elseif (($type) === 'register_otp_wa') {
                 $waMessage = "*DIGIPAYID* Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                sendWhatsapp($res['merchant_wa'], $waMessage);
+            } elseif (($type) === 'otp_login_email') {
+                $htmlBody = template_email_otp($res["otp_email"]);
+                sendMail($res['email'], 'DIGIPAY OTP Login', $htmlBody);
+            } elseif (($type) === 'otp_login_wa') {
+                $waMessage = "*DIGIPAYID* Kode OTP *Login Merchant " . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             }
             echo '{
