@@ -117,8 +117,8 @@ Events::on('pre_system', static function () {
             $user = $row;
         }
         $user = (object)$user;
-        $id_user = $user ? $user->id_user : 0;
-        $token_api = $user ? $user->token_api : null;
+        $id_user = isset($user->id_user) ? $user->id_user : 0;
+        $token_api = isset($user->token_api) ? $user->token_api : null;
 
         // print_r("------------------");
         // print_r($user);
