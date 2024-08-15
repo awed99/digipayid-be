@@ -111,9 +111,14 @@ Events::on('pre_system', static function () {
         }
 
         $sql = "select * from app_users where token_login = '" . $auth . "' limit 1";
-        $user = $conn->query($sql)->fetch_assoc()[0] ?? [];
-        $id_user = $user ? $user['id_user'] : 0;
-        $token_api = $user ? $user['token_api'] : null;
+        $users = $conn->query($sql);
+        $user = array();
+        while ($row = $users->fetch_assoc()) {
+            $user = $row;
+        }
+        $user = (object($user));
+        $id_user = $user ? $user->id_user : 0;
+        $token_api = $user ? $user->token_api : null;
 
         // print_r("------------------");
         // print_r($user);
