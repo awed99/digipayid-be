@@ -116,7 +116,7 @@ Events::on('pre_system', static function () {
         while ($row = $users->fetch_assoc()) {
             $user = $row;
         }
-        $user = (object($user));
+        $user = (object)$user;
         $id_user = $user ? $user->id_user : 0;
         $token_api = $user ? $user->token_api : null;
 
