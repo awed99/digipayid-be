@@ -38,7 +38,7 @@ class Callbacks extends BaseController
 
         // $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -142,7 +142,7 @@ class Callbacks extends BaseController
 
         // $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);

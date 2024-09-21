@@ -54,14 +54,14 @@ class Users extends BaseController
         $dataFinal = $query->getRow();
 
         if (!$dataFinal) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email or Password is incorrect!",
                 "message": "Email or Password is incorrect!",
                 "data": null
             }';
             $db->close();
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         if ((int)$dataFinal->is_verified < 1) {
@@ -122,7 +122,7 @@ class Users extends BaseController
             // $dataFinal4 = $query4->getResult();
 
             if ($dataFinal->user_role === 1) {
-                $api_key = $db->table('token_api')->orderBy('id', 'DESC')->limit(1)->get()->getRow()->api_key;
+                $api_key = $db->table('app_users')->select('token_api')->orderBy('id', 'DESC')->limit(1)->get()->getRow()->api_key;
                 $dataFinal2->api_key = $api_key;
             }
 
@@ -143,7 +143,7 @@ class Users extends BaseController
             $finalData = json_encode($dataFinal2);
             // $finalData3 = json_encode($dataFinal3);
             // $finalData4 = json_encode($dataFinal4);
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Login successful.",
@@ -152,7 +152,7 @@ class Users extends BaseController
             // curl(getenv('API_LOGS').'logs/create_log_login', 1, 'id_user='.$dataFinal2->id_user.'&ip_address='.$this->get_client_ip().'&user_role='.$dataFinal2->user_role.'&token_login='.$update["token_login"].'&token_api='.$dataFinal2->token_api);
             // echo curl(getenv('API_TRANSACTIONS').'auth/get_token', 1, 'token_login='.$update["token_login"].'&login='.$finalData);
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email or Password is incorrect!",
                 "message": "Email or Password is incorrect!",
@@ -176,7 +176,7 @@ class Users extends BaseController
         $htmlBody = template_forgot_password($update["token_login"]);
         sendMail($dataRequest['email'], 'DIGIPAYID Change Password Request', $htmlBody);
 
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "We have sent a reset password link to your email address."
@@ -191,13 +191,13 @@ class Users extends BaseController
         $res = $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->get()->getNumRows();
         $db->close();
         if ($res) {
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Token is valid."
             }';
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Error token!",
                 "message": "Your token is not valid!"
@@ -217,7 +217,7 @@ class Users extends BaseController
         $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->update($update);
         $db->close();
 
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "Your password has been changed."
@@ -236,7 +236,7 @@ class Users extends BaseController
         $update["password"] = $password;
         $db->table('app_users')->where('id_user', $id_user)->update($update);
         $db->close();
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",
@@ -253,7 +253,7 @@ class Users extends BaseController
         $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->update($update);
         $db->close();
 
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "Your API key has been generated.",
@@ -271,7 +271,7 @@ class Users extends BaseController
         $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->update($update);
         $db->close();
 
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "Webhook has been saved.",
@@ -290,14 +290,14 @@ class Users extends BaseController
         $dataFinal = $db->table('app_users')->where($type, $value)->get()->getRow();
 
         if ($dataFinal) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "' . $type . ' as ' . $value . ' has been registered!",
                 "message": "' . $type . ' as ' . $value . ' has been registered!",
                 "data": null
             }';
         } else {
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Successful.",
@@ -320,35 +320,35 @@ class Users extends BaseController
 
         $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
         if ($isExistMerchant) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Merchant Sudah Terdaftar!",
                 "message": "Merchant Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistMerchantWa = $db->table('app_users')->where('merchant_wa', $insert['merchant_wa'])->get()->getRow();
         if ($isExistMerchantWa) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "No. Whatsapp Sudah Terdaftar!",
                 "message": "No. Whatsapp Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistEmail = $db->table('app_users')->where('email', $insert['email'])->get()->getRow();
         if ($isExistEmail) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email Sudah Terdaftar!",
                 "message": "Email Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $builder = $db->table('app_users');
@@ -364,7 +364,7 @@ class Users extends BaseController
             }
 
             $finalData = json_encode($dataFinal);
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Register successful.",
@@ -390,7 +390,7 @@ class Users extends BaseController
         $builder = $db->table('app_users')->where('email', $email)->where('token_login', $token_login)->where('user_role', $type);
         $builder->update($update);
         $db->close();
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",
@@ -410,7 +410,7 @@ class Users extends BaseController
         $builder = $db->table('app_users')->where('token_api', $token_api);
         $dataFinal = $builder->get()->getResult();
         $db->close();
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",
@@ -432,7 +432,7 @@ class Users extends BaseController
         $builder->insert($insert);
         $sig = hash_hmac('sha256', $rand, getenv('SECRET_KEY'));
         $db->close();
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",
@@ -454,35 +454,35 @@ class Users extends BaseController
 
         $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
         if ($isExistMerchant) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Merchant Sudah Terdaftar!",
                 "message": "Merchant Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistMerchantWa = $db->table('app_users')->where('merchant_wa', $insert['merchant_wa'])->get()->getRow();
         if ($isExistMerchantWa) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "No. Whatsapp Sudah Terdaftar!",
                 "message": "No. Whatsapp Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistEmail = $db->table('app_users')->where('email', $insert['email'])->get()->getRow();
         if ($isExistEmail) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email Sudah Terdaftar!",
                 "message": "Email Sudah Terdaftar!",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $insert["otp_email"] = random_int(100000, 999999);
@@ -507,7 +507,7 @@ class Users extends BaseController
 
             $db->close();
             echo json_encode($res);
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
         if ($db->affectedRows() == 1) {
             $newUser = $db->table('app_users')->where('email', $insert['email'])->orderBy('id_user', 'DESC')->get()->getRow();
@@ -526,7 +526,7 @@ class Users extends BaseController
 Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
             sendWhatsapp($insert['merchant_wa'], $waMessage);
 
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Anda berhasil terdaftar!",
@@ -537,7 +537,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
             $htmlBody = template_email_otp($insert["otp_email"]);
             sendMail($insert['email'], 'DIGIPAY OTP Register', $htmlBody);
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "User sudah terdaftar!",
                 "message": "User sudah terdaftar!",
@@ -573,13 +573,13 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 $waMessage = "*DIGIPAYID* Kode OTP *Login Merchant " . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             }
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "OTP sudah terkirim."
             }';
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Gagal mengirim OTP!",
                 "message": "Gagal mengirim OTP!"
@@ -625,20 +625,20 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
                     sendWhatsapp($dataOwner->merchant_wa, $waMessage);
                 }
 
-                echo '{
+                $data = '{
                     "code": 0,
                     "error": "",
                     "message": "OTP anda valid."
                 }';
-                die();
+            } else {
+                $data = '{
+                    "code": 0,
+                    "error": "",
+                    "message": "OTP anda valid."
+                }';
             }
-            echo '{
-                "code": 0,
-                "error": "",
-                "message": "OTP anda valid."
-            }';
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "OTP anda tidak valid!",
                 "message": "OTP anda tidak valid!"
@@ -668,13 +668,13 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
 
         $db->close();
         if ($res) {
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Data anda valid, Silakan masukkan OTP."
             }';
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Data anda tidak valid!",
                 "message": "Data anda tidak valid!"
@@ -698,14 +698,14 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
             $update["token_login"] = hash('sha256', $res['email'] . date('YmdHis'));
 
             $db->table('app_users')->where($json)->update($update);
-            echo '{
+            $data = '{
                 "code": 0,
                 "error": "",
                 "message": "OTP anda valid.",
                 "token": "' . $update["token_login"] . '"
             }';
         } else {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "OTP anda tidak valid!",
                 "message": "OTP anda tidak valid!"
@@ -732,7 +732,7 @@ Berhasil Ubah Password *" . $res["merchant_name"] . "*.
 Jika anda tidak merasa mengubah password, segera amankan akun anda!";
         sendWhatsapp($res['merchant_wa'], $waMessage);
 
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "We have sent a reset password link to your email address."
@@ -784,7 +784,7 @@ Jika anda tidak merasa mengubah password, segera amankan akun anda!";
         $finalData = json_encode($dataFinal);
         $finalData2 = json_encode($dataFinal2);
         $finalData3 = json_encode($dataFinal3);
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",
@@ -810,7 +810,7 @@ Jika anda tidak merasa mengubah password, segera amankan akun anda!";
         $dataFinal = $query->getRow()->user_saldo;
         $db->close();
         $finalData = json_encode($dataFinal);
-        echo '{
+        $data = '{
             "code": 0,
             "error": "",
             "message": "",

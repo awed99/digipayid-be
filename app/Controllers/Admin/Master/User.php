@@ -118,13 +118,13 @@ class User extends BaseController
         if (
             $db->table('app_users')->where('telp', $dataPost->telp)->orWhere('email', $dataPost->email)->get()->getRow()
         ) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email or Telp/WA is already exists!",
                 "message": "Email or Telp/WA is already exists!",
                 "data": []
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $query = $builder->insert($dataPost);
@@ -217,13 +217,13 @@ Admin DIGIPAYID menghapus akun anda di merchant *" . $dataPost['merchant_name'] 
         if (
             $db->table('app_users')->where('telp', $dataPost->telp)->orWhere('email', $dataPost->email)->get()->getRow()
         ) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Email or Telp/WA is already exists!",
                 "message": "Email or Telp/WA is already exists!",
                 "data": []
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $query = $builder->insert($dataPost);

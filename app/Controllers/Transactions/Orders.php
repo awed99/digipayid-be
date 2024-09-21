@@ -267,7 +267,7 @@ class Orders extends BaseController
         $user = cekValidation('/transactions/orders/create');
 
         if ((int)$user->saldo < 1000) {
-            echo '{
+            $data = '{
                 "code": 99,
                 "error": "Saldo anda kurang dari IDR 1.000, silahkan top up terlebih dahulu.",
                 "message": "Saldo anda kurang dari IDR 1.000, silahkan top up terlebih dahulu.",
@@ -275,7 +275,7 @@ class Orders extends BaseController
                 "data": [],
                 "payment": []
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
 
         $tax_percentage = (int)$user->tax_percentage;

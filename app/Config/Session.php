@@ -24,7 +24,7 @@ class Session extends BaseConfig
      */
     // public string $driver = 'CodeIgniter\Session\Handlers\FileHandler';
     // public string $driver = FileHandler::class;
-    public string $driver = DatabaseHandler::class;
+    public string $driver = FileHandler::class;
 
     /**
      * --------------------------------------------------------------------------
@@ -60,8 +60,8 @@ class Session extends BaseConfig
      *
      * IMPORTANT: You are REQUIRED to set a valid save path!
      */
-    // public string $savePath = WRITEPATH . 'session';
     public string $savePath = WRITEPATH . 'session';
+    // public string $savePath = 'ci_sessions';
 
     /**
      * --------------------------------------------------------------------------

@@ -57,7 +57,12 @@ Events::on('pre_system', static function () {
 
         $message =  new \CodeIgniter\HTTP\Message;
         $request = request();
-        $_dataPost = $request->getJSON() ?? $request->getPostGet();
+        // $_dataPost = $request->getJSON() ?? $request->getPostGet();
+        if ($request->is('json')) {
+            $_dataPost = $request->getJSON();
+        } else {
+            $_dataPost = $request->getPostGet();
+        }
         $ip = $request->getIPAddress();
         $dataPost = json_encode($_dataPost);
         $response = $message->getBody();
@@ -107,7 +112,9 @@ Events::on('pre_system', static function () {
         $conn = new \mysqli($servername, $username, $password, $dbname);
         // Check connection
         if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
+            $this->response->setStatusCode(500)->setBody("Connection failed: " . $conn->connect_error);
+            $this->fail("Connection failed: " . $conn->connect_error, 500);
+            // die("Connection failed: " . $conn->connect_error);
         }
 
         $sql = "select * from app_users where token_login = '" . $auth . "' limit 1";
