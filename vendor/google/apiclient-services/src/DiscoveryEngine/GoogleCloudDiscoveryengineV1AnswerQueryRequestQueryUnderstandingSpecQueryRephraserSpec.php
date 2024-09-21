@@ -23,6 +23,10 @@ class GoogleCloudDiscoveryengineV1AnswerQueryRequestQueryUnderstandingSpecQueryR
    * @var bool
    */
   public $disable;
+  /**
+   * @var int
+   */
+  public $maxRephraseSteps;
 
   /**
    * @param bool
@@ -37,6 +41,20 @@ class GoogleCloudDiscoveryengineV1AnswerQueryRequestQueryUnderstandingSpecQueryR
   public function getDisable()
   {
     return $this->disable;
+  }
+  /**
+   * @param int
+   */
+  public function setMaxRephraseSteps($maxRephraseSteps)
+  {
+    $this->maxRephraseSteps = $maxRephraseSteps;
+  }
+  /**
+   * @return int
+   */
+  public function getMaxRephraseSteps()
+  {
+    return $this->maxRephraseSteps;
   }
 }
 

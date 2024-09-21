@@ -24,6 +24,7 @@ use Google\Service\Drive\GeneratedIds;
 use Google\Service\Drive\LabelList;
 use Google\Service\Drive\ModifyLabelsRequest;
 use Google\Service\Drive\ModifyLabelsResponse;
+use Google\Service\Drive\Operation as OperationModel;
 
 /**
  * The "files" collection of methods.
@@ -152,6 +153,32 @@ class Files extends \Google\Service\Resource
     return $this->call('delete', [$params]);
   }
   /**
+   * Downloads content of a file. Operations are valid for 24 hours from the time
+   * of creation. (files.download)
+   *
+   * @param string $fileId Required. The ID of the file to download.
+   * @param array $optParams Optional parameters.
+   *
+   * @opt_param string mimeType Optional. The MIME type the file should be
+   * downloaded as. This field can only be set when downloading Google Workspace
+   * documents. See [Export MIME types for Google Workspace
+   * documents](/drive/api/guides/ref-export-formats) for the list of supported
+   * MIME types. If not set, a Google Workspace document is downloaded with a
+   * default MIME type. The default MIME type might change in the future.
+   * @opt_param string revisionId Optional. The revision ID of the file to
+   * download. This field can only be set when downloading blob files, Google
+   * Docs, and Google Sheets. Returns `INVALID_ARGUMENT` if downloading a specific
+   * revision on the file is unsupported.
+   * @return OperationModel
+   * @throws \Google\Service\Exception
+   */
+  public function download($fileId, $optParams = [])
+  {
+    $params = ['fileId' => $fileId];
+    $params = array_merge($params, $optParams);
+    return $this->call('download', [$params], OperationModel::class);
+  }
+  /**
    * Permanently deletes all of the user's trashed files. (files.emptyTrash)
    *
    * @param array $optParams Optional parameters.
@@ -221,7 +248,8 @@ class Files extends \Google\Service\Resource
    *
    * @opt_param bool acknowledgeAbuse Whether the user is acknowledging the risk
    * of downloading known malware or other abusive files. This is only applicable
-   * when alt=media.
+   * when the `alt` parameter is set to `media` and the user is the owner of the
+   * file or an organizer of the shared drive in which the file resides.
    * @opt_param string includeLabels A comma-separated list of IDs of labels to
    * include in the `labelInfo` part of the response.
    * @opt_param string includePermissionsForView Specifies which additional view's
@@ -387,7 +415,8 @@ class Files extends \Google\Service\Resource
    *
    * @opt_param bool acknowledgeAbuse Whether the user is acknowledging the risk
    * of downloading known malware or other abusive files. This is only applicable
-   * when alt=media.
+   * when the `alt` parameter is set to `media` and the user is the owner of the
+   * file or an organizer of the shared drive in which the file resides.
    * @opt_param string includeLabels A comma-separated list of IDs of labels to
    * include in the `labelInfo` part of the response.
    * @opt_param string includePermissionsForView Specifies which additional view's
