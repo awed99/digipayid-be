@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'digipayid/be',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '07ea9c9f57a3a5c5ade924c9f3673837d69cb916',
+        'pretty_version' => 'dev-develop',
+        'version' => 'dev-develop',
+        'reference' => '65c014144e4a7d3888d35ffaa4b6b9e9d5bbc1ac',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -67,9 +67,9 @@
             'dev_requirement' => false,
         ),
         'digipayid/be' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '07ea9c9f57a3a5c5ade924c9f3673837d69cb916',
+            'pretty_version' => 'dev-develop',
+            'version' => 'dev-develop',
+            'reference' => '65c014144e4a7d3888d35ffaa4b6b9e9d5bbc1ac',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
