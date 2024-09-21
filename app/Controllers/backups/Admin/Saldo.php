@@ -8,11 +8,11 @@ class Saldo extends BaseController
 {
     public function index()
     {
-        echo('welcome!');
+        echo ('welcome!');
     }
 
     public function postGet_user_saldo()
-    {   
+    {
         cekValidation('admin/saldo/get_user_saldo');
         $request = request();
         $db = db_connect();
@@ -20,19 +20,19 @@ class Saldo extends BaseController
         $update0['is_done'] = '1';
         $update0['status'] = 'Cancel';
         $builder0 = $db->table('orders')
-        ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
-        ->where('status <> \'Success\'')
-        ->where('(created_date <= (NOW() - interval 20 minute))')
-        ->update($update0);
+            ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
+            ->where('status <> \'Success\'')
+            ->where('(created_date <= (NOW() - interval 20 minute))')
+            ->update($update0);
 
         $update1['is_done'] = '1';
         $builder1 = $db->table('orders')
-        ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
-        ->where('status = \'Success\'')
-        ->where('(created_date <= (NOW() - interval 20 minute))')
-        ->update($update1);
+            ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
+            ->where('status = \'Success\'')
+            ->where('(created_date <= (NOW() - interval 20 minute))')
+            ->update($update1);
 
-        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow(); 
+        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow();
         if ($baseCURS) {
             $usdCURS = $baseCURS->curs_usd;
         } else {
@@ -50,12 +50,12 @@ class Saldo extends BaseController
         // print_r($user);
         // die();
         if (!$user || $user === null || $user === 0 || $user === '0' || $user === '') {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Unauthorized! Please login.",
                 "message": "Unauthorized! Please login."
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
         // $id_user = $user->id_user;
 
@@ -72,11 +72,11 @@ class Saldo extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "balance": '.$finalData.',
+            "balance": ' . $finalData . ',
             "curs": {
-                "curs_idr": '.$dataFinal4->curs_idr.',
-                "curs_usd": '.$dataFinal4->curs_usd.', 
-                "curs_usd_to_idr": '.$dataFinal4->curs_usd_to_idr.'
+                "curs_idr": ' . $dataFinal4->curs_idr . ',
+                "curs_usd": ' . $dataFinal4->curs_usd . ', 
+                "curs_usd_to_idr": ' . $dataFinal4->curs_usd_to_idr . '
             }
         }';
     }

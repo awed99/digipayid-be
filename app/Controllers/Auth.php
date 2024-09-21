@@ -29,6 +29,7 @@ class Auth extends BaseController
         $upsert['id'] = $postData['key'];
         $upsert['ip_address'] = getUserIP();
         $upsert['data'] = json_encode($postData['val']);
+        $upsert['timestamp'] = date('Y-m-d H:i:s');
         $db->table('ci_sessions')->upsert($upsert);
         $db->close();
 

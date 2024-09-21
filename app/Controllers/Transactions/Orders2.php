@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controllers\Transactions;
+
 use Config\Services;
 use CodeIgniter\Files\File;
 
@@ -12,10 +13,11 @@ class Orders2 extends BaseController
 {
     public function index()
     {
-        echo('welcome!');
+        echo ('welcome!');
     }
 
-    public function postList() {
+    public function postList()
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         $dataRequest = cek_token_login($dataPost);
@@ -37,16 +39,16 @@ class Orders2 extends BaseController
         FROM orders bo
         LEFT JOIN app_services appsx ON appsx.id = bo.id_app_service
         left join base_countries bc on bc.id = appsx.id_base_country
-        WHERE bo.status = \'Success\' AND DATE(bo.created_date) = \''.$date.'\'
+        WHERE bo.status = \'Success\' AND DATE(bo.created_date) = \'' . $date . '\'
         ORDER BY bo.created_date DESC
         LIMIT 10000;');
         $dataFinal = $query->getResult();
-        $total_selling_price = $db->query('SELECT ROUND(SUM(price_user), 2) as total_selling_price from orders where status = \'Success\' AND DATE(created_date) = \''.$date.'\';')->getRow()->total_selling_price ?? 0;
-        $total_supplier_price = $db->query('SELECT ROUND(SUM(price_real), 2) as total_supplier_price from orders where status = \'Success\' AND DATE(created_date) = \''.$date.'\';')->getRow()->total_supplier_price ?? 0;
-        $total_profit = $db->query('SELECT ROUND(SUM(price_profit), 2) as total_profit from orders where status = \'Success\' AND DATE(created_date) = \''.$date.'\';')->getRow()->total_profit ?? 0;
-        $total_order = $db->query('SELECT COUNT(*) as total_order from orders where status = \'Success\' AND DATE(created_date) = \''.$date.'\';')->getRow()->total_order ?? 0;
-        $totalBP = $db->query('SELECT ROUND(SUM(amount), 2) as totalBP from bestpva_finance.topup_users where status = \'success\' AND id_base_payment_method = \'1\' AND DATE(created_datetime) = \''.$date.'\';')->getRow()->totalBP ?? 0;
-        $totalBonus = $db->query('SELECT ROUND(SUM(amount), 2) as totalBP from bestpva_finance.topup_users where status = \'success\' AND id_base_payment_method = \'5\' AND  DATE(created_datetime) = \''.$date.'\';')->getRow()->totalBP ?? 0;
+        $total_selling_price = $db->query('SELECT ROUND(SUM(price_user), 2) as total_selling_price from orders where status = \'Success\' AND DATE(created_date) = \'' . $date . '\';')->getRow()->total_selling_price ?? 0;
+        $total_supplier_price = $db->query('SELECT ROUND(SUM(price_real), 2) as total_supplier_price from orders where status = \'Success\' AND DATE(created_date) = \'' . $date . '\';')->getRow()->total_supplier_price ?? 0;
+        $total_profit = $db->query('SELECT ROUND(SUM(price_profit), 2) as total_profit from orders where status = \'Success\' AND DATE(created_date) = \'' . $date . '\';')->getRow()->total_profit ?? 0;
+        $total_order = $db->query('SELECT COUNT(*) as total_order from orders where status = \'Success\' AND DATE(created_date) = \'' . $date . '\';')->getRow()->total_order ?? 0;
+        $totalBP = $db->query('SELECT ROUND(SUM(amount), 2) as totalBP from bestpva_finance.topup_users where status = \'success\' AND id_base_payment_method = \'1\' AND DATE(created_datetime) = \'' . $date . '\';')->getRow()->totalBP ?? 0;
+        $totalBonus = $db->query('SELECT ROUND(SUM(amount), 2) as totalBP from bestpva_finance.topup_users where status = \'success\' AND id_base_payment_method = \'5\' AND  DATE(created_datetime) = \'' . $date . '\';')->getRow()->totalBP ?? 0;
         $db->close();
         $finalData = json_encode($dataFinal);
         echo '{
@@ -54,18 +56,19 @@ class Orders2 extends BaseController
             "error": "",
             "message": "",
             "data": {
-                "data": '.$finalData.',
-                "totalBP": '.$totalBP.',
-                "totalBonus": '.$totalBonus.',
-                "total_selling_price": '.$total_selling_price.',
-                "total_supplier_price": '.$total_supplier_price.',
-                "total_profit": '.$total_profit.',
-                "total_order": '.$total_order.'
+                "data": ' . $finalData . ',
+                "totalBP": ' . $totalBP . ',
+                "totalBonus": ' . $totalBonus . ',
+                "total_selling_price": ' . $total_selling_price . ',
+                "total_supplier_price": ' . $total_supplier_price . ',
+                "total_profit": ' . $total_profit . ',
+                "total_order": ' . $total_order . '
             }
         }';
     }
 
-    public function postTop10() {
+    public function postTop10()
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         $dataRequest = cek_token_login($dataPost);
@@ -100,20 +103,21 @@ class Orders2 extends BaseController
             "error": "",
             "message": "",
             "data": {
-                "top": '.$finalData.',
-                "total_amount": '.$total_amount.',
-                "total_profit": '.$total_profit.',
-                "total_order": '.$total_order.'
+                "top": ' . $finalData . ',
+                "total_amount": ' . $total_amount . ',
+                "total_profit": ' . $total_profit . ',
+                "total_order": ' . $total_order . '
             }
         }';
     }
 
-    public function getCreate2a() {
+    public function getCreate2a()
+    {
 
         $apiKey = getenv('IPAYMU_API_KEY');
         $va = getenv('IPAYMU_VA_NUMBER');
         $production = true;
-        
+
         $iPaymu = new iPaymu($apiKey, $va, $production);
 
         $balance = $iPaymu->checkBalance();
@@ -135,12 +139,12 @@ class Orders2 extends BaseController
         ]);
 
         // set your reference id (optional)
-        $reffID = 'DIGIPAYID-'.date('YmdHis').'-'.strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
+        $reffID = 'DIGIPAYID-' . date('YmdHis') . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
         $iPaymu->setReferenceId($reffID);
 
         // set your expiredPayment
         $iPaymu->setExpired(1, 'hours'); // 24 hours
-        
+
         // set payment method
         // check https://ipaymu.com/api-collection for list payment method
         $iPaymu->setPaymentMethod('qris');
@@ -182,21 +186,22 @@ class Orders2 extends BaseController
 
         print_r($iPaymu->directPayment());
     }
-    
-    
-    public function getCreate2() {
+
+
+    public function getCreate2()
+    {
         // SAMPLE HIT API iPaymu v2 PHP //
         // $va           = getenv('IPAYMU_VA_NUMBER') ; // nomer virtual account akun
         // $secret       = getenv('IPAYMU_API_KEY'); // api key account iPaymu
         // $url          = getenv('IPAYMU_HOST_URL') . '/api/v2/payment/direct'; // url mode sandbox
 
-        
-        $va           = '1179000894100592' ; // nomer virtual account akun
+
+        $va           = '1179000894100592'; // nomer virtual account akun
         $secret       = '79C05894-8349-46E2-9BCE-1942CC959893'; // api key account iPaymu
         $url          = 'https://my.ipaymu.com/api/v2/payment/direct'; // url mode sandbox
 
         $method       = 'POST'; // method POST
-        
+
 
         //Request Body//
         $body['product']    = 'fee'; // nama produk yang dibeli
@@ -209,7 +214,7 @@ class Orders2 extends BaseController
         $body['name']  = 'Dewa Danu Brata'; // nama pembeli
         $body['email'] = 'dewadanubrata@gmail.com'; // email pembeli
         $body['phone'] = '081234567890'; // nomor telepon pembeli
-        $body['referenceId'] = 'DIGIPAY-'.date('YmdHis').'-'.strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
+        $body['referenceId'] = 'DIGIPAY-' . date('YmdHis') . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
         $body['paymentMethod'] = 'va'; // paymentMethod
         $body['paymentChannel'] = 'bni'; // paymentChannel
         $body['feeDirection'] = 'BUYER '; // MERCHANT | BUYER 
@@ -281,11 +286,12 @@ class Orders2 extends BaseController
         }
     }
 
-    public function getCreate3() {
+    public function getCreate3()
+    {
         $url = getenv('TOKOPAY_HOST_URL') . 'v1/order'; // url mode sandbox
 
         //Request Body//
-        $body['reff_id'] = 'DIGIPAYID-'.strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
+        $body['reff_id'] = 'DIGIPAYID-' . strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
         $body['merchant_id'] = getenv('TOKOPAY_MERCHANT_ID');
         $body['signature'] = md5(getenv('TOKOPAY_MERCHANT_ID') . ':' . getenv('TOKOPAY_SECRET_KEY') . ':' . $body['reff_id']); // signature
         $body['kode_channel'] = 'QRISREALTIME';
@@ -296,7 +302,7 @@ class Orders2 extends BaseController
         $body['customer_email'] = 'dewadanubrata@gmail.com';
         $body['customer_phone'] = '08194100592';
         $body['expired_ts'] = strtotime(date('Y-m-d H:i:s', strtotime('1 hour')));
-        
+
         $headers = array(
             'Accept: application/json',
             'Content-Type: application/json',
@@ -304,14 +310,14 @@ class Orders2 extends BaseController
 
         $jsonBody     = json_encode($body, JSON_UNESCAPED_SLASHES);
 
-        print_r('<pre>'.$jsonBody.'</pre>');
-        
+        print_r('<pre>' . $jsonBody . '</pre>');
+
         $res = curl($url, 1, $jsonBody, $headers);
-        
+
         // $resOBJ = json_decode($res);
 
-        print_r($res);
-        die();
+        $data = ($res);
+        $this->response->setStatusCode(200)->setBody($data);
 
         // set option curl
         // *Don't change this
@@ -355,20 +361,22 @@ class Orders2 extends BaseController
         // }
     }
 
-    public function getCreate4() {
+    public function getCreate4()
+    {
         $url = getenv('TOKOPAY_HOST_URL') . 'v1/order'; // url mode sandbox
-        $reff_id = 'DIGIPAYID-'.date('YmdHis').'-'.strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
+        $reff_id = 'DIGIPAYID-' . date('YmdHis') . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 6)); // kode unik untuk transaksi
         $nominal = 10000;
         $kode_channel = 'QRISREALTIME';
         // print_r($url.'?merchant='.getenv('TOKOPAY_MERCHANT_ID').'&secret='.getenv('TOKOPAY_SECRET_KEY').'&ref_id='.$reff_id.'&nominal='.$nominal.'&metode='.$kode_channel);
-        $res = curl($url.'?merchant='.getenv('TOKOPAY_MERCHANT_ID').'&secret='.getenv('TOKOPAY_SECRET_KEY').'&ref_id='.$reff_id.'&nominal='.$nominal.'&metode='.$kode_channel);
+        $res = curl($url . '?merchant=' . getenv('TOKOPAY_MERCHANT_ID') . '&secret=' . getenv('TOKOPAY_SECRET_KEY') . '&ref_id=' . $reff_id . '&nominal=' . $nominal . '&metode=' . $kode_channel);
 
-        echo($res);
+        echo ($res);
     }
 
-    public function getCreate5() {
+    public function getCreate5()
+    {
         $res = generate_qris(20000);
-        header('Content-Type: '.$res->getMimeType());
+        header('Content-Type: ' . $res->getMimeType());
         echo $res->getString();
         // $result->saveToFile(__DIR__.'/qrcode.png');
 
@@ -376,7 +384,8 @@ class Orders2 extends BaseController
         // echo '<img src="data:image/png;base64, '.$res.'" alt="Red dot" />';
     }
 
-    public function getCreate6() {
+    public function getCreate6()
+    {
         // $res = tokopay_generate_qris(20000, 'QRISREALTIME');
         // $res = tokopay_generate_va(20000, 'BNIVA');
         // $res = tokopay_generate_ewallet(20000, 'SHOPEEPAY');
@@ -388,7 +397,8 @@ class Orders2 extends BaseController
         // echo '<img src="qris/QRIS-'.$res->req->reff_id.'.png" alt="'.$res->req->reff_id.'" />';
     }
 
-    public function postCreate($data=false, $data2=false) {
+    public function postCreate($data = false, $data2 = false)
+    {
         $request = request();
         $postData = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
@@ -416,7 +426,7 @@ class Orders2 extends BaseController
         $postData2['price_user'] = ($postData0['activationCost'] + $general_profit);
         $postData2['price_profit'] = round(($postData0['activationCost'] + $general_profit) - ($postData0['activationCost'] * 1), 2);
         $postData2['price_profit_idr'] = $postData2['price_profit'] * $usdCURS;
-        $postData2['invoice_number'] = 'INV/'.date('Y').'/'.date('m').'/'.$postData2['id_user'].'/'.$postData2['order_id'];
+        $postData2['invoice_number'] = 'INV/' . date('Y') . '/' . date('m') . '/' . $postData2['id_user'] . '/' . $postData2['order_id'];
         // echo json_encode($postData2);
 
         $builder->insert($postData2);
@@ -432,7 +442,8 @@ class Orders2 extends BaseController
         return $finalData;
     }
 
-    public function postUpdate_all_status_activations() {
+    public function postUpdate_all_status_activations()
+    {
         $db = db_connect();
         $api_key = getenv('API_SERVICE_KEY');
         $builder = $db->table('orders');
@@ -443,8 +454,8 @@ class Orders2 extends BaseController
         $query   = $builder->get(1000);
         $dataFinal = $query->getResult();
 
-        foreach($dataFinal as $key) {
-            $dataFinalX = explode(":", curl(getenv('API_SERVICE').$api_key.'&action=getStatus&id='.$key->order_id));
+        foreach ($dataFinal as $key) {
+            $dataFinalX = explode(":", curl(getenv('API_SERVICE') . $api_key . '&action=getStatus&id=' . $key->order_id));
             $status = 'Waiting for SMS';
             if ($dataFinalX[0] === 'STATUS_WAIT_CODE') {
                 $status = 'Waiting for SMS';
@@ -460,7 +471,7 @@ class Orders2 extends BaseController
                 $update['sms_text'] = $dataFinalX[1];
             }
 
-            if (time() > (strtotime($key->created_date) + 1800)){
+            if (time() > (strtotime($key->created_date) + 1800)) {
                 $update['is_done'] = '1';
             }
 
@@ -471,7 +482,8 @@ class Orders2 extends BaseController
         $db->close();
     }
 
-    public function postUpdate_all_status_activation() {
+    public function postUpdate_all_status_activation()
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
@@ -486,8 +498,8 @@ class Orders2 extends BaseController
         $query   = $builder->get(1000);
         $dataFinal = $query->getResult();
 
-        foreach($dataFinal as $key) {
-            $dataFinalX = explode(":", curl(getenv('API_SERVICE').$api_key.'&action=getStatus&id='.$key->order_id));
+        foreach ($dataFinal as $key) {
+            $dataFinalX = explode(":", curl(getenv('API_SERVICE') . $api_key . '&action=getStatus&id=' . $key->order_id));
             $status = 'Waiting for SMS';
             if ($dataFinalX[0] === 'STATUS_WAIT_CODE') {
                 $status = 'Waiting for SMS';
@@ -503,7 +515,7 @@ class Orders2 extends BaseController
                 $update['sms_text'] = $dataFinalX[1];
             }
 
-            if (time() > (strtotime($key->created_date) + 1800)){
+            if (time() > (strtotime($key->created_date) + 1800)) {
                 $update['is_done'] = '1';
             }
 
@@ -522,7 +534,8 @@ class Orders2 extends BaseController
         // echo $finalData;
     }
 
-    public function postUpdate_status_activation() {
+    public function postUpdate_status_activation()
+    {
         $request = request();
         // $dataPost = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
@@ -574,8 +587,8 @@ class Orders2 extends BaseController
         $finalData = json_encode($dataFinal2);
         $finalDataX = json_encode($dataFinalX);
         return '{
-            "dataLists": '.$finalData.',
-            "dataList5": '.$finalDataX.'
+            "dataLists": ' . $finalData . ',
+            "dataList5": ' . $finalDataX . '
         }';
         // echo '{
         //     "code": 0,
@@ -587,7 +600,8 @@ class Orders2 extends BaseController
         // echo $finalData;
     }
 
-    public function postRe_order() {
+    public function postRe_order()
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
@@ -595,20 +609,20 @@ class Orders2 extends BaseController
         $db = db_connect();
         $api_key = getenv('API_SERVICE_KEY');
         $id_user = $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->limit(1)->get()->getRow()->id_user;
-        
+
         $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow();
         $usdCURS = $baseCURS->curs_idr;
 
-        $dataFinal = curl(getenv('API_SERVICE').$api_key.'&action=setStatus&status=3&id='.$postData['order_id']);
-        $dataFinal = curl(getenv('API_SERVICE').$api_key.'&action=setStatus&status=1&id='.$postData['order_id']);
-        
+        $dataFinal = curl(getenv('API_SERVICE') . $api_key . '&action=setStatus&status=3&id=' . $postData['order_id']);
+        $dataFinal = curl(getenv('API_SERVICE') . $api_key . '&action=setStatus&status=1&id=' . $postData['order_id']);
+
         $update['status'] = 'Success';
         $update['is_done '] = '1';
         $db->table('orders')->where('order_id ', $postData['order_id'])->update($update);
         $data = $db->table('orders')->where('order_id ', $postData['order_id'])->get()->getRow();
         // $this->postUpdate_all_status_activation();
 
-        
+
         $builder = $db->table('orders');
         $insert['order_id'] = $postData['order_id'];
         $insert['id_user'] = $id_user;
@@ -625,7 +639,7 @@ class Orders2 extends BaseController
         $insert['exp_date'] = $data->exp_date;
         $insert['created_date'] = $data->created_date;
         $insert['status'] = 'Waiting for Resend SMS';
-        $insert['invoice_number'] = 'INV/'.date('Y').'/'.date('m').'/'.$id_user.'/'.$postData['order_id'];
+        $insert['invoice_number'] = 'INV/' . date('Y') . '/' . date('m') . '/' . $id_user . '/' . $postData['order_id'];
         // print_r($postData);
 
         $builder->insert($insert);
@@ -638,28 +652,29 @@ class Orders2 extends BaseController
         }';
     }
 
-    public function postCancel_order() {
+    public function postCancel_order()
+    {
         cekValidation('transactions/orders/cancel_order');
         $request = request();
         $postData = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
         $db = db_connect();
         $api_key = getenv('API_SERVICE_KEY');
-        
-        $dataFinal = curl(getenv('API_SERVICE').$api_key.'&action=setStatus&status=8&id='.$postData['order_id']);
+
+        $dataFinal = curl(getenv('API_SERVICE') . $api_key . '&action=setStatus&status=8&id=' . $postData['order_id']);
 
         // print_r($dataFinal);
         // die();
         if ($dataFinal === 'EARLY_CANCEL_DENIED') {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "System Error.",
                 "message": "Early cancel! Please wait for two minutes.",
                 "data": null
             }';
-            die();
+            $this->response->setStatusCode(200)->setBody($data);
         }
-        
+
         if (!$postData['completed']) {
             $update['status'] = 'Cancel';
         }
@@ -668,7 +683,7 @@ class Orders2 extends BaseController
         // $this->postUpdate_all_status_activation();
         // $update2['is_done '] = '1';
         // $db->table('orders')->where('(orders.is_done = 0 or orders.is_done = \'0\' or orders.is_done = false)')->where('order_id', $postData['order_id'])->update($update2);
-        
+
         echo '{
             "code": 0,
             "error": "",
@@ -677,15 +692,16 @@ class Orders2 extends BaseController
         }';
     }
 
-    public function postCreate_order() {
+    public function postCreate_order()
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         // $postData = cek_token_login($dataPost);
         $postData = $dataPost;
         $db = db_connect();
         $builder = $db->table('orders');
-        $postData['order_id'] = substr(md5(rand(1,10000).date('YmdHis')), 0, 6);
-        $postData['invoice_number'] = 'INV/'.date('Y').'/'.date('m').'/'.$postData['id_user'].'/'.$postData['order_id'];
+        $postData['order_id'] = substr(md5(rand(1, 10000) . date('YmdHis')), 0, 6);
+        $postData['invoice_number'] = 'INV/' . date('Y') . '/' . date('m') . '/' . $postData['id_user'] . '/' . $postData['order_id'];
         // print_r($postData);
 
         $builder->insert($postData);
@@ -699,12 +715,12 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$finalData.'
+            "data": ' . $finalData . '
         }';
     }
 
     public function postList_orders()
-    {   
+    {
         cekValidation('transactions/orders/list_orders');
         $this->postUpdate_all_status_activation();
         $request = request();
@@ -724,8 +740,8 @@ class Orders2 extends BaseController
 
         $expFiles = $db->table('order_product_files')->where('created_at >', date('Y-m-d H:i:s', strtotime('3 day')))->get()->getResult();
         foreach ($expFiles as $files) {
-            if (file_exists(FCPATH. "files/".$files->filename.'.zip')) {
-                unlink (FCPATH. "files/".$files->filename.'.zip');
+            if (file_exists(FCPATH . "files/" . $files->filename . '.zip')) {
+                unlink(FCPATH . "files/" . $files->filename . '.zip');
             }
         }
 
@@ -735,12 +751,12 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$finalData.'
+            "data": ' . $finalData . '
         }';
     }
 
     public function postList_orders_all()
-    {   
+    {
         $this->postUpdate_all_status_activation();
         $request = request();
         $dataPost = $request->getJSON(true);
@@ -763,12 +779,12 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$finalData.'
+            "data": ' . $finalData . '
         }';
     }
 
     public function postGet_token_api()
-    {   
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         $dataRequest = cek_token_login($dataPost);
@@ -778,7 +794,7 @@ class Orders2 extends BaseController
         $email = $json->email;
         $token_login = $json->token_login;
         $type = $json->type;
-        $update["token_api"] = hash('sha256', $email.$token_login.date('YmdHis'));
+        $update["token_api"] = hash('sha256', $email . $token_login . date('YmdHis'));
         $builder = $db->table('app_users')->where('email', $email)->where('token_login', $token_login)->where('user_role', $type);
         $builder->update($update);
         $db->close();
@@ -786,12 +802,12 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$update["token_api"].'
+            "data": ' . $update["token_api"] . '
         }';
     }
 
     public function postGet_user_data_from_token_api()
-    {   
+    {
         $request = request();
         $dataPost = $request->getJSON(true);
         $dataRequest = cek_token_login($dataPost);
@@ -806,7 +822,7 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$dataFinal[0].'
+            "data": ' . $dataFinal[0] . '
         }';
     }
 
@@ -827,12 +843,12 @@ class Orders2 extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$rand.'
+            "data": ' . $rand . '
         }';
     }
 
     public function postRegister()
-    {   
+    {
         $request = request();
         $json = $request->getJSON(true);
         $db = db_connect();
@@ -873,7 +889,7 @@ class Orders2 extends BaseController
         $insert['user_role'] = 2;
         $insert['user_status'] = 'ACTIVE';
         $insert['is_active'] = 1;
-        $insert['token_login'] = hash('sha256', $json->email.date('YmdHis'));
+        $insert['token_login'] = hash('sha256', $json->email . date('YmdHis'));
         $builder = $db->table('app_users');
         $builder->ignore(true)->insert($insert);
         if ($db->affectedRows() == 1) {
@@ -883,7 +899,7 @@ class Orders2 extends BaseController
                 "code": 0,
                 "error": "",
                 "message": "You have been successfuly registered!",
-                "data": '.json_encode((object)$insert).'
+                "data": ' . json_encode((object)$insert) . '
             }';
         } else {
             echo '{
@@ -895,5 +911,4 @@ class Orders2 extends BaseController
         }
         $db->close();
     }
-
 }
