@@ -116,8 +116,8 @@ class CoursesCourseWork extends \Google\Service\Resource
    * not exist. (courseWork.getAddOnContext)
    *
    * @param string $courseId Required. Identifier of the course.
-   * @param string $itemId Identifier of the announcement, courseWork, or
-   * courseWorkMaterial under which the attachment is attached. This field is
+   * @param string $itemId Identifier of the `Announcement`, `CourseWork`, or
+   * `CourseWorkMaterial` under which the attachment is attached. This field is
    * required, but is not marked as such while we are migrating from post_id.
    * @param array $optParams Optional parameters.
    *
@@ -128,9 +128,10 @@ class CoursesCourseWork extends \Google\Service\Resource
    * The developer project issuing the request is the same project that created
    * the post.
    * @opt_param string attachmentId Optional. The identifier of the attachment.
-   * This field is required for student users and optional for teacher users. If
-   * not provided in the student case, an error is returned.
-   * @opt_param string postId Optional. Deprecated, use item_id instead.
+   * This field is required for all requests except when the user is in the
+   * [Attachment Discovery iframe](https://developers.google.com/classroom/add-
+   * ons/get-started/iframes/attachment-discovery-iframe).
+   * @opt_param string postId Optional. Deprecated, use `item_id` instead.
    * @return AddOnContext
    * @throws \Google\Service\Exception
    */
@@ -212,8 +213,7 @@ class CoursesCourseWork extends \Google\Service\Resource
    * the requested modification to the student submission, or for access errors. *
    * `INVALID_ARGUMENT` if the request is malformed. * `FAILED_PRECONDITION` if
    * the requested course work has already been deleted. * `NOT_FOUND` if the
-   * requested course, course work, or student submission does not exist.
-   * (courseWork.patch)
+   * requested course or course work does not exist. (courseWork.patch)
    *
    * @param string $courseId Identifier of the course. This identifier can be
    * either the Classroom-assigned identifier or an alias.
@@ -229,7 +229,9 @@ class CoursesCourseWork extends \Google\Service\Resource
    * update mask and not set in the `CourseWork` object, an `INVALID_ARGUMENT`
    * error is returned. The following fields may be specified by teachers: *
    * `title` * `description` * `state` * `due_date` * `due_time` * `max_points` *
-   * `scheduled_time` * `submission_modification_mode` * `topic_id`
+   * `scheduled_time` * `submission_modification_mode` * `topic_id` *
+   * `grading_period_id` Available in [V1_20240401_PREVIEW](https://developers.goo
+   * gle.com/classroom/reference/preview) and later.
    * @return CourseWork
    * @throws \Google\Service\Exception
    */

@@ -786,16 +786,6 @@ class Integrations extends \Google\Service
                   'type' => 'boolean',
                 ],
               ],
-            ],'replay' => [
-              'path' => 'v1/{+name}:replay',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],
           ]
         ]
@@ -1288,17 +1278,7 @@ class Integrations extends \Google\Service
         'executions',
         [
           'methods' => [
-            'cancel' => [
-              'path' => 'v1/{+name}:cancel',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'download' => [
+            'download' => [
               'path' => 'v1/{+name}:download',
               'httpMethod' => 'GET',
               'parameters' => [
@@ -1967,6 +1947,20 @@ class Integrations extends \Google\Service
                   'required' => true,
                 ],
               ],
+            ],'download' => [
+              'path' => 'v1/{+name}:download',
+              'httpMethod' => 'GET',
+              'parameters' => [
+                'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+                'fileFormat' => [
+                  'location' => 'query',
+                  'type' => 'string',
+                ],
+              ],
             ],'get' => [
               'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
@@ -2076,6 +2070,16 @@ class Integrations extends \Google\Service
               'httpMethod' => 'POST',
               'parameters' => [
                 'name' => [
+                  'location' => 'path',
+                  'type' => 'string',
+                  'required' => true,
+                ],
+              ],
+            ],'upload' => [
+              'path' => 'v1/{+parent}/templates:upload',
+              'httpMethod' => 'POST',
+              'parameters' => [
+                'parent' => [
                   'location' => 'path',
                   'type' => 'string',
                   'required' => true,

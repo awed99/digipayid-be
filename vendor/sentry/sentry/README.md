@@ -1,8 +1,8 @@
-<p align="center">
-  <a href="https://sentry.io/?utm_source=github&utm_medium=logo" target="_blank">
-    <img src="https://sentry-brand.storage.googleapis.com/sentry-wordmark-dark-280x84.png" alt="Sentry" width="280" height="84">
-  </a>
-</p>
+<div align="center">
+    <a href="https://sentry.io/?utm_source=github&utm_medium=logo" target="_blank">
+        <img src="https://sentry-brand.storage.googleapis.com/github-banners/github-sdk-php.jpg" alt="Sentry for PHP">
+    </a>
+</div>
 
 _Bad software is everywhere, and we're tired of it. Sentry is on a mission to help developers write better software faster, so we can get back to enjoying technology. If you want to join us [<kbd>**Check out our open positions**</kbd>](https://sentry.io/careers/)_
 
@@ -94,7 +94,13 @@ The following integrations are available and maintained by members of the Sentry
 
 ## Contributing to the SDK
 
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+Please make sure to read the [CONTRIBUTING.md](CONTRIBUTING.md) before making a pull request.
+
+Thanks to everyone who has contributed to this project so far.
+
+<a href="https://github.com/getsentry/sentry-php/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=getsentry/sentry-php" />
+</a>
 
 ## Getting help/support
 

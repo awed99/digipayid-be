@@ -19,6 +19,25 @@ namespace Google\Service\Aiplatform;
 
 class GoogleCloudAiplatformV1BleuSpec extends \Google\Model
 {
+  /**
+   * @var bool
+   */
+  public $useEffectiveOrder;
+
+  /**
+   * @param bool
+   */
+  public function setUseEffectiveOrder($useEffectiveOrder)
+  {
+    $this->useEffectiveOrder = $useEffectiveOrder;
+  }
+  /**
+   * @return bool
+   */
+  public function getUseEffectiveOrder()
+  {
+    return $this->useEffectiveOrder;
+  }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.
