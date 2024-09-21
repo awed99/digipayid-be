@@ -38,7 +38,7 @@ class Callbacks extends BaseController
 
         // $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -120,7 +120,7 @@ class Callbacks extends BaseController
 
         // $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -202,7 +202,7 @@ class Callbacks extends BaseController
 
         // $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['reff_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -296,7 +296,7 @@ class Callbacks extends BaseController
         */
 
 
-        $myfile = fopen("logs/topup-callback-" . $insert['id_user'] . "-" . ((int)$dt['amount_settled'] / ($data->idr->rate)) . "-" . date('Y-m-d-H-i') . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("logs/topup-callback-" . $insert['id_user'] . "-" . ((int)$dt['amount_settled'] / ($data->idr->rate)) . "-" . date('Y-m-d-H-i') . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($insert['created_datetime']);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -311,7 +311,7 @@ class Callbacks extends BaseController
         // print_r($dt);
 
         $rawRequestInput = file_get_contents("php://input");
-        $myfile = fopen("callbacks/" . $dt['order_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['order_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = $rawRequestInput;
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -357,7 +357,7 @@ class Callbacks extends BaseController
         */
 
 
-        // $myfile = fopen("logs/topup-callback-".$update['id_user']."-".((int)$dt['gross_amount'] / ($data->idr->rate))."-".date('Y-m-d-H-i').".txt", "w") or die("Unable to open file!");
+        // $myfile = fopen("logs/topup-callback-".$update['id_user']."-".((int)$dt['gross_amount'] / ($data->idr->rate))."-".date('Y-m-d-H-i').".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         // $txt = json_encode($update['updated_datetime']);
         // fwrite($myfile, $txt);
         // fclose($myfile);
@@ -373,7 +373,7 @@ class Callbacks extends BaseController
 
         $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['unique_code'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['unique_code'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -457,7 +457,7 @@ class Callbacks extends BaseController
 
         $rawRequestInput = file_get_contents("php://input");
 
-        $myfile = fopen("callbacks/" . $dt['order_id'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/" . $dt['order_id'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = json_encode($dt);
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -540,7 +540,7 @@ class Callbacks extends BaseController
         // print_r($dt);
 
         $rawRequestInput = file_get_contents("php://input");
-        $myfile = fopen("callbacks/activation-" . $dt['activationId'] . ".txt", "w") or die("Unable to open file!");
+        $myfile = fopen("callbacks/activation-" . $dt['activationId'] . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         $txt = $rawRequestInput;
         fwrite($myfile, $txt);
         fclose($myfile);
@@ -618,7 +618,7 @@ class Callbacks extends BaseController
         */
 
 
-        // $myfile = fopen("logs/topup-callback-".$update['id_user']."-".((int)$dt['gross_amount'] / ($data->idr->rate))."-".date('Y-m-d-H-i').".txt", "w") or die("Unable to open file!");
+        // $myfile = fopen("logs/topup-callback-".$update['id_user']."-".((int)$dt['gross_amount'] / ($data->idr->rate))."-".date('Y-m-d-H-i').".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
         // $txt = json_encode($update['updated_datetime']);
         // fwrite($myfile, $txt);
         // fclose($myfile);
