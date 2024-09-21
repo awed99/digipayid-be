@@ -27,9 +27,11 @@ use Google\Service\SQLAdmin\InstancesFailoverRequest;
 use Google\Service\SQLAdmin\InstancesImportRequest;
 use Google\Service\SQLAdmin\InstancesListResponse;
 use Google\Service\SQLAdmin\InstancesListServerCasResponse;
+use Google\Service\SQLAdmin\InstancesListServerCertificatesResponse;
 use Google\Service\SQLAdmin\InstancesReencryptRequest;
 use Google\Service\SQLAdmin\InstancesRestoreBackupRequest;
 use Google\Service\SQLAdmin\InstancesRotateServerCaRequest;
+use Google\Service\SQLAdmin\InstancesRotateServerCertificateRequest;
 use Google\Service\SQLAdmin\InstancesTruncateLogRequest;
 use Google\Service\SQLAdmin\Operation;
 use Google\Service\SQLAdmin\SqlInstancesAcquireSsrsLeaseResponse;
@@ -45,6 +47,48 @@ use Google\Service\SQLAdmin\SqlInstancesReleaseSsrsLeaseResponse;
  */
 class Instances extends \Google\Service\Resource
 {
+  /**
+   * Lists all versions of server certificates and certificate authorities (CAs)
+   * for the specified instance. There can be up to three sets of certs listed:
+   * the certificate that is currently in use, a future that has been added but
+   * not yet used to sign a certificate, and a certificate that has been rotated
+   * out. (instances.ListServerCertificates)
+   *
+   * @param string $project Required. Project ID of the project that contains the
+   * instance.
+   * @param string $instance Required. Cloud SQL instance ID. This does not
+   * include the project ID.
+   * @param array $optParams Optional parameters.
+   * @return InstancesListServerCertificatesResponse
+   * @throws \Google\Service\Exception
+   */
+  public function ListServerCertificates($project, $instance, $optParams = [])
+  {
+    $params = ['project' => $project, 'instance' => $instance];
+    $params = array_merge($params, $optParams);
+    return $this->call('ListServerCertificates', [$params], InstancesListServerCertificatesResponse::class);
+  }
+  /**
+   * Rotates the server certificate version to one previously added with the
+   * addServerCertificate method. For instances not using Certificate Authority
+   * Service (CAS) server CA, please use RotateServerCa instead.
+   * (instances.RotateServerCertificate)
+   *
+   * @param string $project Required. Project ID of the project that contains the
+   * instance.
+   * @param string $instance Required. Cloud SQL instance ID. This does not
+   * include the project ID.
+   * @param InstancesRotateServerCertificateRequest $postBody
+   * @param array $optParams Optional parameters.
+   * @return Operation
+   * @throws \Google\Service\Exception
+   */
+  public function RotateServerCertificate($project, $instance, InstancesRotateServerCertificateRequest $postBody, $optParams = [])
+  {
+    $params = ['project' => $project, 'instance' => $instance, 'postBody' => $postBody];
+    $params = array_merge($params, $optParams);
+    return $this->call('RotateServerCertificate', [$params], Operation::class);
+  }
   /**
    * Acquire a lease for the setup of SQL Server Reporting Services (SSRS).
    * (instances.acquireSsrsLease)
@@ -71,7 +115,9 @@ class Instances extends \Google\Service\Resource
    * instance. Required to prepare for a certificate rotation. If a CA version was
    * previously added but never used in a certificate rotation, this operation
    * replaces that version. There cannot be more than one CA version waiting to be
-   * rotated in. (instances.addServerCa)
+   * rotated in. For instances that have enabled Certificate Authority Service
+   * (CAS) based server CA, please use AddServerCertificate to add a new server
+   * certificate. (instances.addServerCa)
    *
    * @param string $project Project ID of the project that contains the instance.
    * @param string $instance Cloud SQL instance ID. This does not include the
@@ -85,6 +131,28 @@ class Instances extends \Google\Service\Resource
     $params = ['project' => $project, 'instance' => $instance];
     $params = array_merge($params, $optParams);
     return $this->call('addServerCa', [$params], Operation::class);
+  }
+  /**
+   * Add a new trusted server certificate version for the specified instance using
+   * Certificate Authority Service (CAS) server CA. Required to prepare for a
+   * certificate rotation. If a server certificate version was previously added
+   * but never used in a certificate rotation, this operation replaces that
+   * version. There cannot be more than one certificate version waiting to be
+   * rotated in. For instances not using CAS server CA, please use AddServerCa
+   * instead. (instances.addServerCertificate)
+   *
+   * @param string $project Project ID of the project that contains the instance.
+   * @param string $instance Cloud SQL instance ID. This does not include the
+   * project ID.
+   * @param array $optParams Optional parameters.
+   * @return Operation
+   * @throws \Google\Service\Exception
+   */
+  public function addServerCertificate($project, $instance, $optParams = [])
+  {
+    $params = ['project' => $project, 'instance' => $instance];
+    $params = array_merge($params, $optParams);
+    return $this->call('addServerCertificate', [$params], Operation::class);
   }
   /**
    * Creates a Cloud SQL instance as a clone of the source instance. Using this
@@ -432,7 +500,9 @@ class Instances extends \Google\Service\Resource
   }
   /**
    * Rotates the server certificate to one signed by the Certificate Authority
-   * (CA) version previously added with the addServerCA method.
+   * (CA) version previously added with the addServerCA method. For instances that
+   * have enabled Certificate Authority Service (CAS) based server CA, please use
+   * RotateServerCertificate to rotate the server certificate.
    * (instances.rotateServerCa)
    *
    * @param string $project Project ID of the project that contains the instance.

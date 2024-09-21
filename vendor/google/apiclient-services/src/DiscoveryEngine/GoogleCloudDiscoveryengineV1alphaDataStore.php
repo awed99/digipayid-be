@@ -54,12 +54,18 @@ class GoogleCloudDiscoveryengineV1alphaDataStore extends \Google\Collection
    * @var string
    */
   public $name;
+  protected $naturalLanguageQueryUnderstandingConfigType = GoogleCloudDiscoveryengineV1alphaNaturalLanguageQueryUnderstandingConfig::class;
+  protected $naturalLanguageQueryUnderstandingConfigDataType = '';
+  protected $servingConfigDataStoreType = GoogleCloudDiscoveryengineV1alphaServingConfigDataStore::class;
+  protected $servingConfigDataStoreDataType = '';
   /**
    * @var string[]
    */
   public $solutionTypes;
   protected $startingSchemaType = GoogleCloudDiscoveryengineV1alphaSchema::class;
   protected $startingSchemaDataType = '';
+  protected $workspaceConfigType = GoogleCloudDiscoveryengineV1alphaWorkspaceConfig::class;
+  protected $workspaceConfigDataType = '';
 
   /**
    * @param bool
@@ -202,6 +208,34 @@ class GoogleCloudDiscoveryengineV1alphaDataStore extends \Google\Collection
     return $this->name;
   }
   /**
+   * @param GoogleCloudDiscoveryengineV1alphaNaturalLanguageQueryUnderstandingConfig
+   */
+  public function setNaturalLanguageQueryUnderstandingConfig(GoogleCloudDiscoveryengineV1alphaNaturalLanguageQueryUnderstandingConfig $naturalLanguageQueryUnderstandingConfig)
+  {
+    $this->naturalLanguageQueryUnderstandingConfig = $naturalLanguageQueryUnderstandingConfig;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1alphaNaturalLanguageQueryUnderstandingConfig
+   */
+  public function getNaturalLanguageQueryUnderstandingConfig()
+  {
+    return $this->naturalLanguageQueryUnderstandingConfig;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1alphaServingConfigDataStore
+   */
+  public function setServingConfigDataStore(GoogleCloudDiscoveryengineV1alphaServingConfigDataStore $servingConfigDataStore)
+  {
+    $this->servingConfigDataStore = $servingConfigDataStore;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1alphaServingConfigDataStore
+   */
+  public function getServingConfigDataStore()
+  {
+    return $this->servingConfigDataStore;
+  }
+  /**
    * @param string[]
    */
   public function setSolutionTypes($solutionTypes)
@@ -228,6 +262,20 @@ class GoogleCloudDiscoveryengineV1alphaDataStore extends \Google\Collection
   public function getStartingSchema()
   {
     return $this->startingSchema;
+  }
+  /**
+   * @param GoogleCloudDiscoveryengineV1alphaWorkspaceConfig
+   */
+  public function setWorkspaceConfig(GoogleCloudDiscoveryengineV1alphaWorkspaceConfig $workspaceConfig)
+  {
+    $this->workspaceConfig = $workspaceConfig;
+  }
+  /**
+   * @return GoogleCloudDiscoveryengineV1alphaWorkspaceConfig
+   */
+  public function getWorkspaceConfig()
+  {
+    return $this->workspaceConfig;
   }
 }
 

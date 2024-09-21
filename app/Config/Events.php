@@ -57,7 +57,12 @@ Events::on('pre_system', static function () {
 
         $message =  new \CodeIgniter\HTTP\Message;
         $request = request();
-        $_dataPost = $request->getJSON() ?? $request->getPostGet();
+        // $_dataPost = $request->getJSON() ?? $request->getPostGet();
+        if ($request->is('json')) {
+            $_dataPost = $request->getJSON();
+        } else {
+            $_dataPost = $request->getPostGet();
+        }
         $ip = $request->getIPAddress();
         $dataPost = json_encode($_dataPost);
         $response = $message->getBody();

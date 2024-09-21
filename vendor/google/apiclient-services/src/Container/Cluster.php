@@ -34,6 +34,8 @@ class Cluster extends \Google\Collection
    * @var string
    */
   public $clusterIpv4Cidr;
+  protected $compliancePostureConfigType = CompliancePostureConfig::class;
+  protected $compliancePostureConfigDataType = '';
   protected $conditionsType = StatusCondition::class;
   protected $conditionsDataType = 'array';
   protected $confidentialNodesType = ConfidentialNodes::class;
@@ -174,6 +176,8 @@ class Cluster extends \Google\Collection
   protected $parentProductConfigDataType = '';
   protected $privateClusterConfigType = PrivateClusterConfig::class;
   protected $privateClusterConfigDataType = '';
+  protected $rbacBindingConfigType = RBACBindingConfig::class;
+  protected $rbacBindingConfigDataType = '';
   protected $releaseChannelType = ReleaseChannel::class;
   protected $releaseChannelDataType = '';
   /**
@@ -190,6 +194,8 @@ class Cluster extends \Google\Collection
    * @var bool
    */
   public $satisfiesPzs;
+  protected $secretManagerConfigType = SecretManagerConfig::class;
+  protected $secretManagerConfigDataType = '';
   protected $securityPostureConfigType = SecurityPostureConfig::class;
   protected $securityPostureConfigDataType = '';
   /**
@@ -310,6 +316,20 @@ class Cluster extends \Google\Collection
   public function getClusterIpv4Cidr()
   {
     return $this->clusterIpv4Cidr;
+  }
+  /**
+   * @param CompliancePostureConfig
+   */
+  public function setCompliancePostureConfig(CompliancePostureConfig $compliancePostureConfig)
+  {
+    $this->compliancePostureConfig = $compliancePostureConfig;
+  }
+  /**
+   * @return CompliancePostureConfig
+   */
+  public function getCompliancePostureConfig()
+  {
+    return $this->compliancePostureConfig;
   }
   /**
    * @param StatusCondition[]
@@ -984,6 +1004,20 @@ class Cluster extends \Google\Collection
     return $this->privateClusterConfig;
   }
   /**
+   * @param RBACBindingConfig
+   */
+  public function setRbacBindingConfig(RBACBindingConfig $rbacBindingConfig)
+  {
+    $this->rbacBindingConfig = $rbacBindingConfig;
+  }
+  /**
+   * @return RBACBindingConfig
+   */
+  public function getRbacBindingConfig()
+  {
+    return $this->rbacBindingConfig;
+  }
+  /**
    * @param ReleaseChannel
    */
   public function setReleaseChannel(ReleaseChannel $releaseChannel)
@@ -1052,6 +1086,20 @@ class Cluster extends \Google\Collection
   public function getSatisfiesPzs()
   {
     return $this->satisfiesPzs;
+  }
+  /**
+   * @param SecretManagerConfig
+   */
+  public function setSecretManagerConfig(SecretManagerConfig $secretManagerConfig)
+  {
+    $this->secretManagerConfig = $secretManagerConfig;
+  }
+  /**
+   * @return SecretManagerConfig
+   */
+  public function getSecretManagerConfig()
+  {
+    return $this->secretManagerConfig;
   }
   /**
    * @param SecurityPostureConfig
