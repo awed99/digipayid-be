@@ -137,7 +137,7 @@ final class RequestIntegration implements IntegrationInterface
         if ($options->shouldSendDefaultPii()) {
             $serverParams = $request->getServerParams();
 
-            if (isset($serverParams['REMOTE_ADDR'])) {
+            if (!empty($serverParams['REMOTE_ADDR'])) {
                 $user = $event->getUser();
                 $requestData['env']['REMOTE_ADDR'] = $serverParams['REMOTE_ADDR'];
 
@@ -267,7 +267,7 @@ final class RequestIntegration implements IntegrationInterface
             } elseif (\is_array($item)) {
                 $result[$key] = $this->parseUploadedFiles($item);
             } else {
-                throw new \UnexpectedValueException(sprintf('Expected either an object implementing the "%s" interface or an array. Got: "%s".', UploadedFileInterface::class, \is_object($item) ? \get_class($item) : \gettype($item)));
+                throw new \UnexpectedValueException(\sprintf('Expected either an object implementing the "%s" interface or an array. Got: "%s".', UploadedFileInterface::class, \is_object($item) ? \get_class($item) : \gettype($item)));
             }
         }
 
