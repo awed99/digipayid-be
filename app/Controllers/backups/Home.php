@@ -41,6 +41,6 @@ class Home extends BaseController
         $data = (json_encode($insert));
         // print_r(($insert));
         // die();
-        $this->response->setStatusCode(200)->setBody($data);
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 }

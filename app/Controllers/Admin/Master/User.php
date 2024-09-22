@@ -124,7 +124,7 @@ class User extends BaseController
                 "message": "Email or Telp/WA is already exists!",
                 "data": []
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $query = $builder->insert($dataPost);
@@ -223,7 +223,7 @@ Admin DIGIPAYID menghapus akun anda di merchant *" . $dataPost['merchant_name'] 
                 "message": "Email or Telp/WA is already exists!",
                 "data": []
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $query = $builder->insert($dataPost);

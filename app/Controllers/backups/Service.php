@@ -401,7 +401,7 @@ class Service extends BaseController
                 "message": "Insuficient Balance. Topup your balance first!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         // $dataRequest = cek_token_login($dataPost);
@@ -427,7 +427,7 @@ class Service extends BaseController
                 "message": "No numbers available!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
 

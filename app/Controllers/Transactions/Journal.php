@@ -335,7 +335,7 @@ class Journal extends BaseController
                 "data": []
             }';
 
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
 
@@ -356,7 +356,7 @@ class Journal extends BaseController
                 "data": []
             }';
 
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         if ((int)$user->id_user_parent > 0) {
