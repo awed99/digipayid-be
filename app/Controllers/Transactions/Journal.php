@@ -328,14 +328,14 @@ class Journal extends BaseController
         $db = db_connect();
 
         if (((int)$dataPost['amount'] + (int)$dataPost['fee']) > $user->saldo) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Saldo anda kurang!",
                 "message": "Saldo anda kurang!",
                 "data": []
             }';
 
-            die();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
 
@@ -349,14 +349,14 @@ class Journal extends BaseController
                 ->get()->getRow();
         }
         if ($isExistTrx) {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Transaksi Withdraw anda masih berlangsung!",
                 "message": "Transaksi Withdraw anda masih berlangsung!",
                 "data": []
             }';
 
-            die();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         if ((int)$user->id_user_parent > 0) {
