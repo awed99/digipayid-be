@@ -275,7 +275,7 @@ class Orders extends BaseController
                 "data": [],
                 "payment": []
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $tax_percentage = (int)$user->tax_percentage;

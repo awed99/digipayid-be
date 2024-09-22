@@ -55,7 +55,7 @@ class Saldo extends BaseController
                 "error": "Unauthorized! Please login.",
                 "message": "Unauthorized! Please login."
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
         // $id_user = $user->id_user;
 
