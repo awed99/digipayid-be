@@ -53,7 +53,7 @@ class Journal extends BaseController
                 "message": "Insuficient Balance!",
                 "data": ' . $finalData . '
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         // $insert = $json;

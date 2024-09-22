@@ -173,7 +173,7 @@ class Orders_product extends BaseController
                 "data": null
             }';
             $db->close();
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         if ((float)$postData['total'] > 10) {
@@ -184,7 +184,7 @@ class Orders_product extends BaseController
                 "data": null
             }';
             $db->close();
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $user = $db->table('app_users')->where('token_login', $request->header('Authorization')->getValue())->limit(1)->get()->getRow();
@@ -201,7 +201,7 @@ class Orders_product extends BaseController
                 "data": null
             }';
             $db->close();
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
 
@@ -221,7 +221,7 @@ class Orders_product extends BaseController
                 "data": null
             }';
             $db->close();
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $builder = $db->table('order_products');

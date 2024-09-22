@@ -318,7 +318,7 @@ class Orders2 extends BaseController
 
         $data = ($res);
 
-        $this->response->setStatusCode(200)->setBody($data);
+        return $this->response->setStatusCode(200)->setBody($data);
 
         // set option curl
         // *Don't change this
@@ -673,7 +673,7 @@ class Orders2 extends BaseController
                 "message": "Early cancel! Please wait for two minutes.",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         if (!$postData['completed']) {

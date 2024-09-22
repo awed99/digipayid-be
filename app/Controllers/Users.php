@@ -61,7 +61,7 @@ class Users extends BaseController
                 "data": null
             }';
             $db->close();
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         if ((int)$dataFinal->is_verified < 1) {
@@ -149,6 +149,8 @@ class Users extends BaseController
                 "message": "Login successful.",
                 "data": ' . $finalData . '
             }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
             // curl(getenv('API_LOGS').'logs/create_log_login', 1, 'id_user='.$dataFinal2->id_user.'&ip_address='.$this->get_client_ip().'&user_role='.$dataFinal2->user_role.'&token_login='.$update["token_login"].'&token_api='.$dataFinal2->token_api);
             // echo curl(getenv('API_TRANSACTIONS').'auth/get_token', 1, 'token_login='.$update["token_login"].'&login='.$finalData);
         } else {
@@ -158,8 +160,9 @@ class Users extends BaseController
                 "message": "Email or Password is incorrect!",
                 "data": null
             }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
-        $db->close();
     }
 
     public function postChange_password0()
@@ -181,6 +184,7 @@ class Users extends BaseController
             "error": "",
             "message": "We have sent a reset password link to your email address."
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postCheck_valid_token()
@@ -196,12 +200,14 @@ class Users extends BaseController
                 "error": "",
                 "message": "Token is valid."
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         } else {
             $data = '{
                 "code": 1,
                 "error": "Error token!",
                 "message": "Your token is not valid!"
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         }
     }
 
@@ -222,6 +228,7 @@ class Users extends BaseController
             "error": "",
             "message": "Your password has been changed."
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postChange_password_user()
@@ -242,6 +249,7 @@ class Users extends BaseController
             "message": "",
             "data": "' . $update["password"] . '"
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postGenerate_api_key()
@@ -259,6 +267,7 @@ class Users extends BaseController
             "message": "Your API key has been generated.",
             "data": "' . $update["token_api"] . '"
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postSave_webhook()
@@ -277,6 +286,7 @@ class Users extends BaseController
             "message": "Webhook has been saved.",
             "data": "' . $update["webhook_url"] . '"
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postIs_exist()
@@ -296,6 +306,8 @@ class Users extends BaseController
                 "message": "' . $type . ' as ' . $value . ' has been registered!",
                 "data": null
             }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         } else {
             $data = '{
                 "code": 0,
@@ -303,8 +315,9 @@ class Users extends BaseController
                 "message": "Successful.",
                 "data": null
             }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
-        $db->close();
     }
 
     public function postRegister_user()
@@ -320,35 +333,38 @@ class Users extends BaseController
 
         $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
         if ($isExistMerchant) {
+            $db->close();
             $data = '{
                 "code": 1,
                 "error": "Merchant Sudah Terdaftar!",
                 "message": "Merchant Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistMerchantWa = $db->table('app_users')->where('merchant_wa', $insert['merchant_wa'])->get()->getRow();
         if ($isExistMerchantWa) {
+            $db->close();
             $data = '{
                 "code": 1,
                 "error": "No. Whatsapp Sudah Terdaftar!",
                 "message": "No. Whatsapp Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistEmail = $db->table('app_users')->where('email', $insert['email'])->get()->getRow();
         if ($isExistEmail) {
+            $db->close();
             $data = '{
                 "code": 1,
                 "error": "Email Sudah Terdaftar!",
                 "message": "Email Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $builder = $db->table('app_users');
@@ -364,16 +380,17 @@ class Users extends BaseController
             }
 
             $finalData = json_encode($dataFinal);
+            $db->close();
             $data = '{
                 "code": 0,
                 "error": "",
                 "message": "Register successful.",
                 "data": ' . $finalData . '
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
             // curl(getenv('API_LOGS').'logs/create_log_login', 1, 'id_user='.$dataFinal->id_user.'&user_role='.$dataFinal->user_role.'&token_login='.$insert["token_login"].'&token_api='.$dataFinal->token_api);
             // echo curl(getenv('API_TRANSACTIONS').'auth/get_token', 1, 'token_login='.$update["token_login"].'&login='.$finalData);
         }
-        $db->close();
     }
 
     public function postGet_token_api()
@@ -396,6 +413,7 @@ class Users extends BaseController
             "message": "",
             "data": ' . $update["token_api"] . '
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postGet_user_data_from_token_api()
@@ -416,6 +434,7 @@ class Users extends BaseController
             "message": "",
             "data": ' . $dataFinal[0] . '
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postCreate_captcha()
@@ -438,6 +457,7 @@ class Users extends BaseController
             "message": "",
             "data": ' . $sig . '
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postRegister()
@@ -460,7 +480,8 @@ class Users extends BaseController
                 "message": "Merchant Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistMerchantWa = $db->table('app_users')->where('merchant_wa', $insert['merchant_wa'])->get()->getRow();
@@ -471,7 +492,8 @@ class Users extends BaseController
                 "message": "No. Whatsapp Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $isExistEmail = $db->table('app_users')->where('email', $insert['email'])->get()->getRow();
@@ -482,7 +504,8 @@ class Users extends BaseController
                 "message": "Email Sudah Terdaftar!",
                 "data": null
             }';
-            $this->response->setStatusCode(200)->setBody($data);
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
 
         $insert["otp_email"] = random_int(100000, 999999);
@@ -507,7 +530,7 @@ class Users extends BaseController
 
             $db->close();
             echo json_encode($res);
-            $this->response->setStatusCode(200)->setBody($data);
+            return $this->response->setStatusCode(200)->setBody($data);
         }
         if ($db->affectedRows() == 1) {
             $newUser = $db->table('app_users')->where('email', $insert['email'])->orderBy('id_user', 'DESC')->get()->getRow();
@@ -545,6 +568,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
             }';
         }
         $db->close();
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postResend_otp()
@@ -578,12 +602,14 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 "error": "",
                 "message": "OTP sudah terkirim."
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         } else {
             $data = '{
                 "code": 1,
                 "error": "Gagal mengirim OTP!",
                 "message": "Gagal mengirim OTP!"
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         }
     }
 
@@ -630,12 +656,16 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
                     "error": "",
                     "message": "OTP anda valid."
                 }';
+                $db->close();
+                return $this->response->setStatusCode(200)->setBody($data);
             } else {
                 $data = '{
                     "code": 0,
                     "error": "",
                     "message": "OTP anda valid."
                 }';
+                $db->close();
+                return $this->response->setStatusCode(200)->setBody($data);
             }
         } else {
             $data = '{
@@ -643,6 +673,8 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
                 "error": "OTP anda tidak valid!",
                 "message": "OTP anda tidak valid!"
             }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
     }
 
@@ -673,12 +705,14 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
                 "error": "",
                 "message": "Data anda valid, Silakan masukkan OTP."
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         } else {
             $data = '{
                 "code": 1,
                 "error": "Data anda tidak valid!",
                 "message": "Data anda tidak valid!"
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         }
     }
 
@@ -704,12 +738,14 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
                 "message": "OTP anda valid.",
                 "token": "' . $update["token_login"] . '"
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         } else {
             $data = '{
                 "code": 1,
                 "error": "OTP anda tidak valid!",
                 "message": "OTP anda tidak valid!"
             }';
+            return $this->response->setStatusCode(200)->setBody($data);
         }
     }
 
@@ -737,6 +773,7 @@ Jika anda tidak merasa mengubah password, segera amankan akun anda!";
             "error": "",
             "message": "We have sent a reset password link to your email address."
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postTop5()
@@ -794,6 +831,7 @@ Jika anda tidak merasa mengubah password, segera amankan akun anda!";
                 "users": ' . $finalData3 . '
             }
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 
     public function postGet_user_saldo()
@@ -816,5 +854,6 @@ Jika anda tidak merasa mengubah password, segera amankan akun anda!";
             "message": "",
             "data": ' . $finalData . '
         }';
+        return $this->response->setStatusCode(200)->setBody($data);
     }
 }
