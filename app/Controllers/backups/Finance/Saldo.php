@@ -8,11 +8,11 @@ class Saldo extends BaseController
 {
     public function index()
     {
-        echo('welcome!');
+        echo ('welcome!');
     }
 
     public function postGet_user_saldo()
-    {   
+    {
         cekValidation('finance/saldo/get_user_saldo');
         $request = request();
         $db = db_connect();
@@ -20,19 +20,19 @@ class Saldo extends BaseController
         $update0['is_done'] = '1';
         $update0['status'] = 'Cancel';
         $builder0 = $db->table('orders')
-        ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
-        ->where('status <> \'Success\'')
-        ->where('(created_date <= (NOW() - interval 20 minute))')
-        ->update($update0);
+            ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
+            ->where('status <> \'Success\'')
+            ->where('(created_date <= (NOW() - interval 20 minute))')
+            ->update($update0);
 
         $update1['is_done'] = '1';
         $builder1 = $db->table('orders')
-        ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
-        ->where('status = \'Success\'')
-        ->where('(created_date <= (NOW() - interval 20 minute))')
-        ->update($update1);
+            ->where('(is_done = 0 or is_done = \'0\' or is_done = false)')
+            ->where('status = \'Success\'')
+            ->where('(created_date <= (NOW() - interval 20 minute))')
+            ->update($update1);
 
-        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow(); 
+        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow();
         if ($baseCURS) {
             $usdCURS = $baseCURS->curs_usd;
         } else {
@@ -50,12 +50,12 @@ class Saldo extends BaseController
         // print_r($user);
         // die();
         if (!$user || $user === null || $user === 0 || $user === '0' || $user === '') {
-            echo '{
+            $data = '{
                 "code": 1,
                 "error": "Unauthorized! Please login.",
                 "message": "Unauthorized! Please login."
             }';
-            die();
+            return $this->response->setStatusCode(200)->setBody($data);
         }
         $id_user = $user->id_user;
 
@@ -63,36 +63,36 @@ class Saldo extends BaseController
         (SELECT 
         COALESCE(ROUND(SUM(bftu.amount), 2), 0)
         from topup_users bftu
-        where bftu.status = \'Success\' and id_user = '.$id_user.') as total_topup,
+        where bftu.status = \'Success\' and id_user = ' . $id_user . ') as total_topup,
         (SELECT 
         COALESCE(ROUND(SUM(bfru.amount), 2), 0)
         from refund_users bfru
-        where bfru.status = \'Success\' and id_user = '.$id_user.') as total_refund,
+        where bfru.status = \'Success\' and id_user = ' . $id_user . ') as total_refund,
         (SELECT 
-        (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / '.($usdCURS).')
+        (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / ' . ($usdCURS) . ')
         from orders bto
-        where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = '.$id_user.') as total_orders,
+        where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = ' . $id_user . ') as total_orders,
         (SELECT 
         COALESCE(ROUND(SUM(op.price_user), 2), 0)
         from order_products op
-        where id_user = '.$id_user.') as total_order_products,
+        where id_user = ' . $id_user . ') as total_order_products,
         (
             (SELECT 
             COALESCE(ROUND(SUM(bftu.amount), 2), 0)
             from topup_users bftu
-            where bftu.status = \'Success\' and id_user = '.$id_user.') -
+            where bftu.status = \'Success\' and id_user = ' . $id_user . ') -
             (SELECT 
             COALESCE(ROUND(SUM(bfru.amount), 2), 0)
             from refund_users bfru
-            where bfru.status = \'Success\' and id_user = '.$id_user.') -
+            where bfru.status = \'Success\' and id_user = ' . $id_user . ') -
             (SELECT 
             COALESCE(ROUND(SUM(op.price_user), 2), 0)
             from order_products op
-            where id_user = '.$id_user.') -
+            where id_user = ' . $id_user . ') -
             (SELECT 
-            (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / '.($usdCURS).')
+            (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / ' . ($usdCURS) . ')
             from orders bto
-            where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = '.$id_user.')
+            where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = ' . $id_user . ')
         ) as saldo;
         ';
 
@@ -110,22 +110,22 @@ class Saldo extends BaseController
             "code": 0,
             "error": "",
             "message": "",
-            "data": '.$finalData.',
-            "list_activations": '.$dataZ.',
+            "data": ' . $finalData . ',
+            "list_activations": ' . $dataZ . ',
             "curs": {
-                "curs_idr": '.$dataFinal4->curs_idr.',
-                "curs_usd": '.$dataFinal4->curs_usd.'
+                "curs_idr": ' . $dataFinal4->curs_idr . ',
+                "curs_usd": ' . $dataFinal4->curs_usd . '
             }
         }';
     }
 
     public function get_user_saldo($auth)
-    {   
+    {
         // cekValidation('finance/saldo/get_user_saldo');
         $request = request();
         $db = db_connect();
 
-        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow(); 
+        $baseCURS = $db->table('base_profit')->where('current_date', date('Y-m-d'))->limit(1)->get()->getRow();
         if ($baseCURS) {
             $usdCURS = $baseCURS->curs_usd;
         } else {
@@ -144,31 +144,31 @@ class Saldo extends BaseController
         (SELECT 
         COALESCE(ROUND(SUM(bftu.amount), 2), 0)
         from topup_users bftu
-        where bftu.status = \'Success\' and id_user = '.$id_user.') as total_topup,
+        where bftu.status = \'Success\' and id_user = ' . $id_user . ') as total_topup,
         (SELECT 
         COALESCE(ROUND(SUM(bfru.amount), 2), 0)
         from refund_users bfru
-        where bfru.status = \'Success\' and id_user = '.$id_user.') as total_refund,
+        where bfru.status = \'Success\' and id_user = ' . $id_user . ') as total_refund,
         (SELECT 
-        (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / '.($usdCURS).')
+        (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / ' . ($usdCURS) . ')
         from orders bto
-        where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = '.$id_user.') as total_orders,
+        where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = ' . $id_user . ') as total_orders,
         (
             (SELECT 
             COALESCE(ROUND(SUM(bftu.amount), 2), 0)
             from topup_users bftu
-            where bftu.status = \'Success\' and id_user = '.$id_user.') -
+            where bftu.status = \'Success\' and id_user = ' . $id_user . ') -
             (SELECT 
             COALESCE(ROUND(SUM(bfru.amount), 2), 0)
             from refund_users bfru
-            where bfru.status = \'Success\' and id_user = '.$id_user.') -
+            where bfru.status = \'Success\' and id_user = ' . $id_user . ') -
             (SELECT 
-            (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / '.($usdCURS).')
+            (COALESCE(ROUND(SUM(bto.price_user), 2), 0) / ' . ($usdCURS) . ')
             from orders bto
-            where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = '.$id_user.')
+            where (bto.status = \'Success\' or bto.status = \'Waiting for SMS\' or bto.status = \'Waiting for Retry SMS\' or bto.status = \'Waiting for Resend SMS\') and id_user = ' . $id_user . ')
         ) as saldo;
         ';
-        
+
         $query = $db->query($q);
         $dataFinal = $query->getRow();
         $builder4 = $db->table('base_profit');
@@ -180,11 +180,11 @@ class Saldo extends BaseController
         $orders = new Orders;
         $dataZ = $orders->postUpdate_status_activation();
         $res = '{
-            "data": '.$finalData.',
-            "list_activations": '.$dataZ.',
+            "data": ' . $finalData . ',
+            "list_activations": ' . $dataZ . ',
             "curs": {
-                "curs_idr": '.$dataFinal4->curs_idr.',
-                "curs_usd": '.$dataFinal4->curs_usd.'
+                "curs_idr": ' . $dataFinal4->curs_idr . ',
+                "curs_usd": ' . $dataFinal4->curs_usd . '
             }
         }';
 

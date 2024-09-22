@@ -59,7 +59,7 @@ class Filters extends BaseFilters
             'cors',
             'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
-            'toolbar',     // Debug Toolbar
+            // 'toolbar',     // Debug Toolbar
         ],
     ];
 
@@ -78,8 +78,8 @@ class Filters extends BaseFilters
         ],
         'after' => [
             'cors',
-            // 'honeypot',
-            // 'secureheaders',
+            //     // 'honeypot',
+            //     // 'secureheaders',
         ],
     ];
 
