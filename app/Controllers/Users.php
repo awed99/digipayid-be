@@ -4,9 +4,14 @@ namespace App\Controllers;
 
 use Config\Services;
 use CodeIgniter\Files\File;
+use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\RESTful\ResourceController;
 
-class Users extends BaseController
+class Users extends ResourceController
 {
+
+    use ResponseTrait;
+
     public function index()
     {
         echo ('welcome!');
@@ -41,7 +46,8 @@ class Users extends BaseController
 
     public function postLogin()
     {
-        cekValidation('users/logins');
+        $_this = $this;
+        cekValidation('users/login');
         $request = request();
         $db = db_connect();
         $json = $request->getJSON();
