@@ -749,7 +749,18 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
         unset($json['type']);
 
         $res = $db->table('app_users')->where($json)->get()->getRowArray();
-        $dataOwner = $db->table('app_users')->where('id_user', $res['id_user_parent'])->get()->getRow();
+        $dataOwner = false;
+        if ($res) {
+            $dataOwner = $db->table('app_users')->where('id_user', $res['id_user_parent'])->get()->getRow();
+        } else {
+            $data = '{
+                "code": 1,
+                "error": "OTP anda tidak valid!",
+                "message": "OTP anda tidak valid!"
+            }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
 
         if ((int)$res['user_role'] === 3) {
             $role = 'Affiliator';
