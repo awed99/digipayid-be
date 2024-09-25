@@ -12,6 +12,7 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
+use App\Filters\Cors as Cors2;
 
 class Filters extends BaseFilters
 {
@@ -31,6 +32,7 @@ class Filters extends BaseFilters
         'invalidchars'  => InvalidChars::class,
         // 'secureheaders' => SecureHeaders::class,
         'cors'          => Cors::class,
+        'cors2'          => Cors2::class,
         // 'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
@@ -51,14 +53,16 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'cors',
+            // 'cors',
+            'cors2',
             // 'forcehttps', // Force Global Secure Requests
             'pagecache',  // Web Page Caching
         ],
         'after' => [
-            'cors',
-            'pagecache',   // Web Page Caching
-            'performance', // Performance Metrics
+            // 'cors',
+            'cors2',
+            // 'pagecache',   // Web Page Caching
+            // 'performance', // Performance Metrics
             // 'toolbar',     // Debug Toolbar
         ],
     ];
@@ -71,13 +75,15 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'cors',
+            // 'cors',
+            'cors2',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
-            'cors',
+            // 'cors',
+            'cors2',
             //     // 'honeypot',
             //     // 'secureheaders',
         ],
