@@ -64,6 +64,14 @@ class Users extends BaseController
             return $this->response->setStatusCode(200)->setBody($data);
         }
 
+        if ((int)$dataFinal->user_role === 3) {
+            $role = 'Affiliator';
+        } elseif ((int)$dataFinal->user_role === 1) {
+            $role = 'Administrator';
+        } else {
+            $role = 'Merchant';
+        }
+
         if ((int)$dataFinal->is_verified < 1) {
             $update0['otp_email'] = random_int(100000, 999999);
             $update0['otp_wa'] = random_int(100000, 999999);
@@ -77,7 +85,8 @@ class Users extends BaseController
             $update['otp_email'] = $otp_login;
             $update['otp_wa'] = $otp_login;
 
-            $waMessage = "*DIGIPAYID* Kode OTP *Login Merchant " . $dataFinal->merchant_name . "* Adalah *" . $otp_login . "*";
+            $waMessage = "*OTP DIGIPAYID (RAHASIA)* 
+Kode OTP *Login " . $role . " " . $dataFinal->merchant_name . "* Adalah *" . $otp_login . "*";
             sendWhatsapp($dataFinal->merchant_wa, $waMessage);
 
             $htmlBody = template_email_otp($otp_login);
@@ -464,12 +473,10 @@ class Users extends BaseController
     {
         cekValidation('users/register');
         $request = request();
-        $json = $request->getJSON(true);
         $db = db_connect();
         $insert = $request->getJSON(true);
         $insert['email'] = strtolower($insert['email']);
         $insert['password'] = hash('sha256', $insert['password']);
-        $insert['email'] = strtolower($insert['email']);
 
 
         $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
@@ -529,7 +536,117 @@ class Users extends BaseController
             $res["data"] = null;
 
             $db->close();
-            echo json_encode($res);
+            $data = json_encode($res);
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+        if ($db->affectedRows() == 1) {
+            $newUser = $db->table('app_users')->where('email', $insert['email'])->orderBy('id_user', 'DESC')->get()->getRow();
+            $db->query("CREATE TABLE app_journal_finance_" . $newUser->id_user . " LIKE master_journal_finance");
+            $db->query("CREATE TABLE app_payment_method_" . $newUser->id_user . " LIKE master_payment_method_user");
+            $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (SELECT * FROM master_payment_method_user where id_payment_method > 0)");
+            $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (id_payment_method, fee_app) values(0, 500)");
+            $db->query("CREATE TABLE app_product_" . $newUser->id_user . " LIKE master_product");
+            $db->query("CREATE TABLE app_product_category_" . $newUser->id_user . " LIKE master_product_category");
+            $db->query("CREATE TABLE app_transactions_" . $newUser->id_user . " LIKE master_transactions");
+            $db->query("CREATE TABLE app_transaction_products_" . $newUser->id_user . " LIKE master_transaction_products");
+            $db->query("CREATE TABLE app_transaction_products_temp_" . $newUser->id_user . " LIKE master_transaction_products_temp");
+
+
+            $waMessage = "*INFO DIGIPAYID* 
+Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
+            sendWhatsapp($insert['merchant_wa'], $waMessage);
+
+            $data = '{
+                "code": 0,
+                "error": "",
+                "message": "Anda berhasil terdaftar!",
+                "data": ' . json_encode((object)$insert) . '
+            }';
+
+
+            $htmlBody = template_email_otp($insert["otp_email"]);
+            sendMail($insert['email'], 'DIGIPAY OTP Register', $htmlBody);
+        } else {
+            $data = '{
+                "code": 1,
+                "error": "User sudah terdaftar!",
+                "message": "User sudah terdaftar!",
+                "data": null
+            }';
+        }
+        $db->close();
+        return $this->response->setStatusCode(200)->setBody($data);
+    }
+
+    public function postRegister_affiliator()
+    {
+        cekValidation('users/register');
+        $request = request();
+        $db = db_connect();
+        $insert = $request->getJSON(true);
+        $insert['email'] = strtolower($insert['email']);
+        $insert['password'] = hash('sha256', $insert['password']);
+        $insert['reff_code'] = strtoupper(substr(hash('sha256', date('YmdHis')), rand(0, 15), 6));
+
+
+        $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
+        if ($isExistMerchant) {
+            $data = '{
+                "code": 1,
+                "error": "Merchant Sudah Terdaftar!",
+                "message": "Merchant Sudah Terdaftar!",
+                "data": null
+            }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+
+        $isExistMerchantWa = $db->table('app_users')->where('merchant_wa', $insert['merchant_wa'])->get()->getRow();
+        if ($isExistMerchantWa) {
+            $data = '{
+                "code": 1,
+                "error": "No. Whatsapp Sudah Terdaftar!",
+                "message": "No. Whatsapp Sudah Terdaftar!",
+                "data": null
+            }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+
+        $isExistEmail = $db->table('app_users')->where('email', $insert['email'])->get()->getRow();
+        if ($isExistEmail) {
+            $data = '{
+                "code": 1,
+                "error": "Email Sudah Terdaftar!",
+                "message": "Email Sudah Terdaftar!",
+                "data": null
+            }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+
+        $insert["otp_email"] = random_int(100000, 999999);
+        $insert["otp_wa"] = random_int(100000, 999999);
+        $insert['telp'] = preg_replace('/^0/', '', $insert['merchant_wa']);
+        $insert['telp_country_code'] = '62';
+        $insert['user_role'] = 3;
+        $insert['user_privilege'] = 8;
+        $insert['is_active'] = 1;
+        $insert['is_verified'] = 0;
+        $insert['user_status'] = 'ACTIVE';
+        // $insert['token_login'] = hash('sha256', $json->email.date('YmdHis'));
+        $builder = $db->table('app_users');
+        $builder->insert($insert);
+        if ($db->error()['code'] > 0) {
+            log_message('error', json_encode($db->error()));
+
+            // RETURN RESPONSE
+            $res["code"]     = $db->error()['code'];
+            $res["error"] = $db->error()['message'];
+            $res["data"] = null;
+
+            $db->close();
+            $data = json_encode($res);
             return $this->response->setStatusCode(200)->setBody($data);
         }
         if ($db->affectedRows() == 1) {
@@ -582,19 +699,29 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
 
         $res = $db->table('app_users')->where($json)->get()->getRowArray();
 
+        if ((int)$res['user_role'] === 3) {
+            $role = 'Affiliator';
+        } elseif ((int)$res['user_role'] === 1) {
+            $role = 'Administrator';
+        } else {
+            $role = 'Merchant';
+        }
+
         $db->close();
         if ($res) {
             if (($type) === 'register_otp_email') {
                 $htmlBody = template_email_otp($res["otp_email"]);
                 sendMail($res['email'], 'DIGIPAY OTP Register', $htmlBody);
             } elseif (($type) === 'register_otp_wa') {
-                $waMessage = "*DIGIPAYID* Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                $waMessage = "*OTP DIGIPAYID (RAHASIAOTP )* (RAHASIA) 
+                Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             } elseif (($type) === 'otp_login_email') {
                 $htmlBody = template_email_otp($res["otp_email"]);
                 sendMail($res['email'], 'DIGIPAY OTP Login', $htmlBody);
             } elseif (($type) === 'otp_login_wa') {
-                $waMessage = "*DIGIPAYID* Kode OTP *Login Merchant " . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                $waMessage = "*OTP DIGIPAYID (RAHASIAOTP )* (RAHASIA) 
+                Kode OTP *Login " . $role . " " . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             }
             $data = '{
@@ -625,10 +752,19 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
         $res = $db->table('app_users')->where($json)->get()->getRowArray();
         $dataOwner = $db->table('app_users')->where('id_user', $res['id_user_parent'])->get()->getRow();
 
+        if ((int)$res['user_role'] === 3) {
+            $role = 'Affiliator';
+        } elseif ((int)$res['user_role'] === 1) {
+            $role = 'Administrator';
+        } else {
+            $role = 'Merchant';
+        }
+
         $db->close();
         if ($res) {
             if (($type) === 'register_otp_email') {
-                $waMessage = "*DIGIPAYID* Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                $waMessage = "*OTP DIGIPAYID (RAHASIA)* 
+Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             } elseif (($type) === 'register_otp_wa') {
                 // $htmlBody = template_email_otp($insert["otp_email"]);
@@ -642,12 +778,12 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 $db->table('app_users')->where($json)->update($update);
             } elseif (($type) === 'otp_login') {
                 $waMessage = "*INFO DIGIPAYID* 
-User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $res['merchant_name'] . "*";
+User *" . $res['email'] . "* telah login ke Akun DIGIPAYID sebagai *" . $role . " " . $res['merchant_name'] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
 
                 if ($dataOwner) {
                     $waMessage = "*INFO DIGIPAYID* 
-User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOwner->merchant_name . "*";
+User *" . $res['email'] . "* telah login ke Akun DIGIPAYID sebagai *" . $role . " " . $dataOwner->merchant_name . "*";
                     sendWhatsapp($dataOwner->merchant_wa, $waMessage);
                 }
 
@@ -694,7 +830,8 @@ User *" . $res['email'] . "* telah login ke Akun DIGIPAYID Merchant *" . $dataOw
             $htmlBody = template_email_otp($update0['otp_email']);
             sendMail($json['email'], 'DIGIPAY OTP Forgot Password', $htmlBody);
 
-            $waMessage = "*DIGIPAYID* Kode OTP Ubah Password *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+            $waMessage = "*OTP DIGIPAYID (RAHASIA)*
+Kode OTP Ubah Password *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
             sendWhatsapp($res['merchant_wa'], $waMessage);
         }
 
