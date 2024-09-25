@@ -1,5 +1,6 @@
 <?php
 
+use CodeIgniter\API\ResponseTrait;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -12,15 +13,16 @@ use Endroid\QrCode\Label\Font\NotoSans;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 
+
 //Load Composer's autoloader
 require '../vendor/autoload.php';
 
-
 date_default_timezone_set("Asia/Bangkok");
 
-function cekValidation($uri)
+function cekValidation($uri, $response = false)
 {
     $request = request();
+    $response = response();
 
     $secret_key     = trim(getenv("SECRET_KEY"));
     $http_method    = $_SERVER["REQUEST_METHOD"];
@@ -30,20 +32,46 @@ function cekValidation($uri)
     $pattern = strtoupper($http_method . ":" . $uri . ":" . $time);
     $signature = hash_hmac('sha256', $pattern, $secret_key);
 
+    // print_r($signature);
+    // print_r($request->header('X-Signature')->getValue());
+    // exit(1);
+
     if ($signature !== $request->header('X-Signature')->getValue()) {
-        echo json_encode([
+        $data = [
+            "error"    => true,
             "status"    => "102",
             "error_message"   => "Invalid Signature.",
+            "message"   => "Invalid Signature.",
             "data"      => []
-        ]);
-        die();
+        ];
+        return $response->setStatusCode(200)
+            ->setHeader('Connection', 'close')
+            ->setHeader('content-type', 'application/json')
+            ->setHeader('Access-Control-Allow-Origin', '*')
+            ->setHeader('access-control-expose-headers', '*')
+            ->setJSON(($data));
+        // throw new \Exception('Some message goes here');
+
+        // ResponseTrait::respond($data, 200);
+        // print_r($res);
+        // return ResponseTrait::fail($res, 200);
+        // dd($res);
+        // exit($data);
+        // die(json_encode($data));
     } elseif ($now > ((int)$time + getenv('TIMEOUT_SIGNATURE'))) {
-        echo json_encode([
+        $data = [
+            "error"    => true,
             "status"    => "101",
             "error_message"   => "Expired Signature.",
+            "message"   => "Expired Signature.",
             "data"      => []
-        ]);
-        die();
+        ];
+        return $response->setStatusCode(200)
+            ->setHeader('Connection', 'close')
+            ->setHeader('content-type', 'application/json')
+            ->setHeader('Access-Control-Allow-Origin', '*')
+            ->setHeader('access-control-expose-headers', '*')
+            ->setJSON(($data));
     }
 
     $db = db_connect();
