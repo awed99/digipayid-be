@@ -25,7 +25,7 @@ function normalize()
             ->join("master_payment_method mpmx", "apmx.id_payment_method = mpmx.id_payment_method", 'left')
             ->where('atx.status_transaction', 1)->get()->getResult();
 
-        $tbl_affiliator = "journal_finance_" . $db->table('app_users')
+        $tbl_affiliator = "app_journal_finance_" . $db->table('app_users')
             ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
             ->where('user_role', 3)->where('user_privilege', 8)
             ->get()->getRow()->id_user;
