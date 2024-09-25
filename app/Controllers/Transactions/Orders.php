@@ -456,7 +456,7 @@ class Orders extends BaseController
         $builder2->insertBatch($journal_insert);
         $db->table('admin_journal_finance')->insertBatch($journal_insert_admin);
 
-        $tbl_affiliator = "journal_finance_" . $db->table('app_users')
+        $tbl_affiliator = "app_journal_finance_" . $db->table('app_users')
             ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
             ->where('user_role', 3)->where('user_privilege', 8)
             ->get()->getRow()->id_user;
