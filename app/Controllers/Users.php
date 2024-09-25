@@ -41,9 +41,8 @@ class Users extends BaseController
 
     public function postLogin()
     {
-        cekValidation('users/login');
+        cekValidation('users/logins');
         $request = request();
-        $response = response();
         $db = db_connect();
         $json = $request->getJSON();
         $email = strtolower($json->email);
@@ -580,7 +579,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
 
     public function postRegister_affiliator()
     {
-        cekValidation('users/register_affiliator');
+        cekValidation('users/register_affiliators', $this->response);
         $request = request();
         $db = db_connect();
         $insert = $request->getJSON(true);
