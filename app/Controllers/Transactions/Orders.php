@@ -330,6 +330,7 @@ class Orders extends BaseController
 
         $journal_insert = array();
         $journal_insert_admin = array();
+        $journal_insert_affiliator = array();
 
         $journal_insert0['invoice_number'] = $dataPost['invoice_number'];
         $journal_insert0['amount_credit'] = $dataPost['amount'];
@@ -395,6 +396,17 @@ class Orders extends BaseController
         $journal_insert_admin1['description'] = 'Fee App ' . $dataPost['invoice_number'] . ' (Keuntungan)';
         array_push($journal_insert_admin, $journal_insert_admin1);
 
+        $journal_insert_admin1['invoice_number'] = $dataPost['invoice_number'];
+        $journal_insert_admin1['id_user'] = $user->id_user;
+        $journal_insert_admin1['id_user_parent'] = $user->id_user_parent;
+        $journal_insert_admin1['amount_credit'] = 0;
+        $journal_insert_admin1['amount_debet'] = (float)$dataPost['app_fee'] * (float)getenv('FEE_AFFILIATOR_PERCENT');
+        $journal_insert_admin1['accounting_type'] = 7002;
+        $journal_insert_admin1['id_payment_method'] = (int)$dataPost['id_payment_method'];
+        $journal_insert_admin1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert_admin1['description'] = 'Fee Affiliator ' . $dataPost['invoice_number'];
+        array_push($journal_insert_admin, $journal_insert_admin1);
+
         if (((int)$dataPost['id_payment_method'] > 0)) {
             $journal_insert_admin2['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin2['id_user'] = $user->id_user;
@@ -421,8 +433,34 @@ class Orders extends BaseController
             array_push($journal_insert_admin, $journal_insert_admin3);
         }
 
+        // $journal_insert_affiliator0['invoice_number'] = $dataPost['invoice_number'];
+        // $journal_insert_affiliator0['amount_credit'] = $dataPost['amount'];
+        // $journal_insert_affiliator0['amount_debet'] = 0;
+        // $journal_insert_affiliator0['accounting_type'] = 1;
+        // $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
+        // $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        // $journal_insert_affiliator0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
+        // array_push($journal_insert_affiliator, $journal_insert_affiliator0);
+
+        $journal_insert_affiliator0['invoice_number'] = $dataPost['invoice_number'];
+        $journal_insert_affiliator0['amount_credit'] = (float)$dataPost['app_fee'] * (float)getenv('FEE_AFFILIATOR_PERCENT');
+        $journal_insert_affiliator0['amount_debet'] = 0;
+        $journal_insert_affiliator0['accounting_type'] = 7001;
+        $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
+        $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert_affiliator0['description'] = 'Fee Transaksi ' . $dataPost['invoice_number'];
+        array_push($journal_insert_affiliator, $journal_insert_affiliator0);
+
+
+
         $builder2->insertBatch($journal_insert);
         $db->table('admin_journal_finance')->insertBatch($journal_insert_admin);
+
+        $tbl_affiliator = "journal_finance_" . $db->table('app_users')
+            ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
+            ->where('user_role', 3)->where('user_privilege', 8)
+            ->get()->getRow()->id_user;
+        $db->table($tbl_affiliator)->insertBatch($journal_insert_affiliator);
 
         // if ((int)$user->id_user_parent > 0) {
         //     $db->table('app_transaction_products_temp_'.$user->id_user_parent)->truncate();
