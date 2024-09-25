@@ -4,11 +4,16 @@ namespace App\Controllers\Master;
 
 use Config\Services;
 use CodeIgniter\Files\File;
+use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\RESTful\ResourceController;
 
 date_default_timezone_set("Asia/Bangkok");
 
-class User extends BaseController
+class User extends ResourceController
 {
+
+    use ResponseTrait;
+
     public function index()
     {
         echo ('welcome!');
