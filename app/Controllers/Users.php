@@ -41,9 +41,8 @@ class Users extends BaseController
 
     public function postLogin()
     {
-        cekValidation('users/login');
+        cekValidation('users/logins');
         $request = request();
-        $response = response();
         $db = db_connect();
         $json = $request->getJSON();
         $email = strtolower($json->email);
@@ -580,7 +579,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
 
     public function postRegister_affiliator()
     {
-        cekValidation('users/register');
+        cekValidation('users/register_affiliators', $this->response);
         $request = request();
         $db = db_connect();
         $insert = $request->getJSON(true);
@@ -766,6 +765,14 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 $waMessage = "*OTP DIGIPAYID (RAHASIA)* 
 Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
+
+                $data = '{
+                    "code": 0,
+                    "error": "",
+                    "message": "OTP anda valid."
+                }';
+                $db->close();
+                return $this->response->setStatusCode(200)->setBody($data);
             } elseif (($type) === 'register_otp_wa') {
                 // $htmlBody = template_email_otp($insert["otp_email"]);
                 //         sendMail($res['email'], 'DIGIPAY Change Password Request', $htmlBody);
@@ -776,6 +783,13 @@ Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 $update['otp_wa'] = null;
 
                 $db->table('app_users')->where($json)->update($update);
+                $data = '{
+                    "code": 0,
+                    "error": "",
+                    "message": "OTP anda valid."
+                }';
+                $db->close();
+                return $this->response->setStatusCode(200)->setBody($data);
             } elseif (($type) === 'otp_login') {
                 $waMessage = "*INFO DIGIPAYID* 
 User *" . $res['email'] . "* telah login ke Akun DIGIPAYID sebagai *" . $role . " " . $res['merchant_name'] . "*";
