@@ -1,6 +1,6 @@
 <?php
 
-use CodeIgniter\API\ResponseTrait;
+// use CodeIgniter\API\ResponseTrait;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -19,8 +19,12 @@ require '../vendor/autoload.php';
 
 date_default_timezone_set("Asia/Bangkok");
 
-function cekValidation($uri, $response = false)
+function cekValidation($uri, $_this = false)
 {
+
+    // $returnErrorSignature = service('returnErrorSignature');
+    // print_r($returnErrorSignature);
+    // exit(1);
     $request = request();
     $response = response();
 
@@ -44,12 +48,16 @@ function cekValidation($uri, $response = false)
             "message"   => "Invalid Signature.",
             "data"      => []
         ];
-        return $response->setStatusCode(200)
-            ->setHeader('Connection', 'close')
-            ->setHeader('content-type', 'application/json')
-            ->setHeader('Access-Control-Allow-Origin', '*')
-            ->setHeader('access-control-expose-headers', '*')
-            ->setJSON(($data));
+        echo json_encode($data);
+        exit(1);
+        die(1);
+        // return ResponseTrait::respond($data);
+        // echo $response->setStatusCode(200)
+        //     ->setHeader('Connection', 'close')
+        //     ->setHeader('content-type', 'application/json')
+        //     ->setHeader('Access-Control-Allow-Origin', '*')
+        //     ->setHeader('Access-Control-Expose-Headers', '*')
+        //     ->setJSON(($data));
         // throw new \Exception('Some message goes here');
 
         // ResponseTrait::respond($data, 200);
@@ -66,12 +74,16 @@ function cekValidation($uri, $response = false)
             "message"   => "Expired Signature.",
             "data"      => []
         ];
-        return $response->setStatusCode(200)
-            ->setHeader('Connection', 'close')
-            ->setHeader('content-type', 'application/json')
-            ->setHeader('Access-Control-Allow-Origin', '*')
-            ->setHeader('access-control-expose-headers', '*')
-            ->setJSON(($data));
+        echo json_encode($data);
+        exit(1);
+        die(1);
+        // return ResponseTrait::respond($data);
+        // return $response->setStatusCode(200)
+        //     ->setHeader('Connection', 'close')
+        //     ->setHeader('content-type', 'application/json')
+        //     ->setHeader('Access-Control-Allow-Origin', '*')
+        //     ->setHeader('access-control-expose-headers', '*')
+        //     ->setJSON(($data));
     }
 
     $db = db_connect();

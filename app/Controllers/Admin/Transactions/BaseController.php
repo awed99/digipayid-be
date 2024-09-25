@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controllers\Admin\Transactions;
+
 date_default_timezone_set('Asia/Jakarta');
 
 use CodeIgniter\Controller;
@@ -36,7 +37,7 @@ abstract class BaseController extends Controller
      *
      * @var array
      */
-    protected $helpers = ['my_helper'];
+    public $helpers = ['my_helper'];
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
@@ -52,7 +53,7 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        
+
         // header('Access-Control-Allow-Origin: *');
         // header('Access-Control-Allow-Origin: *');
         // // header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization, Token-Login');
