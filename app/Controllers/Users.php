@@ -586,6 +586,7 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
         $insert = $request->getJSON(true);
         $insert['email'] = strtolower($insert['email']);
         $insert['password'] = hash('sha256', $insert['password']);
+        $insert['reff_code'] = strtoupper(substr(hash('sha256', date('YmdHis')), rand(0, 15), 6));
 
 
         $isExistMerchant = $db->table('app_users')->where('merchant_name', $insert['merchant_name'])->get()->getRow();
