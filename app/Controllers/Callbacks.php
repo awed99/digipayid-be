@@ -279,6 +279,15 @@ class Callbacks extends BaseController
             $updateJournalAdmin['status'] = $status;
             $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
             $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
+
+
+            $tbl_affiliator = "app_journal_finance_" . $db->table('app_users')
+                ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
+                ->where('user_role', 3)->where('user_privilege', 8)
+                ->get()->getRow()->id_user;
+            $updateJournalAffiliator['status'] = $status;
+            $updateJournalAffiliator['updated_at'] = date('Y-m-d H:i:s');
+            $db->table($tbl_affiliator)->where('invoice_number', $dt['reff_id'])->update($updateJournalAffiliator);
         } else {
             $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_debet', 0)->get();
             $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_credit', 0)->get()->getRow()->amount_debet;
@@ -296,9 +305,17 @@ class Callbacks extends BaseController
             $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
             $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->update($updateJournalUser);
 
-            $updateJournalAdmin['status'] = 2;
+            $updateJournalAdmin['status'] = $status;
             $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
             $db->table('admin_journal_finance')->where('invoice_number', $dt['reff_id'])->update($updateJournalAdmin);
+
+            $tbl_affiliator = "app_journal_finance_" . $db->table('app_users')
+                ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
+                ->where('user_role', 3)->where('user_privilege', 8)
+                ->get()->getRow()->id_user;
+            $updateJournalAffiliator['status'] = $status;
+            $updateJournalAffiliator['updated_at'] = date('Y-m-d H:i:s');
+            $db->table($tbl_affiliator)->where('invoice_number', $dt['reff_id'])->update($updateJournalAffiliator);
         }
 
         $db->close();

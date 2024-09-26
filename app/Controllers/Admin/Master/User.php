@@ -57,7 +57,29 @@ class User extends BaseController
         $dataPost = $request->getJSON();
         $user = cekValidation('/admin/master/user/list_merchant');
         $db = db_connect();
+
         $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.user_role', 2)->where('au.id_user_parent', 0)->get()->getResult();
+
+
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
+    public function postList_affiliator()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/admin/master/user/list_affiliator');
+        $db = db_connect();
+
+        $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.user_role', 3)->where('au.id_user_parent', 0)->get()->getResult();
+
         $db->close();
         $finalData = json_encode($builder);
         echo '{
