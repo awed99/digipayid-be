@@ -659,7 +659,120 @@ function urlShortener($url)
     }
 }
 
+function htmlToImage1($html)
+{
+    $url = 'https://htmlcsstoimage.com/demo_run';
+    // $url = 'https://api.pictify.io/image';
+    // $data = json_encode(array('html' => $html, 'render_when_ready' => false));
+    $data = '{
+    "currentPath":[],
+    "command":"PJMuYKOvTfmdug7g",
+    "controlUniqueId":"",
+    "validationTargetPath":"/",
+    "renderedResources":["knockout","dotvvm"],
+    "commandArgs":[],
+    "knownTypeMetadata":["pnX2qnyRfVHcAsCV","2jG/+MprLOr2TIOL","Akzg6iWnvjGyA/HB"],
+    "viewModelDiff":{
+        "$type":"pnX2qnyRfVHcAsCV",
+        "Identifier":"",
+        "MessageData":{"$type":"2jG/+MprLOr2TIOL"},
+        "HTML":"' . $html . '",
+        "$csrfToken":"CfDJ8CeKfhIfjiBCrJD4f8bsrWV3/GdLDBHSrtHuh5BJVsOn4JNaQajEBQ1DojrTQH7KYoyi13CNWd+SRW9OhKHQyKqpZIZup6Jb+sISw7LoIb4kZkZoyCmH//DVnXFhT51DR5DKH6OhxkPbwfzowCx+dMR3LkyRWvBLE+fQseqqzGP2"},
+        "viewModelCacheId":"W9E2IBpMxfGtYEy3HCJT4mjEGZUPkcQBUySSTPAOWF4="
+    }';
+    $header = array(
+        'content-type: application/json',
+        'Accept: application/json',
+        'Origin: https://grabz.it',
+        // 'Referer: https://htmlcsstoimage.com/',
+        // 'Cookie: GrabzIt_a=1; GrabzIt_TimeZone=Asia/Jakarta; __Host-dotvvm_sid_grabz.it=CfDJ8FI0mwRVLyZDhlXHyl5v6mcpAwgSly1Auvsh9f60GxVyMinK6ZCXnCyTMdFeoerAIQtGkcm0PO5Ajvu1%2BLlAweM8IxShWJLnZY5G0panl0FBE1fajbmNvRWVmzObce4l40wCC7TIzswn92vKdf4ISXzHb5mELWHDxJwi8vhahtKM; _ga=GA1.1.564480216.1727351936; _ga_M2GZQ92JPZ=GS1.1.1727351936.1.1.1727352210.0.0.0; _dd_s=logs=1&id=4e7a651e-a654-462f-ac37-401108ceebfb&created=1727351935916&expire=1727353444357',
+        // 'Cookie: auth-token=HTN1J8XP5M; sessionid=k22k174q4o0b0w8crltaiks5jv90xt3x; ph_phc_3ecva80rtrdIJiDyYVwsqjy2YI7CbhbAydPApERhNtU_posthog=%7B%22distinct_id%22%3A%220190ac97-27bc-77aa-a49e-bd729c4865bd%22%2C%22%24sesid%22%3A%5B1721400722933%2C%220190cb7a-42e6-7357-a827-e552e3256733%22%2C1721400705766%5D%7D',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    );
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
+    curl_setopt($ch, CURLOPT_POST, true);
+    // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
+    curl_setopt($ch, CURLOPT_ENCODING, '');
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+
+    // print_r($response);
+    // die();
+
+    $info = curl_getinfo($ch);
+    // print_r($info);
+    curl_close($ch);
+
+    // $res = curl( $url, true, $data, $header, true);
+
+    // print_r($response);
+    // die();
+
+    $res = json_decode($response);
+
+    print_r($res);
+    die();
+
+    return ("https://api.grabz.it/services/getjspicture?suppresserrors=1&isAttachment=1&id=" . $res->viewModelDiff->Identifier);
+}
+
 function htmlToImage($html)
+{
+    $url = 'https://api.pictify.io/image/public';
+    // $url = 'https://api.pictify.io/image';
+    $data = json_encode(array('html' => $html));
+    $header = array(
+        'content-type: application/json',
+        'Accept: application/json',
+        // ':authority:: api.pictify.io',
+        // ':method:: POST',
+        // ':path:: /image/public',
+        // ':scheme:: https',
+        'priority: u=1, i',
+        'sec-fetch-mode: cors',
+        'sec-fetch-site: same-site',
+        'Origin: https://pictify.io',
+        'Referer: https://pictify.io/',
+        // 'Cookie: sessionid=9ok9ihjyodxisbk1duqbpa1on7gzxx7h; ph_phc_3ecva80rtrdIJiDyYVwsqjy2YI7CbhbAydPApERhNtU_posthog=%7B%22distinct_id%22%3A%220190ac97-27bc-77aa-a49e-bd729c4865bd%22%2C%22%24sesid%22%3A%5B1727353819541%2C%2201922e2b-309c-7275-82c2-1099622336c7%22%2C1727351435419%5D%7D',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    );
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
+    curl_setopt($ch, CURLOPT_POST, true);
+    // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
+    curl_setopt($ch, CURLOPT_ENCODING, '');
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+
+    // print_r($response);
+    // die();
+
+    $info = curl_getinfo($ch);
+    // print_r($info);
+    curl_close($ch);
+
+    // $res = curl( $url, true, $data, $header, true);
+
+    // print_r($response);
+    // die();
+
+    $res = json_decode($response);
+
+    return ($res->image->url);
+}
+
+function htmlToImage2($html)
 {
     $url = 'https://api.pictify.io/image/public';
     // $url = 'https://api.pictify.io/image';
@@ -704,7 +817,16 @@ function htmlToImage($html)
 
 function grab_image($url, $saveto)
 {
+    $header = array(
+        'content-type: application/json',
+        'Accept: application/json',
+        'Origin: https://pictify.io',
+        'Referer: https://pictify.io/',
+        // 'Cookie: auth-token=HTN1J8XP5M; sessionid=k22k174q4o0b0w8crltaiks5jv90xt3x; ph_phc_3ecva80rtrdIJiDyYVwsqjy2YI7CbhbAydPApERhNtU_posthog=%7B%22distinct_id%22%3A%220190ac97-27bc-77aa-a49e-bd729c4865bd%22%2C%22%24sesid%22%3A%5B1721400722933%2C%220190cb7a-42e6-7357-a827-e552e3256733%22%2C1721400705766%5D%7D',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    );
     $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);

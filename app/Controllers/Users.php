@@ -718,8 +718,8 @@ Affiliator *" . $insert['merchant_name'] . "* berhasil terdaftar.";
                 $htmlBody = template_email_otp($res["otp_email"]);
                 sendMail($res['email'], 'DIGIPAY OTP Register', $htmlBody);
             } elseif (($type) === 'register_otp_wa') {
-                $waMessage = "*OTP DIGIPAYID (RAHASIAOTP )* (RAHASIA) 
-Kode OTP *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                $waMessage = "*OTP DIGIPAYID (OTP)* (RAHASIA) 
+Kode OTP Register " . $role . " " . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             } elseif (($type) === 'otp_login_email') {
                 $htmlBody = template_email_otp($res["otp_email"]);
