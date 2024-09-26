@@ -521,4 +521,104 @@ class Journal extends BaseController
             "data_bank": ' . json_encode($dataBankUser) . '
         }';
     }
+
+    public function postGetOtp()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/transactions/journal/getOTP');
+        $db = db_connect();
+
+        $otp = random_int(100000, 999999);
+        $update0['otp_email'] = $otp;
+        $update0['otp_wa'] = $otp;
+
+        $db->table('app_users')->where('id_user', $user->id_user)->update($update0);
+        $res = $db->table('app_users')->where('id_user', $user->id_user)->get()->getRowArray();
+        $db->close();
+
+        $waMessage = "*OTP DIGIPAYID (RAHASIA)* 
+Kode OTP Penarikan Uang " . 'Merchant' . " *" . $res["merchant_name"] . "* Adalah *" . $otp . "*";
+        sendWhatsapp($res['merchant_wa'], $waMessage);
+        $htmlBody = template_email_otp($otp);
+        sendMail($res['email'], 'DIGIPAY OTP Penarikan Uang', $htmlBody);
+
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "Kode OTP Telah Dikirim Ke Email Dan Whatsapp Anda"
+        }';
+    }
+
+    public function postResend_otp()
+    {
+        cekValidation('/transactions/journal/resend_otp');
+        $request = request();
+        $json = $request->getJSON(true);
+        $db = db_connect();
+        $type = $json['type'];
+        unset($json['type']);
+
+        $res = $db->table('app_users')->where($json)->get()->getRowArray();
+
+        $role = 'Merchant';
+
+        $db->close();
+        if ($res) {
+            if (($type) === 'otp_email') {
+                $htmlBody = template_email_otp($res["otp_email"]);
+                sendMail($res['email'], 'DIGIPAY OTP Penarikan Uang', $htmlBody);
+            } elseif (($type) === 'otp_wa') {
+                $waMessage = "*OTP DIGIPAYID (RAHASIA)*
+Kode OTP Penarikan Uang " . $role . " *" . $res["merchant_name"] . "* Adalah *" . $res["otp_wa"] . "*";
+                sendWhatsapp($res['merchant_wa'], $waMessage);
+            }
+            $data = '{
+                "code": 0,
+                "error": "",
+                "message": "OTP sudah terkirim."
+            }';
+            return $this->response->setStatusCode(200)->setBody($data);
+        } else {
+            $data = '{
+                "code": 1,
+                "error": "Gagal mengirim OTP!",
+                "message": "Gagal mengirim OTP!"
+            }';
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+    }
+
+    public function postCheck_valid_otp()
+    {
+        cekValidation('/transactions/journal/check_valid_otp');
+        $request = request();
+        $json = $request->getJSON(true);
+        $db = db_connect();
+
+        $res = $db->table('app_users')->where($json)->get()->getRowArray();
+        if ($res) {
+            $waMessage = "*INFO DIGIPAYID* 
+Anda telah melakukan permintaan Penarikan Uang sebagai Merchant *" . $res["merchant_name"] . "* (*" . $res['email'] . "*).";
+            sendWA('0' . $res['telp'], $waMessage);
+            $data = '{
+            "code": 0,
+            "error": "",
+            "message": "Data updated successfully!",
+            "data": ' . json_encode($res) . '
+        }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        } else {
+            $data = '{
+                "code": 1,
+                "error": "OTP anda tidak valid!",
+                "message": "OTP anda tidak valid!"
+            }';
+            $db->close();
+            return $this->response->setStatusCode(200)->setBody($data);
+        }
+
+        $db->close();
+    }
 }

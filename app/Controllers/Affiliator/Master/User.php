@@ -79,8 +79,8 @@ Affiliator *" . $dataPost['username'] . "* melakukan perubahan akun anda.";
         $res = $db->table('app_users')->where('id_user', $user->id_user)->get()->getRowArray();
         $db->close();
 
-        $waMessage = "*OTP DIGIPAYID (RAHASIAOTP )* (RAHASIA) 
-Kode OTP *Ubah Data " . 'affiliator' . " " . $res["username"] . "* Adalah *" . $otp . "*";
+        $waMessage = "*OTP DIGIPAYID (RAHASIA)*
+Kode OTP *Ubah Data " . 'Affiliator' . " " . $res["username"] . "* Adalah *" . $otp . "*";
         sendWhatsapp($res['merchant_wa'], $waMessage);
         $htmlBody = template_email_otp($otp);
         sendMail($res['email'], 'DIGIPAY OTP Ubah Data', $htmlBody);
@@ -111,7 +111,7 @@ Kode OTP *Ubah Data " . 'affiliator' . " " . $res["username"] . "* Adalah *" . $
                 $htmlBody = template_email_otp($res["otp_email"]);
                 sendMail($res['email'], 'DIGIPAY OTP Ubah Data', $htmlBody);
             } elseif (($type) === 'otp_wa') {
-                $waMessage = "*OTP DIGIPAYID (RAHASIAOTP )* (RAHASIA) 
+                $waMessage = "*OTP DIGIPAYID (RAHASIA)*
 Kode OTP *Ubah Data " . $role . " " . $res["username"] . "* Adalah *" . $res["otp_wa"] . "*";
                 sendWhatsapp($res['merchant_wa'], $waMessage);
             }

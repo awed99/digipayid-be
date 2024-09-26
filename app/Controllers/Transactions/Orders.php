@@ -628,8 +628,8 @@ class Orders extends BaseController
             $products = $db->table('app_transaction_products_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->get()->getResult();
         }
 
-        $dataPost['email_customer'] = $trx->email_customer;
-        $dataPost['wa_customer'] = $trx->wa_customer;
+        // $dataPost['email_customer'] = $trx->email_customer;
+        // $dataPost['wa_customer'] = $trx->wa_customer;
 
         $db->close();
 
@@ -687,19 +687,19 @@ class Orders extends BaseController
 
         // ob_start();
         if (((int)$trx->id_payment_method < 1)) {
-            if (($dataPost['email_customer'] != '' && $dataPost['email_customer'])) {
+            if (isset($dataPost['email_customer']) && ($dataPost['email_customer'] != '')) {
                 sendReceipt('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }
 
-            if (($dataPost['wa_customer'] != '' && $dataPost['wa_customer'])) {
+            if (isset($dataPost['wa_customer']) && ($dataPost['wa_customer'] != '')) {
                 sendReceipt('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }
         } else {
-            if (($dataPost['email_customer'] != '' && $dataPost['email_customer'])) {
+            if (isset($dataPost['email_customer']) && ($dataPost['email_customer'] != '')) {
                 sendBilling('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }
 
-            if (($dataPost['wa_customer'] != '' && $dataPost['wa_customer'])) {
+            if (isset($dataPost['wa_customer']) && ($dataPost['wa_customer'] != '')) {
                 sendBilling('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }
         }
