@@ -4,14 +4,9 @@ namespace App\Controllers;
 
 use Config\Services;
 use CodeIgniter\Files\File;
-use CodeIgniter\API\ResponseTrait;
-use CodeIgniter\RESTful\ResourceController;
 
-class Users extends ResourceController
+class Users extends BaseController
 {
-
-    use ResponseTrait;
-
     public function index()
     {
         echo ('welcome!');
@@ -46,7 +41,6 @@ class Users extends ResourceController
 
     public function postLogin()
     {
-        $_this = $this;
         cekValidation('users/login');
         $request = request();
         $db = db_connect();
@@ -657,14 +651,14 @@ Merchant *" . $insert['merchant_name'] . "* berhasil terdaftar.";
         if ($db->affectedRows() == 1) {
             $newUser = $db->table('app_users')->where('email', $insert['email'])->orderBy('id_user', 'DESC')->get()->getRow();
             $db->query("CREATE TABLE app_journal_finance_" . $newUser->id_user . " LIKE master_journal_finance");
-            $db->query("CREATE TABLE app_payment_method_" . $newUser->id_user . " LIKE master_payment_method_user");
-            $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (SELECT * FROM master_payment_method_user where id_payment_method > 0)");
-            $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (id_payment_method, fee_app) values(0, 500)");
-            $db->query("CREATE TABLE app_product_" . $newUser->id_user . " LIKE master_product");
-            $db->query("CREATE TABLE app_product_category_" . $newUser->id_user . " LIKE master_product_category");
-            $db->query("CREATE TABLE app_transactions_" . $newUser->id_user . " LIKE master_transactions");
-            $db->query("CREATE TABLE app_transaction_products_" . $newUser->id_user . " LIKE master_transaction_products");
-            $db->query("CREATE TABLE app_transaction_products_temp_" . $newUser->id_user . " LIKE master_transaction_products_temp");
+            // $db->query("CREATE TABLE app_payment_method_" . $newUser->id_user . " LIKE master_payment_method_user");
+            // $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (SELECT * FROM master_payment_method_user where id_payment_method > 0)");
+            // $db->query("INSERT INTO app_payment_method_" . $newUser->id_user . " (id_payment_method, fee_app) values(0, 500)");
+            // $db->query("CREATE TABLE app_product_" . $newUser->id_user . " LIKE master_product");
+            // $db->query("CREATE TABLE app_product_category_" . $newUser->id_user . " LIKE master_product_category");
+            // $db->query("CREATE TABLE app_transactions_" . $newUser->id_user . " LIKE master_transactions");
+            // $db->query("CREATE TABLE app_transaction_products_" . $newUser->id_user . " LIKE master_transaction_products");
+            // $db->query("CREATE TABLE app_transaction_products_temp_" . $newUser->id_user . " LIKE master_transaction_products_temp");
 
 
             $waMessage = "*INFO DIGIPAYID* 

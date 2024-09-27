@@ -426,7 +426,7 @@ class Journal extends BaseController
         $data = [];
         $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 3)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
         foreach ($users as $userX) {
-            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 3)->orderBy('id', 'desc')->get()->getResult();
+            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 8001)->orderBy('id', 'desc')->get()->getResult();
             if ($trx) {
                 foreach ($trx as $wd) {
                     $wd->id_user = $userX->id_user;
@@ -527,7 +527,7 @@ Status : *Berhasil*';
         $data = [];
         $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 3)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
         foreach ($users as $userX) {
-            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 3)->orderBy('id', 'desc')->get()->getResult();
+            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 8001)->orderBy('id', 'desc')->get()->getResult();
             if ($trx) {
                 foreach ($trx as $wd) {
                     $wd->id_user = $userX->id_user;
