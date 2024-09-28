@@ -86,7 +86,7 @@ phpunit
 #-------------------------
 # Composer
 #-------------------------
-/vendor
+vendor
 vendor
 vendor.bak
 
