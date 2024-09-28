@@ -87,6 +87,8 @@ phpunit
 # Composer
 #-------------------------
 /vendor
+vendor
+vendor.bak
 
 #-------------------------
 # IDE / Development Files
@@ -129,3 +131,10 @@ nb-configuration.xml
 /.phpunit.*.cache
 # /vendor
 
+/public/billings
+/public/callbacks
+/public/db
+/public/downloads
+/public/qris
+/public/receipts
+/public/logs
