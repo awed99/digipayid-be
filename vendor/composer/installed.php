@@ -3,7 +3,7 @@
         'name' => 'digipayid/be',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => '65c014144e4a7d3888d35ffaa4b6b9e9d5bbc1ac',
+        'reference' => '00fcb251ed27252e82c1453c8c9acceae05495c0',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -69,7 +69,7 @@
         'digipayid/be' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => '65c014144e4a7d3888d35ffaa4b6b9e9d5bbc1ac',
+            'reference' => '00fcb251ed27252e82c1453c8c9acceae05495c0',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

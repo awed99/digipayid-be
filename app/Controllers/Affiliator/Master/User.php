@@ -54,6 +54,22 @@ class User extends ResourceController
             "data": ' . $finalData . '
         }';
     }
+    public function postList_Merchant()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/affiliator/master/user/list_merchant');
+        $db = db_connect();
+        $builder = $db->table('app_users')->where('reff_code', $user->reff_code)->where('id_user_parent', 0)->get()->getResult();
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
 
     public function postUpdate()
     {

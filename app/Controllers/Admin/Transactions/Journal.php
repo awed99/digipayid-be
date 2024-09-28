@@ -416,6 +416,46 @@ class Journal extends BaseController
         }';
     }
 
+    public function postList_withdraw_request_affiliator()
+    {
+        $user = cekValidation('/admin/transactions/journal/list_withdraw_request_affiliator');
+        $request = request();
+        $dataPost = $request->getJSON(true);
+        $db = db_connect();
+
+        $data = [];
+        $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 3)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
+        foreach ($users as $userX) {
+            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 8001)->orderBy('id', 'desc')->get()->getResult();
+            if ($trx) {
+                foreach ($trx as $wd) {
+                    $wd->id_user = $userX->id_user;
+                    $wd->bank_short_name = $userX->bank_short_name;
+                    $wd->bank_name = $userX->bank_name;
+                    $wd->bank_account = $userX->bank_account;
+                    $wd->bank_account_name = $userX->bank_account_name;
+                    $wd->merchant_wa = $userX->merchant_wa;
+                    $wd->email  = $userX->email;
+                    $wd->merchant_name  = $userX->merchant_name;
+                    array_push($data, $wd);
+                }
+            }
+            // print_r($wd);
+        }
+        // print_r($data);
+        // die();
+
+        $db->close();
+        $finalData = json_encode($data);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . ',
+            "saldo": ' . $user->saldo . '
+        }';
+    }
+
     public function postUpdate_withdraw_request()
     {
         $user = cekValidation('/admin/transactions/journal/update_withdraw_request');
@@ -432,6 +472,62 @@ class Journal extends BaseController
         $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 2)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
         foreach ($users as $userX) {
             $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 3)->orderBy('id', 'desc')->get()->getResult();
+            if ($trx) {
+                foreach ($trx as $wd) {
+                    $wd->id_user = $userX->id_user;
+                    $wd->bank_short_name = $userX->bank_short_name;
+                    $wd->bank_name = $userX->bank_name;
+                    $wd->bank_account = $userX->bank_account;
+                    $wd->bank_account_name = $userX->bank_account_name;
+                    $wd->merchant_wa = $userX->merchant_wa;
+                    $wd->email  = $userX->email;
+                    $wd->merchant_name  = $userX->merchant_name;
+                    array_push($data, $wd);
+                }
+            }
+            // print_r($wd);
+        }
+        // print_r($data);
+        // die();
+
+        if ((int)$dataPost['status'] === 2) {
+            $message = '*INFO DIGIPAYID*
+
+Penarikan Dana anda sudah berhasil. silakan cek.
+No Invoice : *' . $dataPost['invoice_number'] . '*
+Nominal : *IDR ' . format_rupiah($dataPost['amount']) . '*
+Status : *Berhasil*';
+            sendWhatsapp($dataPost['merchant_wa'], $message);
+        }
+
+        $db->close();
+        $finalData = json_encode($data);
+        $saldo = ((int)$dataPost['status'] === 2) ? $user->saldo - (int)$dataPost['amount'] + (int)$dataPost['fee'] : $user->saldo;
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . ',
+            "saldo": ' . $saldo . '
+        }';
+    }
+
+    public function postUpdate_withdraw_request_affiliator()
+    {
+        $user = cekValidation('/admin/transactions/journal/update_withdraw_request_affiliator');
+        $request = request();
+        $dataPost = $request->getJSON(true);
+        $db = db_connect();
+
+        $status['status'] = $dataPost['status'];
+        $status['updated_at'] = date('Y-m-d H:i:s');
+        $db->table("admin_journal_finance")->where('(status = 0 OR status = 1)')->where('invoice_number', $dataPost['invoice_number'])->update($status);
+        $db->table("app_journal_finance_" . $dataPost['id_user'])->where('(status = 0 OR status = 1)')->where('invoice_number', $dataPost['invoice_number'])->update($status);
+
+        $data = [];
+        $users = $db->table('app_users')->where('id_user_parent', 0)->where('user_role', 3)->where('is_verified', 1)->where('is_active', 1)->get()->getResult();
+        foreach ($users as $userX) {
+            $trx = $db->table("app_journal_finance_" . $userX->id_user)->where('accounting_type', 8001)->orderBy('id', 'desc')->get()->getResult();
             if ($trx) {
                 foreach ($trx as $wd) {
                     $wd->id_user = $userX->id_user;
