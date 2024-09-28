@@ -15,111 +15,208 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
 {
     $products = '';
     foreach ($dataProducts as $product) {
-        $products .= '<tr style="border: 1px solid black;border-collapse: collapse;">
-                                <td style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;text-align:left;">' . $product->product_code . '</span></td>
-                                <td style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;text-align:left;">' . $product->product_name . '</span></td>
-                                <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
-                                    <p style="text-align:right;">' . format_rupiah($product->product_qty) . '</p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
-                                    <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah($product->product_price) . '</span></p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
-                                    <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah((int)$product->product_price * (int)$product->product_qty) . '</span></p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:center;border: 1px solid black;border-collapse: collapse;">
-                                    <p style="text-align:center;"><img src="' . getDomainName() . $product->product_image_url . '" height="20px"></p>
-                                </td>
-                            </tr>';
+        // $products .= '<tr style="border: 1px solid black;border-collapse: collapse;">
+        //                         <td style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;text-align:left;">' . $product->product_code . '</span></td>
+        //                         <td style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;text-align:left;">' . $product->product_name . '</span></td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
+        //                             <p style="text-align:right;">' . format_rupiah($product->product_qty) . '</p>
+        //                         </td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
+        //                             <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah($product->product_price) . '</span></p>
+        //                         </td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;">
+        //                             <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah((int)$product->product_price * (int)$product->product_qty) . '</span></p>
+        //                         </td>
+
+        //                     </tr>';
+
+        $products .= '<tr>
+                <td>' . $product->product_name . ' x <span>' . format_rupiah($product->product_qty) . '</span></td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($product->product_price) . '</span></td>
+            </tr>';
     }
-    $htmlBody = '
-            <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
-            <br/>
-                <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
-                <hr>
-                <p style="text-align:center;"><span style="font-size:12px;">Struk Pembayaran</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;">WA :' . $user->merchant_wa . '</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;">' . $user->merchant_address . '</span></p>
-                <hr>
-                <p style="text-align:center;"><span style="font-size:14px;"><strong>' . $dataPost['invoice_number'] . '</strong></span></p>
-                <p style="text-align:center;"><u>' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</u></p>
-                <p>&nbsp;</p>
-                <div align="center" style="width:50%;text-align:center;">
-                        <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
-                            <tbody>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Jumlah Produk</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</strong></span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_tax) . '</span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Biaya Penanganan</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_to_pay) . '</span>
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Kembalian</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_to_back) . '
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Metode Bayar</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->payment_method_name . '</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                </div>
-                <hr>
-                <p style="text-align:center;font-size:16px;"><strong>Detail Pembelian</strong></p>
-                
-                        <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
-                            <thead>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <th style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:left;">Kode Produk</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:left;">Nama Produk</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Jumlah</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Harga</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Sub Total</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:center;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:center;">Gambar</span></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            ' . $products . '
-                            </tbody>
-                        </table>
-                </div>
-            </div>
-            ';
+
+    $htmlBody = '<div style="font-family: Arial, sans-serif;background-color: #f6f6f6;color: #333;margin: 0;padding: 0;">
+      <div style="width: 450px;margin: 50px auto;background-color: #fff;border: 1px solid #ddd;padding: 20px;border-radius: 10px;">
+        <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
+          <h3 style="margin: 0;font-size: 30px"><b>DIGIPAYID</b></h3>
+          <p style="margin: 0">Struk Pembayaran</p>
+        </div>
+
+        <div style="padding: 20px">
+          <div style="text-align: center">
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_name . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">WA: ' . $user->merchant_wa . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_address . '</p>
+            <p style="text-align: center; font-weight: bold">' . $dataPost['invoice_number'] . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</p>
+          </div>
+
+          <div style="text-align: center">
+            <p style="font-size: 30px;background-color: #fff;padding: 10px;border: 1px solid #ddd;margin: 0;">Rp. <span>' . format_rupiah($transaction->amount) . '</span></p>
+          </div>
+
+          <div style="margin-top: 20px;padding: 10px;border-top: 1px solid #ddd;border-bottom: 1px solid #ddd;">
+            <table style="width: 100%; font-size: 16px">
+              ' . $products . '
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%; font-size: 18px">
+              <tr>
+                <td>Subtotal</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</span></td>
+              </tr>
+              <tr>
+                <td>Pajak</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_tax) . '</span></td>
+              </tr>
+              <tr>
+                <td>Biaya Penanganan</td>
+                <td style="text-align: right">Rp. <span>' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%;font-size: 18px;padding: 10px 0;border-top: 1px solid #ddd;">
+              <tr>
+                <td><strong>Total</strong></td>
+                <td style="text-align: right">
+                  <strong>Rp. <span>' . format_rupiah($transaction->amount) . '</span></strong>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%; font-size: 18px">
+              <tr>
+                <td>Status</td>
+                <td style="text-align: right"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></td>
+              </tr>
+              <tr>
+                <td>Jumlah Produk</td>
+                <td style="text-align: right"><span>' . $transaction->total_product . '</span> (Pcs)</td>
+              </tr>
+              <tr>
+                <td>Dibayar</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_to_pay) . '</span></td>
+              </tr>
+              <tr>
+                <td>Kembalian</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_to_back) . '</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 20px;padding: 10px 0;border-top: 1px solid #ddd;">
+            <p style="text-align: center">
+              <strong>Metode Pembayaran: <span>' . $transaction->payment_method_name . '</span></strong>
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
+          <p>Terima kasih telah berbelanja di DIGIPAYID</p>
+          <p>
+            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    ';
+
+
+    // $htmlBody = '
+    //         <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
+    //         <br/>
+    //             <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
+    //             <hr>
+    //             <p style="text-align:center;"><span style="font-size:12px;">Struk Pembayaran</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;">WA :' . $user->merchant_wa . '</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;">' . $user->merchant_address . '</span></p>
+    //             <hr>
+    //             <p style="text-align:center;"><span style="font-size:14px;"><strong>' . $dataPost['invoice_number'] . '</strong></span></p>
+    //             <p style="text-align:center;"><u>' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</u></p>
+    //             <p>&nbsp;</p>
+    //             <div align="center" style="width:50%;text-align:center;">
+    //                     <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
+    //                         <tbody>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Jumlah Produk</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</strong></span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_tax) . '</span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Biaya Penanganan</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_to_pay) . '</span>
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Kembalian</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_to_back) . '
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Metode Bayar</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->payment_method_name . '</span></td>
+    //                             </tr>
+    //                         </tbody>
+    //                     </table>
+    //             </div>
+    //             <hr>
+    //             <p style="text-align:center;font-size:16px;"><strong>Detail Pembelian</strong></p>
+
+    //                     <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
+    //                         <thead>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <th style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:left;">Kode Produk</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:left;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:left;">Nama Produk</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Jumlah</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Harga</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:right;">Sub Total</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:center;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px; text-align:center;">Gambar</span></th>
+    //                             </tr>
+    //                         </thead>
+    //                         <tbody>
+    //                         ' . $products . '
+    //                         </tbody>
+    //                     </table>
+    //             </div>
+    //         </div>
+    //         ';
 
     $urlIMG = "receipts/" . $dataPost['invoice_number'] . ".png";
 
@@ -192,22 +289,27 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
     // $mpdf = new \Mpdf\Mpdf();
     $products = '';
     foreach ($dataProducts as $product) {
-        $products .= '<tr style="border: 1px solid black;border-collapse: collapse;">
-                                <td style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px;text-align:left;">' . $product->product_code . '</span></td>
-                                <td style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px;text-align:left;">' . $product->product_name . '</span></td>
-                                <td style="padding:10px;font-size:14px;text-align:right;">
-                                    <p style="text-align:right;">' . format_rupiah($product->product_qty) . '</p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:right;">
-                                    <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah($product->product_price) . '</span></p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:right;">
-                                    <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah((int)$product->product_price * (int)$product->product_qty) . '</span></p>
-                                </td>
-                                <td style="padding:10px;font-size:14px;text-align:center;">
-                                    <p style="text-align:center;"><img src="' . getDomainName() . $product->product_image_url . '" height="20px"></p>
-                                </td>
-                            </tr>';
+        // $products .= '<tr style="border: 1px solid black;border-collapse: collapse;">
+        //                         <td style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px;text-align:left;">' . $product->product_code . '</span></td>
+        //                         <td style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px;text-align:left;">' . $product->product_name . '</span></td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;">
+        //                             <p style="text-align:right;">' . format_rupiah($product->product_qty) . '</p>
+        //                         </td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;">
+        //                             <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah($product->product_price) . '</span></p>
+        //                         </td>
+        //                         <td style="padding:10px;font-size:14px;text-align:right;">
+        //                             <p style="text-align:right;"><span style="font-size:14px;">' . format_rupiah((int)$product->product_price * (int)$product->product_qty) . '</span></p>
+        //                         </td>
+        //                         <td style="padding:10px;font-size:14px;text-align:center;">
+        //                             <p style="text-align:center;"><img src="' . getDomainName() . $product->product_image_url . '" height="20px"></p>
+        //                         </td>
+        //                     </tr>';
+
+        $products .= '<tr>
+                <td>' . $product->product_name . ' x <span>' . format_rupiah($product->product_qty) . '</span></td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($product->product_price) . '</span></td>
+            </tr>';
     }
 
     $detailPayment = '';
@@ -231,95 +333,187 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         </tr>';
     }
 
-    $htmlBody = '
-            <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
-            <br/>
-                <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
-                <hr>
-                <p style="text-align:center;"><span style="font-size:12px;">Detail Tagihan</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;">WA :' . $user->merchant_wa . '</span></p>
-                <p style="text-align:center;"><span style="font-size:12px;">' . $user->merchant_address . '</span></p>
-                <hr>
-                <p style="text-align:center;"><span style="font-size:14px;"><strong>' . $dataPost['invoice_number'] . '</strong></span></p>
-                <p style="text-align:center;"><u>' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</u></p>
-                <p>&nbsp;</p>
-                <div align="center" style="width:50%;text-align:center;">
-                        <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
-                            <tbody>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Jumlah Produk</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee - (int)$transaction->amount_tax) . '</strong></span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_tax) . '</span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Biaya Penanganan</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
-                                    </td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_to_pay) . '</span>
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Kembalian</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
-                                        IDR ' . format_rupiah($transaction->amount_to_back) . '
-                                    </span></td>
-                                </tr>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Metode Bayar</span></td>
-                                    <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->payment_method_name . '</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                </div>
-                <hr>
-                <p style="text-align:center;font-size:16px;"><strong>Detail Pembelian</strong></p>
-                
-                <div align="center" style="width:100%;text-align:center;">
-                        <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
-                            <thead>
-                                <tr style="border: 1px solid black;border-collapse: collapse;">
-                                    <th style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px; text-align:left;">Kode Produk</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px; text-align:left;">Nama Produk</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Jumlah</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Harga</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Sub Total</span></th>
-                                    <th style="padding:10px;font-size:14px;text-align:center;"><span style="font-size:14px; text-align:center;">Gambar</span></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            ' . $products . '
-                            </tbody>
-                        </table>
-                </div>
-            </div>
-            ';
+    $htmlBody = '<div style="font-family: Arial, sans-serif;background-color: #f6f6f6;color: #333;margin: 0;padding: 0;">
+      <div style="width: 450px;margin: 50px auto;background-color: #fff;border: 1px solid #ddd;padding: 20px;border-radius: 10px;">
+        <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
+          <h3 style="margin: 0;font-size: 30px"><b>DIGIPAYID</b></h3>
+          <p style="margin: 0">Struk Pembayaran</p>
+        </div>
+
+        <div style="padding: 20px">
+          <div style="text-align: center">
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_name . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">WA: ' . $user->merchant_wa . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_address . '</p>
+            <p style="text-align: center; font-weight: bold">' . $dataPost['invoice_number'] . '</p>
+            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</p>
+          </div>
+
+          <div style="text-align: center">
+            <p style="font-size: 30px;background-color: #fff;padding: 10px;border: 1px solid #ddd;margin: 0;">Rp. <span>' . format_rupiah($transaction->amount) . '</span></p>
+          </div>
+
+          <div style="margin-top: 20px;padding: 10px;border-top: 1px solid #ddd;border-bottom: 1px solid #ddd;">
+            <table style="width: 100%; font-size: 16px">
+              ' . $products . '
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%; font-size: 18px">
+              <tr>
+                <td>Subtotal</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</span></td>
+              </tr>
+              <tr>
+                <td>Pajak</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_tax) . '</span></td>
+              </tr>
+              <tr>
+                <td>Biaya Penanganan</td>
+                <td style="text-align: right">Rp. <span>' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%;font-size: 18px;padding: 10px 0;border-top: 1px solid #ddd;">
+              <tr>
+                <td><strong>Total</strong></td>
+                <td style="text-align: right">
+                  <strong>Rp. <span>' . format_rupiah($transaction->amount) . '</span></strong>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 10px">
+            <table style="width: 100%; font-size: 18px">
+              <tr>
+                <td>Status</td>
+                <td style="text-align: right"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></td>
+              </tr>
+              <tr>
+                <td>Jumlah Produk</td>
+                <td style="text-align: right"><span>' . $transaction->total_product . '</span> (Pcs)</td>
+              </tr>
+              <tr>
+                <td>Dibayar</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_to_pay) . '</span></td>
+              </tr>
+              <tr>
+                <td>Kembalian</td>
+                <td style="text-align: right">Rp. <span>' . format_rupiah($transaction->amount_to_back) . '</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 20px;padding: 10px 0;border-top: 1px solid #ddd;">
+            <p style="text-align: center">
+              <strong>Metode Pembayaran: <span>' . $transaction->payment_method_name . '</span></strong>
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
+          <p>Terima kasih telah berbelanja di DIGIPAYID</p>
+          <p>
+            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    ';
+
+    // $htmlBody = '
+    //         <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
+    //         <br/>
+    //             <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
+    //             <hr>
+    //             <p style="text-align:center;"><span style="font-size:12px;">Detail Tagihan</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;font-weight:bold;">' . $user->merchant_name . '</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;">WA :' . $user->merchant_wa . '</span></p>
+    //             <p style="text-align:center;"><span style="font-size:12px;">' . $user->merchant_address . '</span></p>
+    //             <hr>
+    //             <p style="text-align:center;"><span style="font-size:14px;"><strong>' . $dataPost['invoice_number'] . '</strong></span></p>
+    //             <p style="text-align:center;"><u>' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</u></p>
+    //             <p>&nbsp;</p>
+    //             <div align="center" style="width:50%;text-align:center;">
+    //                     <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
+    //                         <tbody>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Status</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Jumlah Produk</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->total_product . ' (Pcs)</span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Sub Total</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     <strong>IDR ' . format_rupiah((int)$transaction->amount - (int)$transaction->fee - (int)$transaction->amount_tax) . '</strong></span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Pajak</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_tax) . '</span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Biaya Penanganan</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . (((int)$transaction->fee_on_merchant === 0) ? format_rupiah($transaction->fee) : 0) . '</span>
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Tagihan</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     <strong>IDR ' . format_rupiah($transaction->amount) . '</strong></span>
+    //                                 </td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Dibayar</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_to_pay) . '</span>
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Kembalian</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">
+    //                                     IDR ' . format_rupiah($transaction->amount_to_back) . '
+    //                                 </span></td>
+    //                             </tr>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Metode Bayar</span></td>
+    //                                 <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $transaction->payment_method_name . '</span></td>
+    //                             </tr>
+    //                         </tbody>
+    //                     </table>
+    //             </div>
+    //             <hr>
+    //             <p style="text-align:center;font-size:16px;"><strong>Detail Pembelian</strong></p>
+
+    //             <div align="center" style="width:100%;text-align:center;">
+    //                     <table class="ck-table-resized" style="width:100%;border: 1px solid black;border-collapse: collapse;">
+    //                         <thead>
+    //                             <tr style="border: 1px solid black;border-collapse: collapse;">
+    //                                 <th style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px; text-align:left;">Kode Produk</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:left;"><span style="font-size:14px; text-align:left;">Nama Produk</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Jumlah</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Harga</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:right;"><span style="font-size:14px; text-align:right;">Sub Total</span></th>
+    //                                 <th style="padding:10px;font-size:14px;text-align:center;"><span style="font-size:14px; text-align:center;">Gambar</span></th>
+    //                             </tr>
+    //                         </thead>
+    //                         <tbody>
+    //                         ' . $products . '
+    //                         </tbody>
+    //                     </table>
+    //             </div>
+    //         </div>
+    //         ';
 
     $urlIMG = "billings/" . $dataPost['invoice_number'] . ".png";
 

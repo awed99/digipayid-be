@@ -456,11 +456,16 @@ class Orders extends BaseController
         $builder2->insertBatch($journal_insert);
         $db->table('admin_journal_finance')->insertBatch($journal_insert_admin);
 
-        $tbl_affiliator = "app_journal_finance_" . $db->table('app_users')
+        $id_user_affiliator = $db->table('app_users')
             ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
             ->where('user_role', 3)->where('user_privilege', 8)
-            ->get()->getRow()->id_user;
-        $db->table($tbl_affiliator)->insertBatch($journal_insert_affiliator);
+            ->get()->getRow();
+
+        if ($id_user_affiliator) {
+            $tbl_affiliator = "app_journal_finance_" . $id_user_affiliator->id_user;
+            $db->table($tbl_affiliator)->insertBatch($journal_insert_affiliator);
+        }
+
 
         // if ((int)$user->id_user_parent > 0) {
         //     $db->table('app_transaction_products_temp_'.$user->id_user_parent)->truncate();
