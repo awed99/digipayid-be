@@ -18,8 +18,7 @@ class Dashboard extends BaseController
         $data['saldo'] = $user->saldo;
         $data['saldo_real'] = $user->real_saldo;
 
-
-        $users = $db->table('app_users')->where('au.id_user', $user->id_user)->get()->getResult();
+        $users = $db->table('app_users')->join('app_user_privilege', 'app_user_privilege.id_user_privilege = app_users.user_privilege')->where('app_users.id_user', $user->id_user)->get()->getResult();
 
         $merchants = $db->table('app_users')->where('user_role', 2)->where('id_user_parent', 0)->where('reff_code', $user->reff_code)->where('is_verified', 1)->get()->getResult();
 
@@ -32,6 +31,7 @@ class Dashboard extends BaseController
             // ->where('(ajf.status = 1 OR ajf.status = 2)')
             ->where('ajf.status', 2)
             ->where('au.user_role', 2)
+            ->where('au.reff_code', $user->reff_code)
             ->groupBy('au.id_user')
             ->orderBy('keuntungan', 'DESC')
             // ->where('time_transaction >=', date('Y-m-01') . ' 00:00:00')
@@ -77,39 +77,37 @@ class Dashboard extends BaseController
 
         $trends = (object)[];
         $trends->keuntungan = $db
-            ->table('admin_journal_finance')
+            ->table('app_journal_finance_' . $user->id_user)
             ->selectSum('amount_credit')
-            ->where('(accounting_type = 1001 OR accounting_type = 2001 OR accounting_type = 3001)')
+            ->where('accounting_type', 7001)
             ->where('(status = 1 OR status = 2)')
             // ->where('time_transaction >=', date('Y-m-01') . ' 00:00:00')
             // ->where('time_transaction <=', date('Y-m-t') . ' 23:59:59')
             ->get()->getRow()->amount_credit;
-        $trends->withdraw = $db->table('admin_journal_finance')
+        // $trends->withdraw = $db->table('admin_journal_finance')
+        //     ->selectSum('amount_debet')
+        //     ->where('accounting_type', 4)
+        //     ->where('(status = 1 OR status = 2)')
+        // ->where('created_at >=', date('Y-m-01') . ' 00:00:00')
+        // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
+        // ->get()->getRow()->amount_debet;
+        // $trends->deposit_merchant = $db->table('admin_journal_finance')
+        // ->selectSum('amount_credit')
+        // ->where('accounting_type', 2)
+        // ->where('(status = 1 OR status = 2)')
+        // ->where('created_at >=', date('Y-m-01') . ' 00:00:00')
+        // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
+        // ->get()->getRow()->amount_credit;
+        $trends->withdraw_affiliator = $db->table('app_journal_finance_' . $user->id_user)
             ->selectSum('amount_debet')
-            ->where('accounting_type', 4)
+            ->where('accounting_type', 8001)
             ->where('(status = 1 OR status = 2)')
             // ->where('created_at >=', date('Y-m-01') . ' 00:00:00')
             // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
             ->get()->getRow()->amount_debet;
-        $trends->deposit_merchant = $db->table('admin_journal_finance')
-            ->selectSum('amount_credit')
-            ->where('accounting_type', 2)
-            ->where('(status = 1 OR status = 2)')
-            // ->where('created_at >=', date('Y-m-01') . ' 00:00:00')
-            // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
-            ->get()->getRow()->amount_credit;
-        $trends->withdraw_merchant = $db->table('admin_journal_finance')
-            ->selectSum('amount_debet')
-            ->where('accounting_type', 3)
-            ->where('(status = 1 OR status = 2)')
-            // ->where('created_at >=', date('Y-m-01') . ' 00:00:00')
-            // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
-            ->get()->getRow()->amount_debet;
 
-        $grafikMingguan = $db->query("SELECT DAYNAME(created_at) AS weekDay, SUM(amount_credit) AS totalCount FROM admin_journal_finance  WHERE (accounting_type = 1001 OR accounting_type = 2001 OR accounting_type = 3001) AND (status = 1 OR status = 2) GROUP BY DAYNAME(created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
-        $grafikWithdraw = $db->query("SELECT DAYNAME(created_at) AS weekDay, SUM(amount_debet) AS totalCount FROM admin_journal_finance  WHERE (accounting_type = 3) GROUP BY DAYNAME(created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
-
-
+        $grafikMingguan = $db->query("SELECT DAYNAME(ajf.created_at) AS weekDay, SUM(ajf.amount_credit) AS totalCount FROM admin_journal_finance ajf inner join app_users au on au.id_user = ajf.id_user WHERE (ajf.accounting_type = 1001 OR ajf.accounting_type = 2001 OR ajf.accounting_type = 3001) AND (ajf.status = 1 OR ajf.status = 2)  and (au.reff_code = '$user->reff_code' ) GROUP BY DAYNAME(ajf.created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
+        $grafikWithdraw = $db->query("SELECT DAYNAME(created_at) AS weekDay, SUM(amount_debet) AS totalCount FROM app_journal_finance_$user->id_user  WHERE (accounting_type = 3) GROUP BY DAYNAME(created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
 
         $db->close();
 
