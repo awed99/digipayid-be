@@ -19,6 +19,25 @@ class User extends ResourceController
         echo ('welcome!');
     }
 
+    public function postList_merchant()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/affiliator/master/user/list_merchant');
+        $db = db_connect();
+
+        $builder = $db->table('app_users')->where('user_role', 2)->where('id_user_parent', 0)->where('reff_code', $user->reff_code)->get()->getResult();
+
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
     public function postList()
     {
         $request = request();
