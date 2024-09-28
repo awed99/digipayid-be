@@ -19,7 +19,7 @@ class Dashboard extends BaseController
         $data['saldo_real'] = $user->real_saldo;
 
 
-        $users = $db->table('app_users')->join('app_user_privilege', 'app_user_privilege.id_user_privilege = app_users.user_privilege')->where('user_role', 1)->get()->getResult();
+        $users = $db->table('app_users')->where('au.id_user', $user->id_user)->get()->getResult();
 
         $merchants = $db->table('app_users')->where('user_role', 2)->where('id_user_parent', 0)->where('reff_code', $user->reff_code)->where('is_verified', 1)->get()->getResult();
 
