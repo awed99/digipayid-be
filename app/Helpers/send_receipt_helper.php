@@ -228,7 +228,24 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         </tr>';
   }
 
-  $htmlBody = '<div style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
+  $htmlBody = '
+  
+  <style>
+    @page {
+      size: 490px 1000px;
+      margin: .5in;
+    }
+    #bgimg {
+      position: fixed;
+      left: -.5in;
+      top: -.5in;
+      width: 500px;
+      height: 1000px;
+      z-index: -999
+    }
+  </style>
+
+  <div style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
       <div style="width: 450px;background-color: #f6f6f6;border: 1px solid #ddd;padding: 20px;border-radius: 10px;">
         <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
           <h3 style="margin: 0;font-size: 30px"><b>DIGIPAYID</b></h3>
@@ -404,6 +421,23 @@ Link Bayar : *' . $caraBayar . '*';
 function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $user, $dt)
 {
   $htmlBody = '
+  
+  <style>
+    @page {
+      size: 490px 1000px;
+      margin: .5in;
+    }
+    #bgimg {
+      position: fixed;
+      left: -.5in;
+      top: -.5in;
+      width: 500px;
+      height: 1000px;
+      z-index: -999
+    }
+  </style>
+
+  
             <div align="center" style="width: 750px; background: #f5f5f5; padding: 30px;">
             <br/>
                 <h3 style="text-align:center;"><b>DIGIPAYID</b></h3>
