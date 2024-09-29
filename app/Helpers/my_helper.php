@@ -711,7 +711,7 @@ function htmlToImage1($html)
     return ("https://api.grabz.it/services/getjspicture?suppresserrors=1&isAttachment=1&id=" . $res->viewModelDiff->Identifier);
 }
 
-function htmlToImage($html)
+function htmlToImageY($html)
 {
     $css = <<<EOD
     .box { 
@@ -737,6 +737,7 @@ function htmlToImage($html)
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
 
     curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 20000);
     // Retrieve your user_id and api_key from https://htmlcsstoimage.com/dashboard
     curl_setopt($ch, CURLOPT_USERPWD, getenv("HTML_TO_IMAGE_ID") . ":" . getenv("HTML_TO_IMAGE_API_KEY"));
 
