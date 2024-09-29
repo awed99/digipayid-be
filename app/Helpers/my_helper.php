@@ -724,6 +724,35 @@ function htmlToImage1($html)
 
 function htmlToImage($html)
 {
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api.pictify.io/image',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => '{
+    "html": ' . $html . '
+}',
+        CURLOPT_HTTPHEADER => array(
+            'Authorization: Bearer ' . getenv('PICTIFY_TOKEN'),
+            'Content-Type: application/json'
+        ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+
+    $image = json_decode($response, true);
+}
+
+function htmlToImage0($html)
+{
     $url = 'https://api.pictify.io/image/public';
     // $url = 'https://api.pictify.io/image';
     $data = json_encode(array('html' => $html));
