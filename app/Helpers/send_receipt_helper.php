@@ -21,7 +21,24 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
             </tr>';
   }
 
-  $htmlBody = '<div style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
+  $htmlBody = '
+  
+  <style>
+    @page {
+      size: 490px 1000px;
+      margin: .5in;
+    }
+    #bgimg {
+      position: fixed;
+      left: -.5in;
+      top: -.5in;
+      width: 500px;
+      height: 1000px;
+      z-index: -999
+    }
+  </style>
+
+  <div id="bgimg" style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
       <div style="width: 450px;background-color: #f6f6f6;border: 1px solid #ddd;padding: 20px;border-radius: 10px;">
         <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
           <h3 style="margin: 0;font-size: 30px"><b>DIGIPAYID</b></h3>
@@ -106,19 +123,19 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
         <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
           <p>Terima kasih telah berbelanja di ' . $user->merchant_name . '</p>
           <p>
-            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+            <a href="https://www.digipayid.com" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
           </p>
         </div>
       </div>
     </div>
     ';
 
-  $urlIMG = "receipts/" . $dataPost['invoice_number'] . ".png";
+  $urlIMG = "receipts/" . $dataPost['invoice_number'];
 
-  $img = htmlToImage($htmlBody);
+  $img = htmlToImage($htmlBody, $dataPost['invoice_number'], $urlIMG);
 
   // file_put_contents($urlIMG, file_get_contents($img));
-  grab_image($img, $urlIMG);
+  // grab_image($img, $urlIMG);
 
   // die();
 
@@ -296,19 +313,19 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
           <p>Terima kasih telah berbelanja di ' . $user->merchant_name . '</p>
           <p>
-            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+            <a href="https://www.digipayid.com" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
           </p>
         </div>
       </div>
     </div>
     ';
 
-  $urlIMG = "billings/" . $dataPost['invoice_number'] . ".png";
+  $urlIMG = "billings/" . $dataPost['invoice_number'];
 
-  $img = htmlToImage($htmlBody);
+  $img = htmlToImage($htmlBody, $dataPost['invoice_number'], $urlIMG);
 
   // file_put_contents($urlIMG, file_get_contents($img));
-  grab_image($img, $urlIMG);
+  // grab_image($img, $urlIMG);
 
   $db = db_connect();
   $update['url_file_billing'] = $img;
@@ -435,12 +452,12 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
             </div>
             ';
 
-  $urlIMG = "receipts/" . $invoice_number . ".png";
+  $urlIMG = "receipts/" . $invoice_number;
 
-  $img = htmlToImage($htmlBody);
+  $img = htmlToImage($htmlBody, $invoice_number, $urlIMG);
 
   // file_put_contents($urlIMG, file_get_contents($img));
-  grab_image($img, $urlIMG);
+  // grab_image($img, $urlIMG);
 
   // die();
 
