@@ -15,8 +15,8 @@ class Dashboard extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
-        $data['saldo'] = $user->saldo;
-        $data['saldo_real'] = $user->real_saldo;
+        $data['saldo'] = $user->saldo ?? 0;
+        $data['saldo_real'] = $user->real_saldo ?? 0;
 
         $users = $db->table('app_users')->join('app_user_privilege', 'app_user_privilege.id_user_privilege = app_users.user_privilege')->where('app_users.id_user', $user->id_user)->get()->getResult();
 
@@ -80,7 +80,7 @@ class Dashboard extends BaseController
             ->table('app_journal_finance_' . $user->id_user)
             ->selectSum('amount_credit')
             ->where('accounting_type', 7001)
-            ->where('(status = 1 OR status = 2)')
+            ->where('(status = 2)')
             // ->where('time_transaction >=', date('Y-m-01') . ' 00:00:00')
             // ->where('time_transaction <=', date('Y-m-t') . ' 23:59:59')
             ->get()->getRow()->amount_credit;
@@ -106,8 +106,8 @@ class Dashboard extends BaseController
             // ->where('created_at <=', date('Y-m-t') . ' 23:59:59')
             ->get()->getRow()->amount_debet;
 
-        $grafikMingguan = $db->query("SELECT DAYNAME(ajf.created_at) AS weekDay, SUM(ajf.amount_credit) AS totalCount FROM admin_journal_finance ajf inner join app_users au on au.id_user = ajf.id_user WHERE (ajf.accounting_type = 1001 OR ajf.accounting_type = 2001 OR ajf.accounting_type = 3001) AND (ajf.status = 1 OR ajf.status = 2)  and (au.reff_code = '$user->reff_code' ) GROUP BY DAYNAME(ajf.created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
-        $grafikWithdraw = $db->query("SELECT DAYNAME(created_at) AS weekDay, SUM(amount_debet) AS totalCount FROM app_journal_finance_$user->id_user  WHERE (accounting_type = 3) GROUP BY DAYNAME(created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
+        $grafikMingguan = $db->query("SELECT DAYNAME(ajf.created_at) AS weekDay, SUM(ajf.amount_credit) AS totalCount FROM app_journal_finance_$user->id_user ajf WHERE (ajf.accounting_type = 7001 OR ajf.accounting_type = 8001 OR ajf.accounting_type = 8002) AND (ajf.status = 1 OR ajf.status = 2) GROUP BY DAYNAME(ajf.created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
+        $grafikWithdraw = $db->query("SELECT DAYNAME(created_at) AS weekDay, SUM(amount_debet) AS totalCount FROM app_journal_finance_$user->id_user  WHERE (accounting_type = 8001) GROUP BY DAYNAME(created_at) ORDER BY FIELD(weekDay, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")->getResult();
 
         $db->close();
 
