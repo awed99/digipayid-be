@@ -749,6 +749,8 @@ function htmlToImage($html)
     curl_close($curl);
 
     $image = json_decode($response, true);
+
+    return $image['url'];
 }
 
 function htmlToImage0($html)
