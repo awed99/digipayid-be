@@ -106,7 +106,7 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
         <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
           <p>Terima kasih telah berbelanja di ' . $user->merchant_name . '</p>
           <p>
-            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+            <a href="https://www.digipayid.com" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
           </p>
         </div>
       </div>
@@ -296,7 +296,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
           <p>Terima kasih telah berbelanja di ' . $user->merchant_name . '</p>
           <p>
-            <a href="#" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
+            <a href="https://www.digipayid.com" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
           </p>
         </div>
       </div>

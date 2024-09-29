@@ -651,8 +651,6 @@ function urlShortener($url)
         // $data = '{"url": "' . $url . '"}';
         $data = http_build_query(array('url' => $url));
         $res0 = curl('https://spoo.me/', true, $data, $headers);
-        // print_r($res0);
-        // die();
 
         $res = json_decode($res0);
         return $res->short_url;
@@ -702,17 +700,8 @@ function htmlToImage1($html)
 
     $response = curl_exec($ch);
 
-    // print_r($response);
-    // die();
-
     $info = curl_getinfo($ch);
-    // print_r($info);
     curl_close($ch);
-
-    // $res = curl( $url, true, $data, $header, true);
-
-    // print_r($response);
-    // die();
 
     $res = json_decode($response);
 
@@ -756,12 +745,14 @@ function htmlToImage($html)
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
     $result = curl_exec($ch);
+
     if (curl_errno($ch)) {
         echo 'Error:' . curl_error($ch);
     }
     curl_close($ch);
     $res = json_decode($result, true);
-    return $res['url'];
+
+    return $res['url'] . '?filename=image.png';
 }
 
 function htmlToImageX($html)
@@ -893,8 +884,8 @@ function grab_image($url, $saveto)
     $header = array(
         'content-type: application/json',
         'Accept: application/json',
-        'Origin: https://pictify.io',
-        'Referer: https://pictify.io/',
+        'Origin: https://hcti.io',
+        'Referer: https://hcti.io/',
         // 'Cookie: auth-token=HTN1J8XP5M; sessionid=k22k174q4o0b0w8crltaiks5jv90xt3x; ph_phc_3ecva80rtrdIJiDyYVwsqjy2YI7CbhbAydPApERhNtU_posthog=%7B%22distinct_id%22%3A%220190ac97-27bc-77aa-a49e-bd729c4865bd%22%2C%22%24sesid%22%3A%5B1721400722933%2C%220190cb7a-42e6-7357-a827-e552e3256733%22%2C1721400705766%5D%7D',
         'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
     );
@@ -904,6 +895,8 @@ function grab_image($url, $saveto)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
     $raw = curl_exec($ch);
+    // print_r($raw);
+    // die()
     curl_close($ch);
     if (file_exists($saveto)) {
         unlink($saveto);
