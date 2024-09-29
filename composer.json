@@ -9,6 +9,7 @@
     "anam/phantommagick": "^2.0",
     "codeigniter4/framework": "^4.5.5",
     "codeigniter4/tasks": "dev-develop",
+    "dompdf/dompdf": "^3.0",
     "endroid/qr-code": "^5.0",
     "google/apiclient": "2.15.0",
     "mpdf/mpdf": "^8.2",

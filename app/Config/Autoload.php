@@ -90,5 +90,5 @@ class Autoload extends AutoloadConfig
      *
      * @var list<string>
      */
-    public $helpers = ['my_helper', 'validations_helper', 'tokopay_helper', 'brick_helper', 'email_templates_forgot_password_helper', 'send_receipt_helper', 'gdrive_helper', 'normalize_helper'];
+    public $helpers = ['my_helper', 'imagick_helper', 'validations_helper', 'tokopay_helper', 'brick_helper', 'email_templates_forgot_password_helper', 'send_receipt_helper', 'gdrive_helper', 'normalize_helper'];
 }
