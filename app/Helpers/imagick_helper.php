@@ -7,8 +7,8 @@ function htmlToImage($html, $invoice_number, $url)
     if (extension_loaded('imagick')) {
 
         $urlHTML = $url . ".html";
-        $urlIMG = $url . ".png";
         $urlPDF = $url . ".pdf";
+        $urlIMG = $url . ".png";
 
         if (file_exists($urlHTML)) {
             unlink($urlHTML);
@@ -57,6 +57,20 @@ function htmlToImage($html, $invoice_number, $url)
         $imagick->setImageFormat('png');
         $imagick->writeImage($urlIMG);
         // unlink($urlHTML);
+
+
+        if (file_exists($urlHTML)) {
+            unlink($urlHTML);
+        }
+
+        if (file_exists($urlPDF)) {
+            unlink($urlPDF);
+        }
+
+        // if (file_exists($urlIMG)) {
+        //     unlink($urlIMG);
+        // }
+
         return getenv('API_DOMAIN_BASE_URL') . $urlIMG;
     }
 }
