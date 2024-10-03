@@ -42,7 +42,7 @@ class User extends ResourceController
         $dataPost = $request->getJSON();
         $user = cekValidation('/affiliator/master/user/lists');
         $db = db_connect();
-        $builder = $db->table('app_users')->where('reff_code', $user->reff_code)->where('id_user_parent', 0)->get()->getResult();
+        $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.user_role', 2)->where('au.id_user_parent', 0)->where('au.reff_code', $user->reff_code)->orderBy('au.merchant_name')->get()->getResult();;
         $db->close();
         $finalData = json_encode($builder);
         echo '{
