@@ -24,13 +24,21 @@ class Orders extends BaseController
 
         if ((int)$dataPost->id_merchant > 0) {
             $builder = $db->table('app_transactions_' . $dataPost->id_merchant);
+            $builder->groupStart();
             if (isset($dataPost->start_date)) {
                 $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00');
             }
             if (isset($dataPost->end_date)) {
                 $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59');
             }
-            $result = $builder->where('status_transaction', 2)->orWhere('status_transaction', 1)->orderBy('id_transaction ', 'desc')->get()->getResult();
+            $builder->groupEnd();
+            $result = $builder
+                ->groupStart()
+                ->where('status_transaction', 2)
+                ->orWhere('status_transaction', 1)
+                ->groupEnd()
+                ->orderBy('id_transaction ', 'desc')
+                ->get()->getResult();
 
             $db->close();
             $finalData = json_encode($result);
