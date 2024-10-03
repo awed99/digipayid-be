@@ -303,12 +303,12 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 20000); //timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 200000); //timeout in seconds
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     } else {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300); //timeout in seconds
     }
 
     // In real life you should use something like:
@@ -617,7 +617,7 @@ function sendWA($phone, $message, $imageLink = null)
         CURLOPT_RETURNTRANSFER => false,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT_MS => 200,
+        CURLOPT_TIMEOUT_MS => 200000,
         CURLOPT_NOSIGNAL => 1,
         CURLOPT_FRESH_CONNECT => 1,
         CURLOPT_SSL_VERIFYPEER => false,
