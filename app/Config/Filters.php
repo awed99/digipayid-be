@@ -76,14 +76,14 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'cors',
-            'cors2',
+            // 'cors2',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
             // 'cors',
-            'cors2',
+            // 'cors2',
             //     // 'honeypot',
             //     // 'secureheaders',
         ],
