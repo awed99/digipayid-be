@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Controllers\affiliator\Transactions;
+namespace App\Controllers\Affiliator\Transactions;
 
 use Config\Services;
 use CodeIgniter\Files\File;
