@@ -121,9 +121,13 @@ class Orders extends BaseController
 
         if ((int)$user->id_user_parent > 0) {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user_parent)->get()->getNumRows();
         } else {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user)->get()->getNumRows();
         }
+        $is_free = $totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
+        // $totalTRX = count($builder);
 
         $db->close();
         $finalData = json_encode($builder);
@@ -131,6 +135,7 @@ class Orders extends BaseController
             "code": 0,
             "error": "",
             "message": "",
+            "is_free": ' . $is_free . ',
             "data": ' . $finalData . ',
             "saldo": ' . $user->saldo . ',
             "tax_percentage": ' . $user->tax_percentage . '
@@ -172,14 +177,9 @@ class Orders extends BaseController
 
         if ((int)$user->id_user_parent > 0) {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
-        } else {
-            $builder = $db->table('app_transaction_products_temp_' . $user->id_user);
-        }
-
-
-        if ((int)$user->id_user_parent > 0) {
             $builder0 = $db->table('app_product_' . $user->id_user_parent);
         } else {
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user);
             $builder0 = $db->table('app_product_' . $user->id_user);
         }
         $q = $builder0->whereIn('id_product', ($dataPost->id_product));
@@ -187,12 +187,16 @@ class Orders extends BaseController
         $data = array();
         foreach ($q->get()->getResultArray() as $value) {
             $_data = $value;
-            $_data['product_qty'] = 1;
+            $qty = $builder->where('id_product', $_data['id_product'])->get()->getRow()->product_qty ?? 0;
+            $_data['product_qty'] = ((int)$qty > 0) ? (int)$qty + 1 : 1;
 
             array_push($data, $_data);
         }
+        // print_r($data);
+        // die;
 
-        $query = $builder->insertBatch($data);
+        // $query = $builder->insertBatch($data);
+        $query = $builder->upsertBatch($data);
         $dataFinal = $builder->get()->getResult();
         $db->close();
         $finalData = json_encode($dataFinal);
