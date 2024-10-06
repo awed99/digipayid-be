@@ -400,36 +400,43 @@ function get_services_price($country)
 
 function upload_file($_request)
 {
-    $file = $_request->getFile('userfile');
-    $validationRule = [
-        'userfile' => [
-            'label' => 'Image File',
-            'rules' => [
-                'uploaded[userfile]',
-                'is_image[userfile]',
-                'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp]',
-                'max_size[userfile,100]',
-                'max_dims[userfile,1024,768]',
+    $request = request();
+    $req = $request->getPost();
+    $file = $request->getFile('userfile');
+    if ($file) {
+
+        $validationRule = [
+            'userfile' => [
+                'label' => 'Image File',
+                'rules' => [
+                    'uploaded[userfile]',
+                    'is_image[userfile]',
+                    'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp]',
+                    'max_size[userfile,100]',
+                    'max_dims[userfile,1024,768]',
+                ],
             ],
-        ],
-    ];
-    if ($file->getSizeByUnit('mb') > 2) {
-        return ['errors' => "File size must < 2mb!"];
-    }
-    if (
-        $file->getMimeType() !== 'image/jpg' &&
-        $file->getMimeType() !== 'image/jpeg' &&
-        $file->getMimeType() !== 'image/png' &&
-        $file->getMimeType() !== 'image/webp'
-    ) {
-        return ['errors' => "File type must an image!"];
-    }
+        ];
+        if ($file->getSizeByUnit('mb') > 2) {
+            return ['errors' => "File size must < 2mb!"];
+        }
+        if (
+            $file->getMimeType() !== 'image/jpg' &&
+            $file->getMimeType() !== 'image/jpeg' &&
+            $file->getMimeType() !== 'image/png' &&
+            $file->getMimeType() !== 'image/webp'
+        ) {
+            return ['errors' => "File type must an image!"];
+        }
 
-    $newName = $file->getRandomName();
-    $x = $file->move(ROOTPATH  . 'public/images', $newName);
+        $newName = $file->getRandomName();
+        $x = $file->move(ROOTPATH  . 'public/images', $newName);
 
-    $data = ['name' => '/images/' . $newName];
-    return $data;
+        $data = ['name' => '/images/' . $newName];
+        return $data;
+    } else {
+        return isset($req['product_image_url']) ? $req['product_image_url'] : (isset($req->product_image_url) ? $req->product_image_url : '');
+    }
     // return view('upload_form', $data);
 }
 
