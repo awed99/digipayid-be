@@ -303,12 +303,12 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 20000); //timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 200000); //timeout in seconds
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     } else {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout in seconds
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300); //timeout in seconds
     }
 
     // In real life you should use something like:
@@ -400,36 +400,43 @@ function get_services_price($country)
 
 function upload_file($_request)
 {
-    $file = $_request->getFile('userfile');
-    $validationRule = [
-        'userfile' => [
-            'label' => 'Image File',
-            'rules' => [
-                'uploaded[userfile]',
-                'is_image[userfile]',
-                'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp]',
-                'max_size[userfile,100]',
-                'max_dims[userfile,1024,768]',
+    $request = request();
+    $req = $request->getPost();
+    $file = $request->getFile('userfile');
+    if ($file) {
+
+        $validationRule = [
+            'userfile' => [
+                'label' => 'Image File',
+                'rules' => [
+                    'uploaded[userfile]',
+                    'is_image[userfile]',
+                    'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp]',
+                    'max_size[userfile,100]',
+                    'max_dims[userfile,1024,768]',
+                ],
             ],
-        ],
-    ];
-    if ($file->getSizeByUnit('mb') > 2) {
-        return ['errors' => "File size must < 2mb!"];
-    }
-    if (
-        $file->getMimeType() !== 'image/jpg' &&
-        $file->getMimeType() !== 'image/jpeg' &&
-        $file->getMimeType() !== 'image/png' &&
-        $file->getMimeType() !== 'image/webp'
-    ) {
-        return ['errors' => "File type must an image!"];
-    }
+        ];
+        if ($file->getSizeByUnit('mb') > 2) {
+            return ['errors' => "File size must < 2mb!"];
+        }
+        if (
+            $file->getMimeType() !== 'image/jpg' &&
+            $file->getMimeType() !== 'image/jpeg' &&
+            $file->getMimeType() !== 'image/png' &&
+            $file->getMimeType() !== 'image/webp'
+        ) {
+            return ['errors' => "File type must an image!"];
+        }
 
-    $newName = $file->getRandomName();
-    $x = $file->move(ROOTPATH  . 'public/images', $newName);
+        $newName = $file->getRandomName();
+        $x = $file->move(ROOTPATH  . 'public/images', $newName);
 
-    $data = ['name' => '/images/' . $newName];
-    return $data;
+        $data = ['name' => '/images/' . $newName];
+        return $data;
+    } else {
+        return isset($req['product_image_url']) ? $req['product_image_url'] : (isset($req->product_image_url) ? $req->product_image_url : '');
+    }
     // return view('upload_form', $data);
 }
 
@@ -617,7 +624,7 @@ function sendWA($phone, $message, $imageLink = null)
         CURLOPT_RETURNTRANSFER => false,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT_MS => 200,
+        CURLOPT_TIMEOUT_MS => 200000,
         CURLOPT_NOSIGNAL => 1,
         CURLOPT_FRESH_CONNECT => 1,
         CURLOPT_SSL_VERIFYPEER => false,
