@@ -42,11 +42,7 @@ class User extends ResourceController
         $dataPost = $request->getJSON();
         $user = cekValidation('/affiliator/master/user/lists');
         $db = db_connect();
-<<<<<<< HEAD
-        $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.user_role', 2)->where('au.id_user_parent', 0)->where('au.reff_code', $user->reff_code)->orderBy('au.merchant_name')->get()->getResult();
-=======
         $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.user_role', 2)->where('au.id_user_parent', 0)->where('au.reff_code', $user->reff_code)->orderBy('au.merchant_name')->get()->getResult();;
->>>>>>> 0476185776d1d20680c4231851088a6cc63c44df
         $db->close();
         $finalData = json_encode($builder);
         echo '{
@@ -56,10 +52,6 @@ class User extends ResourceController
             "data": ' . $finalData . '
         }';
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 0476185776d1d20680c4231851088a6cc63c44df
     public function postList_Merchant()
     {
         $request = request();
