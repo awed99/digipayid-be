@@ -9,14 +9,15 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 
 
-function xendit_generate_qris($amount, $channel, $reff_id, $user = null)
+function xendit_generate_qris($amount, $reff_id, $user = null)
 {
     $url = getenv('XENDIT_API_DOMAIN') . 'qr_codes'; // url
     // $reff_id = 'DIGIPAYID-'.strtoupper(substr(md5(Date('YmdHis')), 5, 8)); // kode unik untuk transaksi
     $headers = [
         'Accept: application/json',
         'Content-Type: application/json',
-        'api-version: 2022-07-31'
+        'api-version: 2022-07-31',
+        'Authorization: Basic ' . base64_encode((strtolower(getenv('XENDIT_ENV')) === 'production') ? getenv('XENDIT_API_KEY') . ':' : getenv('XENDIT_SD_API_KEY') . ':'),
     ];
 
     $req['type'] = "DYNAMIC";
@@ -28,7 +29,7 @@ function xendit_generate_qris($amount, $channel, $reff_id, $user = null)
 
     $res = curl($url, true, $bodyReq, $headers);
     $resOBJ = json_decode($res);
-    print_r($resOBJ);
+    return ($resOBJ);
     die;
     unset($resOBJ->data->other);
     unset($resOBJ->data->panduan_pembayaran);

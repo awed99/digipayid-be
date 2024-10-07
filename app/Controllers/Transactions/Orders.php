@@ -323,7 +323,23 @@ class Orders extends BaseController
             array_push($data, $_data);
         }
 
-        $payment = ((int)$dataPost['id_payment_method'] === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
+        // print_r($dataPost);
+
+        if (getenv('PG') === 'TOKOPAY') {
+            $payment = ((int)$dataPost['id_payment_method'] === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
+
+            return response()->setJSON($payment);
+            die;
+        } elseif (getenv('PG') === 'XENDIT') {
+            if ($dataPost['payment_method_code'] === 'QRIS') {
+                $payment = ((int)$dataPost['id_payment_method'] === 0) ? '{}' : json_encode(xendit_generate_qris($dataPost['amount_to_pay'], $dataPost['invoice_number'], $user));
+
+                return response()->setJSON($payment);
+                die;
+            }
+        } else {
+            $payment = '{}';
+        }
 
         $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
         $dataPost['payment_response'] = ((int)$dataPost['id_payment_method'] === 0) ? null : $paymentJSON;
