@@ -238,4 +238,80 @@ class Product extends BaseController
             "data": ' . $finalData . '
         }';
     }
+
+    public function postIngredient()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/product/ingredient');
+        $db = db_connect();
+        $builder = $db->table('app_ingredient_' . $user->id_user)->get()->getResult();
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
+    public function postIngredient_create()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/product/ingredient_create');
+        $db = db_connect();
+        $builder = $db->table('app_ingredient_' . $user->id_user);
+        $query = $builder->insert($dataPost);
+        $dataFinal = $builder->get()->getResult();
+        $db->close();
+        $finalData = json_encode($dataFinal);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
+    public function postIngredient_update()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/product/ingredient_update');
+        $db = db_connect();
+        $builder = $db->table('app_ingredient_' . $user->id_user);
+        $query = $builder->where('id_bahan', $dataPost->id_bahan);
+        $query->update($dataPost);
+        $dataFinal = $builder->get()->getResult();
+        $db->close();
+        $finalData = json_encode($dataFinal);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
+    public function postIngredient_delete()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/product/ingredient_delete');
+        $db = db_connect();
+        $builder = $db->table('app_ingredient_' . $user->id_user);
+        $query = $builder->where('id_bahan', $dataPost->id_bahan);
+        $query->delete();
+        $dataFinal = $builder->get()->getResult();
+        $db->close();
+        $finalData = json_encode($dataFinal);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
 }
