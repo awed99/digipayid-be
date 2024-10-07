@@ -245,4 +245,21 @@ Pemilik Merchant *" . $dataPost->merchant_name . "* menghapus akun anda (*" . $d
             "data": ' . $finalData . '
         }';
     }
+
+    public function postMaster_satuan()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/user/master_satuan');
+        $db = db_connect();
+        $builder = $db->table('master_satuan')->where('status', 1)->get()->getResult();
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
 }
