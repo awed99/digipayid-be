@@ -1,4 +1,5 @@
 <?php
+set_time_limit(300);
 
 use Dompdf\Dompdf;
 
@@ -22,14 +23,24 @@ function htmlToImage($html, $invoice_number, $url)
         $contents = fread($fpx, filesize($urlHTML));
         fclose($fpx);
 
+
+        define("DOMPDF_ENABLE_HTML5PARSER", true);
+        define("DOMPDF_ENABLE_FONTSUBSETTING", true);
+        define("DOMPDF_UNICODE_ENABLED", true);
+        define("DOMPDF_DPI", 350);
+        define("DOMPDF_ENABLE_REMOTE", true);
+
         $dompdf = new Dompdf();
         $options = $dompdf->getOptions();
-        $dompdf->setPaper(array(0, 0, 500, 1000), 'portrait');
+        $dompdf->setPaper(array(0, 0, 700, 1500), 'portrait');
+        // $dompdf->setPaper(array(0, 0, 595, 841), 'portrait');
 
         $options->set(array(
             'isRemoteEnabled' => true,
-            'isHtml5ParserEnabled' => true
+            'isHtml5ParserEnabled' => true,
+            'dpi' => 350,
         ));
+        // $dompdf->setDpi(350);
         $dompdf->setOptions($options);
         $dompdf->loadHtml($contents);
 

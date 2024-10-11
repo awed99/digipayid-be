@@ -491,7 +491,22 @@ class Journal extends BaseController
         $db = db_connect();
 
         $dataPost['invoice_number'] = isset($dataPost['invoice_number']) ? $dataPost['invoice_number'] : 'DEPOSIT-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
-        $payment = json_encode(tokopay_generate_qris((int)$dataPost['amount'], $dataPost['payment_method'], $dataPost['invoice_number'], $user));
+
+
+        if ((int)$user->id_user_parent > 0) {
+            $trx = $db->table('app_transactions_' . $user->id_user_parent)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+        } else {
+            $trx = $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+        }
+
+
+        if (getenv('PG') === 'TOKOPAY') {
+            $payment = json_encode(tokopay_generate_qris((int)$dataPost['amount'], $dataPost['payment_method'], $dataPost['invoice_number'], $user));
+        } else if (getenv('PG') === 'XENDIT') {
+            $payment = ($trx->payment_response);
+        } else {
+            $payment = '{}';
+        }
 
 
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->orWhere('id_user_parent', $user->id_user)->get()->getRow();

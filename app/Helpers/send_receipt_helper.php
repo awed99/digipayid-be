@@ -198,6 +198,17 @@ function sendReceipt($type, $dataPost, $transaction, $dataProducts, $user, $paym
 
 function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $payment)
 {
+  // print_r($type);
+  // print_r('------');
+  // print_r($dataPost);
+  // print_r('------');
+  // print_r($transaction);
+  // print_r('------');
+  // print_r($dataProducts);
+  // print_r('------');
+  // print_r($user);
+  // print_r('------');
+  // print_r($payment);
   // $mpdf = new \Mpdf\Mpdf();
   $products = '';
   foreach ($dataProducts as $product) {
@@ -209,27 +220,29 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
 
   $detailPayment = '';
   if (isset($payment->res->data->no_va)) {
-    $detailPayment = '
-        <tr style="border: 1px solid black;border-collapse: collapse;">
+    $detailPayment = '<tr style="border: 1px solid black;border-collapse: collapse;">
             <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Nomor VA / Transaksi</span></td>
             <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;padding-left:30px">' . $payment->res->data->no_va . '</span></td>
         </tr>';
   } elseif (isset($payment->res->data->pay_url)) {
-    $detailPayment = '
-        <tr style="border: 1px solid black;border-collapse: collapse;">
+    $detailPayment = '<tr style="border: 1px solid black;border-collapse: collapse;">
             <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Cara Bayar</span></td>
             <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><a href="' . $payment->res->data->pay_url . '" target="_blank"><button style="border: none;border-radius: 5px;color: white;padding: 5px 10px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;width: 100px;background-image: linear-gradient(98deg, #6ACDFF, #16B1FF 94%);">Bayar Sekarang</button></a></td>
         </tr>';
-  } elseif (isset($payment->res->data->qr_link)) {
-    $detailPayment = '
-        <tr style="border: 1px solid black;border-collapse: collapse;">
-            <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">QRIS</span></td>
-            <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><img src="' . $payment->res->data->qr_link . '"></td>
+  } elseif (isset($payment->res->data->paylater_url)) {
+    $detailPayment = '<tr style="border: 1px solid black;border-collapse: collapse;">
+            <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><span style="font-size:14px;">Cara Bayar</span></td>
+            <td style="padding:10px;border: 1px solid black;border-collapse: collapse;"><a href="' . $payment->res->data->paylater_url . '" target="_blank"><button style="border: none;border-radius: 5px;color: white;padding: 5px 10px;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin: 4px 2px;cursor: pointer;width: 100px;background-image: linear-gradient(98deg, #6ACDFF, #16B1FF 94%);">Bayar Sekarang</button></a></td>
         </tr>';
+  } elseif (isset($payment->res->data->qr_link)) {
+    // $detailPayment = '<tr style="border-collapse: collapse;">
+    //         <td style="padding:10px;border-collapse: collapse;text-align: center" colspan="2"><img src="' . $payment->res->data->qr_link . '" width="250"></td>
+    //     </tr>';
+    // $detailPayment = '';
   }
 
-  $htmlBody = '
-  
+  $htmlBody = '<html>
+  <head>
   <style>
     @page {
       size: 490px 1000px;
@@ -244,35 +257,37 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
       z-index: -999
     }
   </style>
+  </head>
 
-  <div style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
+  <body>
+  <div id="bgimg" style="font-family: Arial, sans-serif;color: #333;margin: 0;padding: 0;">
       <div style="width: 450px;background-color: #f6f6f6;border: 1px solid #ddd;padding: 20px;border-radius: 10px;">
         <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
-          <h3 style="margin: 0;font-size: 30px"><b>DIGIPAYID</b></h3>
+          <h3 style="margin: 0;font-size: 20px"><b>DIGIPAYID</b></h3>
           <p style="margin: 0">Detail Tagihan</p>
         </div>
 
         <div style="padding: 20px; background-color: #fff">
           <div style="text-align: center">
-            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_name . '</p>
-            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">WA: ' . $user->merchant_wa . '</p>
-            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . $user->merchant_address . '</p>
+            <p style="text-align: center;font-size: 12px;color: #999;margin-bottom: 10px;">' . $user->merchant_name . '</p>
+            <p style="text-align: center;font-size: 12px;color: #999;margin-bottom: 10px;">WA: ' . $user->merchant_wa . '</p>
+            <p style="text-align: center;font-size: 12px;color: #999;margin-bottom: 10px;">' . $user->merchant_address . '</p>
             <p style="text-align: center; font-weight: bold">' . $dataPost['invoice_number'] . '</p>
-            <p style="text-align: center;font-size: 14px;color: #999;margin-bottom: 10px;">' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</p>
+            <p style="text-align: center;font-size: 12px;color: #999;margin-bottom: 10px;">' . date('l, d F Y H:i', strtotime($transaction->time_transaction)) . '</p>
           </div>
 
           <div style="text-align: center">
-            <p style="font-size: 30px;background-color: #fff;padding: 10px;border: 1px solid #ddd;margin: 0;">Rp. <span>' . format_rupiah($transaction->amount) . '</span></p>
+            <p style="font-size: 20px;background-color: #fff;padding: 10px;border: 1px solid #ddd;margin: 0;">Rp. <span>' . format_rupiah($transaction->amount) . '</span></p>
           </div>
 
           <div style="margin-top: 20px;padding: 10px;border-top: 1px solid #ddd;border-bottom: 1px solid #ddd;">
-            <table style="width: 100%; font-size: 16px">
+            <table style="width: 100%; font-size: 12px">
               ' . $products . '
             </table>
           </div>
 
           <div style="margin-top: 10px">
-            <table style="width: 100%; font-size: 18px">
+            <table style="width: 100%; font-size: 12px">
               <tr>
                 <td>Subtotal</td>
                 <td style="text-align: right">Rp. <span>' . format_rupiah((int)$transaction->amount - (int)$transaction->amount_tax - (int)$transaction->fee) . '</span></td>
@@ -289,18 +304,19 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
           </div>
 
           <div style="margin-top: 10px">
-            <table style="width: 100%;font-size: 18px;padding: 10px 0;border-top: 1px solid #ddd;">
+            <table style="width: 100%;font-size: 12px;padding: 10px 0;border-top: 1px solid #ddd;">
               <tr>
                 <td><strong>Total</strong></td>
                 <td style="text-align: right">
                   <strong>Rp. <span>' . format_rupiah($transaction->amount) . '</span></strong>
                 </td>
               </tr>
+              ' . (($detailPayment !== '') ? $detailPayment  : '') . '
             </table>
           </div>
 
           <div style="margin-top: 10px">
-            <table style="width: 100%; font-size: 18px">
+            <table style="width: 100%; font-size: 12px">
               <tr>
                 <td>Status</td>
                 <td style="text-align: right"><strong>' . (((int)$transaction->status_transaction === 1) ? 'LUNAS' : 'BELUM LUNAS') . '</strong></td>
@@ -327,7 +343,7 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
           </div>
         </div>
 
-        <div style="text-align: center;font-size: 12px;color: #666;margin-top: 20px;">
+        <div style="text-align: center;font-size: 10px;color: #666;margin-top: 20px;">
           <p>Terima kasih telah berbelanja di ' . $user->merchant_name . '</p>
           <p>
             <a href="https://www.digipayid.com" style="color: #2c3e50; text-decoration: none">www.digipayid.com</a>
@@ -335,9 +351,17 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
         </div>
       </div>
     </div>
+    </body>
+    </html>
     ';
 
+  // echo $htmlBody;
+  // die;
+
   $urlIMG = "billings/" . $dataPost['invoice_number'];
+
+  // print_r($htmlBody);
+  // return response()->setStatusCode(200)->setBody($htmlBody);
 
   $img = htmlToImage($htmlBody, $dataPost['invoice_number'], $urlIMG);
 
@@ -383,21 +407,28 @@ function sendBilling($type, $dataPost, $transaction, $dataProducts, $user, $paym
       $caraBayar = ($payment->res->data->checkout_url);
     } elseif (isset($payment->res->data->pay_url)) {
       $caraBayar = ($payment->res->data->pay_url);
+    } elseif (isset($payment->res->data->paylater_url)) {
+      $caraBayar = ($payment->res->data->paylater_url);
     }
+    $file =  $img;
 
-    if (isset($payment->res->data->qr_link)) {
-      $file = $payment->res->data->qr_link;
-    } else {
-      $file =  $img;
-      // $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
-    }
+    // if (isset($payment->res->data->qr_link)) {
+    //   $file = $payment->res->data->qr_link;
+    // } else {
+    //   $file =  $img;
+    //   // $file =  urlShortener($img) . '?file=' . substr(md5(Date('YmdHis')), 5, 10) . '.png';
+    // }
 
     $message = '*TAGIHAN ' . $dataPost['invoice_number'] . '*
 
 Total Bayar : *IDR ' . format_rupiah($transaction->amount_to_pay) . '*
 Metode Bayar : *' . ($transaction->payment_method_name) . '*
-Link Bayar : *' . $caraBayar . '*';
-    // sendWhatsapp($dataPost['wa_customer'], $message, $file);
+*' . $caraBayar . '*';
+    sendWhatsapp($dataPost['wa_customer'], $message, $file);
+    if (isset($payment->res->data->qr_link)) {
+      // $file = $payment->res->data->qr_link;
+      sendWhatsapp($dataPost['wa_customer'], $message, $payment->res->data->qr_link);
+    }
 
     $id_user = (int)$user->id_user;
     if ((int)$user->id_user_parent > 0) {
@@ -422,7 +453,7 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
 {
   $htmlBody = '<style>
       @page {
-        size: 490px 1000px;
+        size: 490px 1500px;
         margin: 0.5in;
       }
       #bgimg {
@@ -430,12 +461,12 @@ function sendReceiptTopup($type, $invoice_number, $dataJournal, $amountDebet, $u
         left: -0.5in;
         top: -0.5in;
         width: 500px;
-        height: 1000px;
+        height: 1500px;
         z-index: -999;
       }
     </style>
 
-    <div style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0">
+    <div id="bgimg" style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0">
       <div style="width: 450px;background-color: #f6f6f6;border: 1px solid #ddd;padding: 20px;border-radius: 10px;overflow: hidden;">
         <div style="text-align: center;background-color: #6f42c1;color: #fff;padding: 20px;border-radius: 10px 10px 0 0;">
           <h3 style="margin: 0; font-size: 30px"><b>DIGIPAYID</b></h3>
