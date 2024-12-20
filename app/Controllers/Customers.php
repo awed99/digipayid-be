@@ -14,7 +14,7 @@ class Customers extends BaseController
 
     public function postCheck_nik()
     {
-        cekValidation0('customers/check_nik');
+        cekValidation('customers/check_nik');
         $request = request();
         $req = $request->getJSON(true);
 
@@ -33,7 +33,7 @@ class Customers extends BaseController
 
     public function postCheck_trx()
     {
-        cekValidation0('customers/check_trx');
+        cekValidation('customers/check_trx');
         $request = request();
         $req = $request->getJSON(true);
 
@@ -55,7 +55,7 @@ class Customers extends BaseController
 
     public function postCreate()
     {
-        // cekValidation0('customers/create');
+        // cekValidation('customers/create');
         $request = request();
         $req = $request->getJSON(true);
 
@@ -159,7 +159,7 @@ class Customers extends BaseController
 
     public function postInitiate_paylater()
     {
-        // cekValidation0('customers/initiate_paylater');
+        // cekValidation('customers/initiate_paylater');
         $request = request();
         $req = $request->getJSON(true);
 

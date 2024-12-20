@@ -9,6 +9,407 @@ class Callbacks extends BaseController
         return view('welcome_message');
     }
 
+    public function postXendit_qris()
+    {
+        // $db = db_connect();
+        $request = request();
+        $dtx = $request->getJSON(true);
+        $dt = $dtx['data'];
+        // print_r($dt);
+
+        // $sampleJSON = '{
+        //     "event": "qr.payment",
+        //     "api_version": "2022-07-31",
+        //     "business_id": "58cd618ba0464eb64acdb246",
+        //     "created": "2022-10-22T06:30:05.86474Z", 
+        //     "data": {
+        //         "id": "qrpy_8182837te-87st-49ing-8696-1239bd4d759c",
+        //         "business_id": "58cd618ba0464eb64acdb246",
+        //         "currency": "IDR",
+        //         "amount": 10000,
+        //         "status": "SUCCEEDED",
+        //         "created": "2022-10-22T06:30:05.86474Z",
+        //         "qr_id": "qr_61cb3576-3a25-4d35-8d15-0e8e3bdba4f2",
+        //         "qr_string": "0002010102##########CO.XENDIT.WWW011893600#######14220002152#####414220010303TTT####015CO.XENDIT.WWW02180000000000000000000TTT52045######ID5911XenditQRIS6007Jakarta6105121606##########3k1mOnF73h11111111#3k1mOnF73h6v53033605401163040BDB",
+        //         "reference_id": "order-id-1666420204",
+        //         "type": "DYNAMIC",
+        //         "channel_code": "ID_DANA",
+        //         "expires_at": "2022-10-23T09:56:43.60445Z",
+        //         "description": "",
+        //         "basket": null,
+        //         "metadata": null,
+        //         "payment_detail": {
+        //             "receipt_id": "000111666",
+        //             "source": "GOPAY",
+        //             "name": null,
+        //             "account_details": null
+        //         }
+        //     }
+        // }';
+        // $dt = json_decode($sampleJSON, true);
+        // print_r($dt);
+
+        $dt['payment_detail_name'] = isset($dt['payment_detail']['name']) ? $dt['payment_detail']['name'] : null;
+        $dt['payment_detail_source'] = isset($dt['payment_detail']['source']) ? $dt['payment_detail']['source'] : null;
+        $dt['payment_detail_receipt_id'] = isset($dt['payment_detail']['receipt_id']) ? $dt['payment_detail']['receipt_id'] : null;
+        $dt['payment_detail_account_details'] = isset($dt['payment_detail']['account_details']) ? $dt['payment_detail']['account_details'] : null;
+        unset($dt['payment_detail']);
+
+        // $rawRequestInput = file_get_contents("php://input");
+
+        $db = db_connect();
+
+        $db->table('pg_qris_callback')->insert($dt);
+
+        if ($dt['status'] === 'SUCCEEDED') {
+            if ($dt['type'] === 'STATIC') {
+                $data = $db->table('view_open_qris_paylater')->where('amount', $dt['amount'])->get()->getRowArray();
+                if ($data) {
+                    $this->sendNotif_xendit($dt, $data);
+                }
+            } else {
+                $this->sendNotif_xendit($dt);
+                // $this->sendNotif($dt);
+            }
+        }
+
+        $db->close();
+
+        $myfile = fopen("callbacks/QRIS_" . $dt['reference_id'] . "_" . date("YmdHis") . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
+        $txt = json_encode($dt);
+        fwrite($myfile, $txt);
+        fclose($myfile);
+
+
+        header('Content-type: application/json');
+        ob_end_clean();
+        ignore_user_abort(true); // just to be safe
+        ob_start();
+
+        ///////////////////////
+        return response()->setStatusCode(200)->setJSON($dt);
+        echo '{"status": true}';
+        ///////////////////////
+
+        header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
+        $size = ob_get_length();
+        header("Content-Length: $size");
+        header("Connection: close");
+        ob_end_flush(); // Strange behaviour, will not work
+        flush(); // Unless both are called !
+
+        ignore_user_abort(true); // just to be safe
+        session_write_close(); //close session file on server side to avoid blocking other requests
+
+        response()->setJSON($dt);
+    }
+
+    public function postXendit_paylater()
+    {
+        // $db = db_connect();
+        $request = request();
+        $dtx = $request->getJSON(true);
+        $dt = $dtx['data'];
+
+        if ($dt['status'] === 'SUCCEEDED') {
+            $this->sendNotif_xendit($dt);
+        }
+
+        $myfile = fopen("callbacks/PAYLATER_" . $dt['reference_id'] . "_" . date("YmdHis") . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
+        $txt = json_encode($dt);
+        fwrite($myfile, $txt);
+        fclose($myfile);
+
+
+        header('Content-type: application/json');
+        ob_end_clean();
+        ignore_user_abort(true); // just to be safe
+        ob_start();
+
+        ///////////////////////
+        return response()->setStatusCode(200)->setJSON($dt);
+        echo '{"status": true}';
+        ///////////////////////
+
+        header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
+        $size = ob_get_length();
+        header("Content-Length: $size");
+        header("Connection: close");
+        ob_end_flush(); // Strange behaviour, will not work
+        flush(); // Unless both are called !
+
+        ignore_user_abort(true); // just to be safe
+        session_write_close(); //close session file on server side to avoid blocking other requests
+
+        response()->setJSON($dt);
+    }
+
+    public function postXendit_disbursement()
+    {
+        // $db = db_connect();
+        $request = request();
+        $dtx = $request->getJSON(true);
+        $dt = $dtx['data'];
+        $reff_id = $dt['reference_id'] ?? $dt['external_id'];
+        // print_r($dt);
+
+        //         $sampleJSON = '{
+        //     "id": "670a4d16c3bed9c995f08d16",
+        //     "user_id": "66f07e7be8c0cf193032441b",
+        //     "external_id": "WITHDRAW-40-4C33C67E",
+        //     "amount": 40000,
+        //     "bank_code": "BCA",
+        //     "account_holder_name": "Dewa Danu Brata",
+        //     "disbursement_description": "WITHDRAW-40-4C33C67E (Bank Central Asia (BCA))",
+        //     "status": "PENDING"
+        // }';
+
+        //         $sampleJSON = '{
+        //     "id": "670a4d16c3bed9c995f08d16",
+        //     "amount": 40000,
+        //     "status": "FAILED",
+        //     "created": "2024-10-12T10:19:02.593Z",
+        //     "updated": "2024-10-12T10:19:02.775Z",
+        //     "user_id": "66f07e7be8c0cf193032441b",
+        //     "bank_code": "BCA",
+        //     "external_id": "WITHDRAW-40-4C33C67E",
+        //     "failure_code": "INSUFFICIENT_BALANCE",
+        //     "account_holder_name": "Dewa Danu Brata",
+        //     "disbursement_description": "WITHDRAW-40-4C33C67E (Bank Central Asia (BCA))"
+        // }';
+        //         $dt = json_decode($sampleJSON, true);
+        //         print_r($dt);
+
+        // $dt['payment_detail_name'] = isset($dt['payment_detail']['name']) ? $dt['payment_detail']['name'] : null;
+        // $dt['payment_detail_source'] = isset($dt['payment_detail']['source']) ? $dt['payment_detail']['source'] : null;
+        // $dt['payment_detail_receipt_id'] = isset($dt['payment_detail']['receipt_id']) ? $dt['payment_detail']['receipt_id'] : null;
+        // $dt['payment_detail_account_details'] = isset($dt['payment_detail']['account_details']) ? $dt['payment_detail']['account_details'] : null;
+        // unset($dt['payment_detail']);
+
+        // $rawRequestInput = file_get_contents("php://input");
+
+        $db = db_connect();
+
+        $db->table('pg_disbursement_callback')->upsert($dt);
+
+        if (strtoupper($dt['status']) === 'SUCCEEDED') {
+            $dt['status'] = 'COMPLETED';
+        }
+        // if ($dt['status'] === 'SUCCEEDED') {
+            $this->sendNotif_xendit($dt);
+        // }
+
+        $db->close();
+
+        $myfile = fopen("callbacks/DISBURSEMENT_" . $reff_id . "_" . date("YmdHis") . ".txt", "w") or $this->response->setStatusCode(500)->setBody('Unable to open file!');
+        $txt = json_encode($dt);
+        fwrite($myfile, $txt);
+        fclose($myfile);
+
+
+        header('Content-type: application/json');
+        ob_end_clean();
+        ignore_user_abort(true); // just to be safe
+        ob_start();
+
+        ///////////////////////
+        return response()->setStatusCode(200)->setJSON($dt);
+        echo '{"status": true}';
+        ///////////////////////
+
+        header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
+        $size = ob_get_length();
+        header("Content-Length: $size");
+        header("Connection: close");
+        ob_end_flush(); // Strange behaviour, will not work
+        flush(); // Unless both are called !
+
+        ignore_user_abort(true); // just to be safe
+        session_write_close(); //close session file on server side to avoid blocking other requests
+
+        response()->setJSON($dt);
+    }
+
+
+
+    private function sendNotif_xendit($dt, $dtx = false)
+    {
+
+        $db = db_connect();
+
+        $reff_id = $dt['reference_id'] ?? $dt['external_id'];
+        $status = 0;
+        $status2 = 'PENDING';
+        if (strtoupper($dt['status']) === 'PENDING') {
+            $status = 0;
+            $status2 = 'PENDING';
+        } elseif (strtoupper($dt['status']) === 'SUCCEEDED') {
+            $status = 1;
+            $status2 = 'BERHASIL';
+        } elseif (strtoupper($dt['status']) === 'COMPLETED') {
+            $status = 2;
+            $status2 = 'BERHASIL';
+        } elseif (strtoupper($dt['status']) === 'FAILED') {
+            $status = 9;
+            $status2 = 'GAGAL';
+        }
+
+        if ($dtx) {
+            $idUser = $dtx['id_user'] ?? '0';
+        } else {
+            $idUser = explode('-', $reff_id)[1] ?? '0';
+        }
+        $typeMoney = explode('-', $reff_id)[0] ?? 'Bayar';
+        $noWA = explode('-', $reff_id)[3] ?? '081290383389';
+        $tblTrx = 'app_transactions_' . $idUser;
+        // print_r($status);
+        // print_r($dt);
+        // print_r($idUser);
+        // print_r($tblTrx);
+        // die;
+
+        $updateTrxUser['status_transaction'] = $status;
+        $updateTrxUser['status_payment'] = $status;
+        $updateTrxUser['time_transaction_success'] = date('Y-m-d H:i:s');
+        $user = $db->table('app_users')->where('id_user', $idUser)->get()->getRow();
+        // $updated = $db->table($tblTrx)->where('invoice_number', $reff_id)->get()->getRow();
+        // echo ($db->getLastQuery());
+        // print_r($updated);
+        // die;
+
+        // if ($status === 1) {
+            $db->table($tblTrx)->where('invoice_number', $reff_id)->update($updateTrxUser);
+            $builder = $db->table($tblTrx)->where('invoice_number', $reff_id)->get();
+            $builder1 = $db->table('app_transaction_products_' . $idUser)->where('invoice_number', $reff_id)->get();
+            $dataTRX = $db->table($tblTrx)->where('invoice_number', $reff_id)->get()->getRowArray();
+            // print_r($dataTRX);
+            // die;
+
+            // $payment = ((int)$dataTRX['id_payment_method'] === 0) ? null : json_encode(tokopay_generate_qris((int)$dataTRX['amount_to_pay'], $dataTRX['payment_method_code'], $dataTRX['invoice_number'], $user));
+            // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+
+            if ((isset($dataTRX['email_customer']) && ($dataTRX['email_customer'] != '')) || (isset($user->email) && $user->email != '')) {
+                if ($typeMoney === 'Bayar' || $typeMoney === 'DIGIPAYID') {
+                    sendReceipt('email', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, null, $dataTRX['nama']);
+                } else if ($typeMoney === 'DEPOSIT' || $typeMoney === 'WITHDRAW' || $typeMoney === 'GAJI') {
+                    if ($typeMoney === 'DEPOSIT') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 201)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_debet', 0)->get();
+                        sendReceiptTopup('email', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                    } else if ($typeMoney === 'WITHDRAW') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 301)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_credit', 0)->get();
+                        sendReceiptWithdraw('email', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                    } else if ($typeMoney === 'GAJI') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 9002)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_credit', 0)->get();
+                        sendReceiptWithdraw('email', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                    }
+                }
+            }
+
+            if ((isset($dataTRX['wa_customer']) && ($dataTRX['wa_customer'] != '')) || (isset($user->merchant_wa) && $user->merchant_wa != '')) {
+                if ($typeMoney === 'Bayar' || $typeMoney === 'DIGIPAYID') {
+            
+                    // sendReceipt('whatsapp_payment', $dataTRX, 
+                    // $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), 
+                    // $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), 
+                    // $user, 
+                    // json_decode($paymentJSON),
+                    // $dataTRX['nama']);
+                    
+                    sendReceipt('whatsapp_payment', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, null, $dataTRX['nama']);
+                    
+                    sendReceipt('whatsapp', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, null, $dataTRX['nama']);
+                } else if ($typeMoney === 'DEPOSIT' || $typeMoney === 'WITHDRAW' || $typeMoney === 'GAJI') {
+                    if ($typeMoney === 'DEPOSIT') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 201)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_debet', 0)->get();
+                        sendReceiptTopup('whatsapp', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                    } else if ($typeMoney === 'WITHDRAW') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 301)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_credit', 0)->get();
+                        sendReceiptWithdraw('whatsapp', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                    }else if ($typeMoney === 'GAJI') {
+                        $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 9002)->get()->getRow()->amount_debet;
+                        $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('amount_credit', 0)->get();
+                        sendReceiptWithdraw('whatsapp', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2);
+                        sendReceiptWithdraw('whatsapp', $reff_id, $builder->getRow(), $amountDebet, $user, $dt, $status2, $noWA);
+                    }
+                }
+            }
+
+            $updateJournalUser['status'] = $status;
+            $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->update($updateJournalUser);
+
+            $updateJournalAdmin['status'] = $status;
+            $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
+            $db->table('admin_journal_finance')->where('invoice_number', $reff_id)->update($updateJournalAdmin);
+
+            $is_affiliator = $db->table('app_users')
+                ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
+                ->where('user_role', 3)->where('user_privilege', 8)
+                ->get()->getRow();
+            if (isset($is_affiliator->id_user)) {
+                $id_affiliator = $is_affiliator->id_user;
+                $tbl_affiliator = "app_journal_finance_" . $id_affiliator;
+                $updateJournalAffiliator['status'] = $status;
+                $updateJournalAffiliator['updated_at'] = date('Y-m-d H:i:s');
+                $db->table($tbl_affiliator)->where('invoice_number', $reff_id)->update($updateJournalAffiliator);
+            }
+        // } else {
+            
+        //     if ($typeMoney == 'WITHDRAW') {
+        //         $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 3)->get();
+        //         $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 301)->get()->getRow()->amount_debet;
+        //         // $payment = json_encode(tokopay_generate_qris((int)$dt['data']['total_dibayar'], $dt['data']['payment_channel'], $reff_id));
+        //         // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+        //         // if (($user->email != '')) {
+        //         //     sendReceiptWithdraw('email', $reff_id, $builder->getRow(), $amountDebet, $user, $dt);
+        //         // }
+    
+        //         // if (($user->merchant_wa != '')) {
+        //         //     sendReceiptWithdraw('whatsapp', $reff_id, $builder->getRow(), $amountDebet, $user, $dt);
+        //         // }
+        //     } else if ($typeMoney == 'DEPOSIT') {
+        //         $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 2)->get();
+        //         $amountCredit = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->where('accounting_type', 201)->get()->getRow()->amount_credit;
+        //         // $payment = json_encode(tokopay_generate_qris((int)$dt['data']['total_dibayar'], $dt['data']['payment_channel'], $reff_id));
+        //         // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+        //         // if (($user->email != '')) {
+        //         //     sendReceiptWithdraw('email', $reff_id, $builder->getRow(), $amountCredit, $user, $dt);
+        //         // }
+    
+        //         // if (($user->merchant_wa != '')) {
+        //         //     sendReceiptWithdraw('whatsapp', $reff_id, $builder->getRow(), $amountCredit, $user, $dt);
+        //         // }
+        //     }
+
+        //     $updateJournalUser['status'] =  $status;
+        //     $updateJournalUser['updated_at'] = date('Y-m-d H:i:s');
+        //     $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $reff_id)->update($updateJournalUser);
+
+        //     $updateJournalAdmin['status'] = $status;
+        //     $updateJournalAdmin['updated_at'] = date('Y-m-d H:i:s');
+        //     $db->table('admin_journal_finance')->where('invoice_number', $reff_id)->update($updateJournalAdmin);
+
+        //     $id_affiliator = $db->table('app_users')
+        //         ->where('reff_code', $user->reff_code)->where('is_active', 1)->where('is_verified', 1)
+        //         ->where('user_role', 3)->where('user_privilege', 8)
+        //         ->get()->getRow()->id_user;
+        //     $tbl_affiliator = "app_journal_finance_" . $id_affiliator;
+        //     $updateJournalAffiliator['status'] = $status;
+        //     $updateJournalAffiliator['updated_at'] = date('Y-m-d H:i:s');
+        //     $db->table($tbl_affiliator)->where('invoice_number', $reff_id)->update($updateJournalAffiliator);
+        // }
+
+        $db->close();
+    }
+
+
+
+
     public function postTokopay()
     {
         // $db = db_connect();
@@ -265,11 +666,23 @@ class Callbacks extends BaseController
             $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
 
             if (($dataTRX['email_customer'] != '')) {
-                sendReceipt('email', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON));
+                sendReceipt('email', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON), $dataTRX['nama']);
             }
 
             if (($dataTRX['wa_customer'] != '')) {
-                sendReceipt('whatsapp', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON));
+            
+                $dt['invoice_number'] = $dt['reff_id'];
+                // sendReceipt('whatsapp_payment', $dt, 
+                // $db->table('app_transactions_' . $idUser)->where('invoice_number', $dt['reff_id'])->orderBy('id_transaction', 'DESC')->get()->getRow(), 
+                // $db->table('app_transaction_products_' . $idUser)->where('invoice_number', $dt['reff_id'])->get()->getResult(), 
+                // $user, 
+                // json_decode($paymentJSON),
+                // $dataTRX['nama']);
+                // print_r($dataTRX);
+                // die();
+                sendReceipt('whatsapp', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON), $dataTRX['nama']);
+                // sleep(1);
+                // sendReceipt('whatsapp_payment', $dataTRX, $builder->getRow(), $builder1->getResult(), $user, json_decode($paymentJSON), $dataTRX['nama']);
             }
 
             $updateJournalUser['status'] = $status;
@@ -289,7 +702,7 @@ class Callbacks extends BaseController
             $updateJournalAffiliator['updated_at'] = date('Y-m-d H:i:s');
             $db->table($tbl_affiliator)->where('invoice_number', $dt['reff_id'])->update($updateJournalAffiliator);
         } else {
-            $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_debet', 0)->get();
+            $builder = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->get();
             $amountDebet = $db->table('app_journal_finance_' . $idUser)->where('invoice_number', $dt['reff_id'])->where('amount_credit', 0)->get()->getRow()->amount_debet;
             // $payment = json_encode(tokopay_generate_qris((int)$dt['data']['total_dibayar'], $dt['data']['payment_channel'], $dt['reff_id']));
             // $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));

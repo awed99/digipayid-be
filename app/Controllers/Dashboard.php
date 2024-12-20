@@ -143,7 +143,8 @@ class Dashboard extends BaseController
         }
 
         $db->close();
-
+        
+        $data['isSetPin'] = $user->pin !== null ? true : false;
         $data['saldo'] = $user->saldo;
         $data['statistics'] = $statistics;
         $data['trends'] = $trends;
@@ -158,6 +159,22 @@ class Dashboard extends BaseController
             "error": "",
             "message": "",
             "data": ' . $dataResponse . '
+        }';
+    }
+
+    public function postCreate_pin()
+    {
+        $request = request();
+        $dataPost = $request->getJSON(true);
+        $user = cekValidation('/dashboard/create_pin');
+        $db = db_connect();
+        $db->table('app_users')->where('id_user', $user->id_user)->update(['pin' => $dataPost['pin']]);
+        $db->close();
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "PIN has been set successfully",
+            "data": null
         }';
     }
 }

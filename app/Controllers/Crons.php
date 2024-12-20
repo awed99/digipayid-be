@@ -28,6 +28,11 @@ class Crons extends BaseController
         // return view('welcome_message');
     }
 
+    public function cliNormalize()
+    {
+        normalize();
+    }
+
     public function postNormalize()
     {
         normalize();
@@ -36,5 +41,15 @@ class Crons extends BaseController
     public function getNormalize()
     {
         normalize();
+    }
+
+    public function postWithdraw()
+    {
+        withdraw();
+    }
+
+    public function cliWithdraw()
+    {
+        withdraw();
     }
 }

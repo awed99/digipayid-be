@@ -21,25 +21,26 @@ class Orders extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
         if ((int)$user->id_user_parent > 0) {
-            $builder = $db->table('app_transactions_' . $user->id_user_parent);
+            $builder = $db->table('app_transactions_' . $user->id_user_parent . ' at');
             if (isset($dataPost->start_date)) {
-                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00');
+                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00')->where($where);
             }
             if (isset($dataPost->end_date)) {
-                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59');
+                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59')->where($where);
             }
-            $result = $builder->orderBy('id_transaction ', 'desc')->get()->getResult();
+            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_'.$user->id_user_parent.' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
         } else {
-            $builder = $db->table('app_transactions_' . $user->id_user);
+            $builder = $db->table('app_transactions_' . $user->id_user . ' at');
             if (isset($dataPost->start_date)) {
-                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00');
+                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00')->where($where);
             }
             if (isset($dataPost->end_date)) {
-                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59');
+                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59')->where($where);
             }
-            $result = $builder->orderBy('id_transaction ', 'desc')->get()->getResult();
+            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_'.$user->id_user.' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
         }
 
         $db->close();
@@ -112,21 +113,27 @@ class Orders extends BaseController
         }';
     }
 
-    public function postGet_temp_products()
+    public function postGet_temp_orders()
     {
         $request = request();
         $dataPost = $request->getJSON();
-        $user = cekValidation('/transactions/orders/get_temp_products');
+        $user = cekValidation('/transactions/orders/get_temp_orders');
         $db = db_connect();
 
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
         if ((int)$user->id_user_parent > 0) {
-            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->get()->getResult();
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where($where)->get()->getResult();
             $totalTRX = $db->table('app_transactions_' . $user->id_user_parent)->get()->getNumRows();
         } else {
-            $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->get()->getResult();
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->where($where)->get()->getResult();
             $totalTRX = $db->table('app_transactions_' . $user->id_user)->get()->getNumRows();
         }
-        $is_free = $totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
+        $is_free = (int)$totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
         // $totalTRX = count($builder);
 
         $db->close();
@@ -142,6 +149,48 @@ class Orders extends BaseController
         }';
     }
 
+    public function postGet_temp_products()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/transactions/orders/get_temp_products');
+        $db = db_connect();
+
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
+        if ((int)$user->id_user_parent > 0) {
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where($where)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user_parent)->get()->getNumRows();
+        } else {
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->where($where)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user)->get()->getNumRows();
+        }
+        $is_free = (int)$totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
+        // $totalTRX = count($builder);
+
+        foreach ($builder as $key => $value) {
+            $builder[$key]->product_price = (int)($value->product_price);
+            $builder[$key]->product_qty = (int)($value->product_qty);
+        }
+
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "is_free": ' . $is_free . ',
+            "data": ' . $finalData . ',
+            "saldo": ' . $user->saldo . ',
+            "tax_percentage": ' . $user->tax_percentage . ',
+            "discount_all_products": ' . $user->discount_all_products . '
+        }';
+    }
+
     public function postCreate_temp_products()
     {
         $request = request();
@@ -150,6 +199,12 @@ class Orders extends BaseController
         $user = cekValidation('/transactions/orders/create_temp_products');
         $db = db_connect();
 
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
         if ((int)$user->id_user_parent > 0) {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
         } else {
@@ -157,8 +212,12 @@ class Orders extends BaseController
         }
 
         $query = $builder->insert($dataPost);
-        $dataFinal = $builder->get()->getResult();
+        $dataFinal = $builder->where($where)->get()->getResult();
         $db->close();
+        foreach ($dataFinal as $key => $value) {
+            $dataFinal[$key]->product_price = (int)($value->product_price);
+            $dataFinal[$key]->product_qty = (int)($value->product_qty);
+        }
         $finalData = json_encode($dataFinal);
         echo '{
             "code": 0,
@@ -175,20 +234,66 @@ class Orders extends BaseController
         $user = cekValidation('/transactions/orders/create_temp_products2');
         $db = db_connect();
 
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
         if ((int)$user->id_user_parent > 0) {
-            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where($where);
             $builder0 = $db->table('app_product_' . $user->id_user_parent);
         } else {
-            $builder = $db->table('app_transaction_products_temp_' . $user->id_user);
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->where($where);
             $builder0 = $db->table('app_product_' . $user->id_user);
         }
         $q = $builder0->whereIn('id_product', ($dataPost->id_product));
+        
+        // print_r($q->get()->getResultArray());
+        // die;
+
+        // print_r($builder->get()->getRow());
+        // print_r((string)$db->getLastQuery());
+        // die;
 
         $data = array();
         foreach ($q->get()->getResultArray() as $value) {
             $_data = $value;
-            $qty = $builder->where('id_product', $_data['id_product'])->get()->getRow()->product_qty ?? 0;
-            $_data['product_qty'] = ((int)$qty > 0) ? (int)$qty + 1 : 1;
+            $qty = 0;
+        
+            // print_r($_data['id_product']);
+            // die;
+            // print_r($builder->where('id_product', (int)$_data['id_product'])->get()->getRow());
+            // die;
+            
+            $_qty = $builder->where('id_product', $_data['id_product'])->where($where)->get()->getNumRows();
+            if ($_qty == 0) {
+                $qty = 0;
+            } else {
+                $qty = $builder->where('id_product', $_data['id_product'])->where($where)->get()->getRow()->product_qty;
+            }
+            
+            // $_qty = 1;
+            // $arr = ($dataPost->qty);
+            // $new_array0 = array_filter($arr, function($obj) use($_data) {
+            //     if (((int)$obj->id_product == (int)$_data['id_product'])) {
+            //         return true;
+            //     }
+            // });
+            
+            $_qty = 1;
+            $arr = ($dataPost->qty);
+            foreach($arr as $obj) {
+                if (((int)$obj->id_product == (int)$_data['id_product'])) {
+                    $_qty = $obj->qty;
+                    $_product_custom_request = $obj->product_custom_request;
+                    continue;
+                }
+            }
+        
+            $_data['product_qty'] = ((int)$qty > 0) ? (int)$qty + $_qty : $_qty;
+            $_data['nama'] = $dataPost->nama;
+            $_data['product_custom_request'] = $_product_custom_request;
 
             array_push($data, $_data);
         }
@@ -197,8 +302,12 @@ class Orders extends BaseController
 
         // $query = $builder->insertBatch($data);
         $query = $builder->upsertBatch($data);
-        $dataFinal = $builder->get()->getResult();
+        $dataFinal = $builder->where($where)->get()->getResult();
         $db->close();
+        foreach ($dataFinal as $key => $value) {
+            $dataFinal[$key]->product_price = (int)($value->product_price);
+            $dataFinal[$key]->product_qty = (int)($value->product_qty);
+        }
         $finalData = json_encode($dataFinal);
         echo '{
             "code": 0,
@@ -211,12 +320,22 @@ class Orders extends BaseController
     public function postUpdate_temp_products()
     {
         $request = request();
-        $dataPost = $request->getPost();
-        if (isset($dataPost['userfile'])) {
-            $dataPost['product_image_url'] = upload_file($request);
+        $dataPost = (object)$request->getPost();
+        if (!isset($dataPost->id)) {
+            $dataPost = $request->getJSON();
         }
-        $user = cekValidation('/transactions/orders/update_temp_products');
+        
+        $user = cekValidation0('/transactions/orders/update_temp_products');
+        if(isset($dataPost->email)){
+            unset($dataPost->email);
+        }
         $db = db_connect();
+
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
 
         if ((int)$user->id_user_parent > 0) {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
@@ -224,10 +343,14 @@ class Orders extends BaseController
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user);
         }
 
-        $query = $builder->where('id', $dataPost['id']);
+        $query = $builder->where('id', $dataPost->id);
         $query->update($dataPost);
-        $dataFinal = $query->get()->getResult();
+        $dataFinal = $query->where($where)->get()->getResult();
         $db->close();
+        foreach ($dataFinal as $key => $value) {
+            $dataFinal[$key]->product_price = (int)($value->product_price);
+            $dataFinal[$key]->product_qty = (int)($value->product_qty);
+        }
         $finalData = json_encode($dataFinal);
         echo '{
             "code": 0,
@@ -244,25 +367,84 @@ class Orders extends BaseController
         $user = cekValidation('/transactions/orders/delete_temp_products');
         $db = db_connect();
 
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
         if ((int)$user->id_user_parent > 0) {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
         } else {
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user);
         }
 
-        $query = $builder->where('id', $dataPost->id);
-        $query->delete();
-        $dataFinal = $builder->get()->getResult();
+
+        if (isset($dataPost->nama) && isset($dataPost->id)) {
+            $query = $builder->where('id', $dataPost->id);
+            $query->delete();
+            $dataFinal = $builder->where($where)->get()->getResult();
+        } else {
+            $query = $builder->where('nama', $dataPost->nama);
+            $query->delete();
+            $dataFinal = $builder->get()->getResult();
+        }
         $db->close();
+        foreach ($dataFinal as $key => $value) {
+            $dataFinal[$key]->product_price = (int)($value->product_price);
+            $dataFinal[$key]->product_qty = (int)($value->product_qty);
+        }
         $finalData = json_encode($dataFinal);
         echo '{
             "code": 0,
             "error": "",
             "message": "",
             "data": ' . $finalData . '
-        }';
+        }'; 
     }
 
+    public function postGet_temp_products0()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation0('/transactions/orders/get_temp_products0');
+        $db = db_connect();
+
+        $where = '1=1';
+
+        if (isset($dataPost->nama)) {
+            $where = "nama = '" . $dataPost->nama . "'";
+        }
+
+        if ((int)$user->id_user_parent > 0) {
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where($where)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user_parent)->get()->getNumRows();
+        } else {
+            $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->where($where)->get()->getResult();
+            $totalTRX = $db->table('app_transactions_' . $user->id_user)->get()->getNumRows();
+        }
+        $is_free = (int)$totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
+        // $totalTRX = count($builder);
+
+        foreach ($builder as $key => $value) {
+            $builder[$key]->product_price = (int)($value->product_price);
+            $builder[$key]->product_qty = (int)($value->product_qty);
+        }
+
+        $db->close();
+        $finalData = json_encode($builder);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "is_free": ' . $is_free . ',
+            "data": ' . $finalData . ',
+            "saldo": ' . $user->saldo . ',
+            "tax_percentage": ' . $user->tax_percentage . ',
+            "discount_all_products": ' . $user->discount_all_products . '
+        }';
+    }
+    
     public function postCreate()
     {
         // header('Content-type: text/html; charset=UTF-8', true);
@@ -285,7 +467,24 @@ class Orders extends BaseController
         $tax_percentage = (int)$user->tax_percentage;
         $request = request();
         $dataPost = $request->getJSON(true);
+        $nama = $dataPost['nama'];
+        // unset($dataPost['nama']);
+        // if (isset($dataPost['payment_method_code']) && $dataPost['payment_method_code'] === 'QRIS_PAYLATER') {
+        //     $dataPost['invoice_number'] = 'DIGIPAYID-SAMPLE-001';
+        // } else {
+        //     $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
+        // }
         $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
+
+        // print_r($dataPost['invoice_number']);
+        // $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
+        if (isset($dataPost['customer_id'])) {
+            $cust_id = $dataPost['customer_id'];
+            unset($dataPost['customer_id']);
+        } else {
+            $cust_id = 'f4844828-dff5-4678-921e-f3ff3a87ccd8';
+        }
+
         $dataPost['external_id'] = $dataPost['invoice_number'];
         $dataPost['id_user'] = $user->id_user;
         $dataPost['tax_percentage'] = $tax_percentage;
@@ -294,7 +493,7 @@ class Orders extends BaseController
         $dataPost['amount_to_pay'] = (int)$dataPost['amount_to_pay'];
         $dataPost['amount_to_back'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount'];
         $dataPost['amount_to_receive'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount_to_back'] - (int)$dataPost['fee'] - $dataPost['amount_tax'];
-        if ((int)$dataPost['id_payment_method'] == 0) {
+        if (($dataPost['payment_method_code'] === 'CASH')) {
             $dataPost['status_transaction'] = 1;
             $dataPost['status_payment'] = 1;
             // $dataPost['payment_method_code'] = 'CASH';
@@ -302,14 +501,17 @@ class Orders extends BaseController
         }
         $db = db_connect();
 
+        $email = '';
         if ((int)$user->id_user_parent > 0) {
+            $email = $db->table('app_users')->where('id_user', $user->id_user_parent)->get->getRow()->email;
             $builder = $db->table('app_transactions_' . $user->id_user_parent);
-            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
+            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where('nama', $nama);
             $builder1 = $db->table('app_transaction_products_' . $user->id_user_parent);
             $builder2 = $db->table('app_journal_finance_' . $user->id_user_parent);
         } else {
+            $email = $user->email;
             $builder = $db->table('app_transactions_' . $user->id_user);
-            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user);
+            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user)->where('nama', $nama);
             $builder1 = $db->table('app_transaction_products_' . $user->id_user);
             $builder2 = $db->table('app_journal_finance_' . $user->id_user);
         }
@@ -323,14 +525,48 @@ class Orders extends BaseController
             array_push($data, $_data);
         }
 
-        $payment = ((int)$dataPost['id_payment_method'] === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
-
-        $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
-        $dataPost['payment_response'] = ((int)$dataPost['id_payment_method'] === 0) ? null : $paymentJSON;
+        // print_r($dataPost);
 
         $builder->insert($dataPost);
         $builder1->insertBatch($data);
 
+        sleep(1);
+
+        $masterPaymentMethod = $db->table('master_payment_method')->where('id_payment_method', (int)$dataPost['id_payment_method'])->get()->getRow();
+
+        $object = (object) array();
+        $object->req = (object) array("reff_id" => $dataPost['invoice_number'], "amount" => $dataPost['amount_to_pay']);
+        $object->image_src = 'qris/QRIS-PAYLATER.PNG';
+        $object->res = (object) array("data" => (object) array("total_bayar" => $dataPost['amount_to_pay'], "pembayaran" => $dataPost['payment_method_name'], "payment_method_code" => $dataPost['payment_method_code']));
+        $payment = json_encode($object);
+        if (getenv('PG') === 'TOKOPAY' || (int)$masterPaymentMethod->payment_method_id_pg === 1) {
+            $payment = ($dataPost['payment_method_code'] === 'CASH') ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
+
+            // return response()->setJSON($payment);
+            // die;
+        } elseif (getenv('PG') === 'XENDIT' || (int)$masterPaymentMethod->payment_method_id_pg === 3) {
+            $payLater = 'QRIS_PAYLATER';
+            if ($dataPost['payment_method_code'] === 'QRIS' || $dataPost['payment_method_code'] === $payLater) {
+                $payment = json_encode(xendit_generate_qris($dataPost['amount_to_pay'], $dataPost['invoice_number'], $dataPost['payment_method_code'], ($dataPost['payment_method_code'] === $payLater ? true : false)));
+
+                // return response()->setJSON($payment);
+                // die;
+            }
+            if ($dataPost['payment_method_code'] === 'ID_AKULAKU' || $dataPost['payment_method_code'] === 'ID_UANGME' || $dataPost['payment_method_code'] === 'ID_KREDIVO' || $dataPost['payment_method_code'] === 'ID_INDODANA') {
+                $discount = 0;
+                if (isset($dataPost['discount_amount'])) {
+                    $discount = (int)$dataPost['discount_amount'];
+                }
+                $payment = (xendit_initiate_paylater($cust_id, $builder->where('invoice_number', $dataPost['invoice_number'])->get()->getRow(), $nama, $email, $discount));
+
+                // return response()->setJSON($payment);
+                // die;
+            }
+        }
+
+        $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+        $dataPostUpdate['payment_response'] = ($dataPost['payment_method_code'] === 'CASH') ? null : $paymentJSON;
+        $builder->where('invoice_number', $dataPost['invoice_number'])->update($dataPostUpdate);
 
         $journal_insert = array();
         $journal_insert_admin = array();
@@ -341,7 +577,7 @@ class Orders extends BaseController
         $journal_insert0['amount_debet'] = 0;
         $journal_insert0['accounting_type'] = 1;
         $journal_insert0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         $journal_insert0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert0);
 
@@ -350,7 +586,7 @@ class Orders extends BaseController
         $journal_insert1['amount_debet'] = (float)$dataPost['app_fee'] + (float)$dataPost['pg_fee'];
         $journal_insert1['accounting_type'] = 101;
         $journal_insert1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         $journal_insert1['description'] = 'Fee ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert1);
 
@@ -360,7 +596,7 @@ class Orders extends BaseController
             $journal_insert2['amount_debet'] = (int)$dataPost['amount_tax'];
             $journal_insert2['accounting_type'] = 5;
             $journal_insert2['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert2['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
             $journal_insert2['description'] = 'Tax ' . $dataPost['invoice_number'];
             array_push($journal_insert, $journal_insert2);
         }
@@ -372,11 +608,11 @@ class Orders extends BaseController
         // $journal_insert_admin0['amount_credit'] = (float)$dataPost['app_fee'];
         // $journal_insert_admin0['amount_debet'] = 0;
         // $journal_insert_admin0['accounting_type'] = 101;
-        // $journal_insert_admin0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 1 : 0;
+        // $journal_insert_admin0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 1 : 0;
         // $journal_insert_admin0['description'] = 'Fee App '.$dataPost['invoice_number'].' (Keuntungan)';
         // array_push($journal_insert_admin, $journal_insert_admin0);
 
-        if (((int)$dataPost['id_payment_method'] > 0)) {
+        if (($dataPost['payment_method_code'] !== 'CASH')) {
             $journal_insert_admin0['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin0['id_user'] = $user->id_user;
             $journal_insert_admin0['id_user_parent'] = $user->id_user_parent;
@@ -384,7 +620,7 @@ class Orders extends BaseController
             $journal_insert_admin0['amount_debet'] = 0;
             $journal_insert_admin0['accounting_type'] = 1;
             $journal_insert_admin0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert_admin0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
             $journal_insert_admin0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin0);
         }
@@ -396,7 +632,7 @@ class Orders extends BaseController
         $journal_insert_admin1['amount_debet'] = 0;
         $journal_insert_admin1['accounting_type'] = 1001;
         $journal_insert_admin1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_admin1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert_admin1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         $journal_insert_admin1['description'] = 'Fee App ' . $dataPost['invoice_number'] . ' (Keuntungan)';
         array_push($journal_insert_admin, $journal_insert_admin1);
 
@@ -407,11 +643,11 @@ class Orders extends BaseController
         $journal_insert_admin1['amount_debet'] = (float)$dataPost['app_fee'] * (float)getenv('FEE_AFFILIATOR_PERCENT');
         $journal_insert_admin1['accounting_type'] = 7002;
         $journal_insert_admin1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_admin1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert_admin1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         $journal_insert_admin1['description'] = 'Fee Affiliator ' . $dataPost['invoice_number'];
         array_push($journal_insert_admin, $journal_insert_admin1);
 
-        if (((int)$dataPost['id_payment_method'] > 0)) {
+        if (($dataPost['payment_method_code'] !== 'CASH')) {
             $journal_insert_admin2['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin2['id_user'] = $user->id_user;
             $journal_insert_admin2['id_user_parent'] = $user->id_user_parent;
@@ -419,7 +655,7 @@ class Orders extends BaseController
             $journal_insert_admin2['amount_debet'] = (float)$dataPost['pg_fee'];
             $journal_insert_admin2['accounting_type'] = 1002;
             $journal_insert_admin2['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert_admin2['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
             $journal_insert_admin2['description'] = 'Fee PG ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin2);
         }
@@ -432,7 +668,7 @@ class Orders extends BaseController
             $journal_insert_admin3['amount_debet'] = (float)$dataPost['amount_tax'];
             $journal_insert_admin3['accounting_type'] = 5;
             $journal_insert_admin3['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin3['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+            $journal_insert_admin3['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
             $journal_insert_admin3['description'] = 'Tax ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin3);
         }
@@ -442,7 +678,7 @@ class Orders extends BaseController
         // $journal_insert_affiliator0['amount_debet'] = 0;
         // $journal_insert_affiliator0['accounting_type'] = 1;
         // $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        // $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        // $journal_insert_affiliator0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         // $journal_insert_affiliator0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
         // array_push($journal_insert_affiliator, $journal_insert_affiliator0);
 
@@ -451,7 +687,7 @@ class Orders extends BaseController
         $journal_insert_affiliator0['amount_debet'] = 0;
         $journal_insert_affiliator0['accounting_type'] = 7001;
         $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
+        $journal_insert_affiliator0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
         $journal_insert_affiliator0['description'] = 'Fee Transaksi ' . $dataPost['invoice_number'];
         array_push($journal_insert_affiliator, $journal_insert_affiliator0);
 
@@ -479,13 +715,6 @@ class Orders extends BaseController
         // }
         // }
 
-        if ((int)$user->id_user_parent > 0) {
-            $db->table('app_transaction_products_temp_' . $user->id_user_parent)->truncate();
-        } else {
-            $db->table('app_transaction_products_temp_' . $user->id_user)->truncate();
-            //app_journal_finance_40
-        }
-
 
         $dataFinal = $builder0->get()->getResult();
         $db->close();
@@ -501,7 +730,35 @@ class Orders extends BaseController
         if (isset($paymentArr->res->data->pay_url)) {
             $paymentArr->res->data->pay_url = urlShortener($paymentArr->res->data->pay_url);
         }
+        if (isset($paymentArr->res->data->paylater_url)) {
+            $paymentArr->res->data->paylater_url = urlShortener($paymentArr->res->data->paylater_url);
+        }
+        if (isset($paymentArr->res->data->paylater_app_url)) {
+            $paymentArr->res->data->paylater_app_url = urlShortener($paymentArr->res->data->paylater_app_url);
+        }
         $paymentJSON = json_encode($paymentArr);
+
+
+        // if ((int)$user->id_user_parent > 0) {
+        //     $builder = $db->table('app_transactions_' . $user->id_user_parent);
+        //     $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
+        //     $builder1 = $db->table('app_transaction_products_' . $user->id_user_parent);
+        //     $builder2 = $db->table('app_journal_finance_' . $user->id_user_parent);
+        // } else {
+        //     $builder = $db->table('app_transactions_' . $user->id_user);
+        //     $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user);
+        //     $builder1 = $db->table('app_transaction_products_' . $user->id_user);
+        //     $builder2 = $db->table('app_journal_finance_' . $user->id_user);
+        // }
+        $id_user = (string)((int)$user->id_user_parent > 0) ? $user->id_user_parent : $user->id_user;
+        $insert_queue = array(
+            "id_user" => $id_user,
+            "invoice_number" => $dataPost['invoice_number'],
+            "amount" => $dataPost['amount_to_pay'],
+            "table_name_trx" => 'app_transactions_' . $id_user,
+        );
+        // print_r($insert_queue);
+        $db->table('app_qris_paylater_list')->insert($insert_queue);
 
         // ob_start();
         // header('Content-type: text/html; charset=UTF-8', true);
@@ -532,7 +789,7 @@ class Orders extends BaseController
         // ob_start();
         // ob_flush();
 
-        $code = ($dataPost['id_payment_method'] === 0) ? 0 : 1;
+        $code = (isset($dataPost['payment']) && $dataPost['payment'] === 0) ? 0 : 1;
 
         // ob_end_clean();
         // // header("Connection: close");
@@ -546,6 +803,15 @@ class Orders extends BaseController
     "data": ' . $finalData . ',
     "payment": ' . $paymentJSON . '
 }';
+
+        if ((int)$user->id_user_parent > 0) {
+            // $db->table('app_transaction_products_temp_' . $user->id_user_parent)->truncate();
+            $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where('nama', $nama)->delete();
+        } else {
+            // $db->table('app_transaction_products_temp_' . $user->id_user)->truncate();
+            $db->table('app_transaction_products_temp_' . $user->id_user)->where('nama', $nama)->delete();
+            //app_journal_finance_40
+        }
         // session_write_close(); //close session file on server side to avoid blocking other requests
 
         // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
@@ -568,21 +834,32 @@ class Orders extends BaseController
         // // sleep(30);
 
         // ob_start();
-        if (((int)$dataPost['id_payment_method'] < 1)) {
+        if (($dataPost['payment_method_code'] === 'CASH')) {
+            
+            sendBilling('whatsapp_cash', $dataPost, 
+            $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), 
+            $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), 
+            $user, 
+            json_decode($paymentJSON),
+            $nama);
+            
+            sleep(3);
+            
             if (($dataPost['email_customer'] != '')) {
-                sendReceipt('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
+                sendReceipt('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
 
             if (($dataPost['wa_customer'] != '')) {
-                sendReceipt('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
+                sendReceipt('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
         } else {
+            
             if (($dataPost['email_customer'] != '')) {
-                sendBilling('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
+                sendBilling('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
 
             if (($dataPost['wa_customer'] != '')) {
-                sendBilling('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
+                sendBilling('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
         }
         // ob_end_clean();
@@ -602,9 +879,19 @@ class Orders extends BaseController
         $db = db_connect();
 
         if ((int)$user->id_user_parent > 0) {
-            $trx = $db->table('app_transactions_' . $user->id_user_parent)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+            $trx = $db->table('app_transactions_' . $user->id_user_parent);
         } else {
-            $trx = $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
+            $trx = $db->table('app_transactions_' . $user->id_user);
+        }
+
+        if (isset($dataPost['payment_method_code']) && $dataPost['payment_method_code'] === 'QRIS_PAYLATER') {
+            $res = $trx->where('invoice_number', $dataPost['invoice_number'])
+                ->where('amount_to_pay', $dataPost['amount'])
+                ->where('payment_method_code', $dataPost['payment_method_code'])
+                ->get()->getRow();
+        } else {
+            $res = $trx->where('invoice_number', $dataPost['invoice_number'])
+                ->get()->getRow();
         }
 
         $db->close();
@@ -614,7 +901,7 @@ class Orders extends BaseController
             "error": "",
             "message": "",
             "data": [],
-            "status": ' . (int)$trx->status_payment . '
+            "status": ' . (int)$res->status_payment . '
         }';
     }
 
@@ -643,8 +930,13 @@ class Orders extends BaseController
         $db->close();
 
 
-
-        $payment = ((int)$trx->id_payment_method === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$trx->amount_to_pay, $trx->payment_method_code, $dataPost['invoice_number'], $user));
+        if (getenv('PG') === 'TOKOPAY') {
+            $payment = ($trx->payment_method_code === 'CASH') ? '{}' : json_encode(tokopay_generate_qris((int)$trx->amount_to_pay, $trx->payment_method_code, $dataPost['invoice_number'], $user));
+        } else if (getenv('PG') === 'XENDIT') {
+            $payment = ($trx->payment_response);
+        } else {
+            $payment = '{}';
+        }
 
         $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
 
@@ -658,14 +950,31 @@ class Orders extends BaseController
         if (isset($paymentArr->res->data->pay_url)) {
             $paymentArr->res->data->pay_url = urlShortener($paymentArr->res->data->pay_url);
         }
+        if (isset($paymentArr->res->data->paylater_url)) {
+            $paymentArr->res->data->paylater_url = urlShortener($paymentArr->res->data->paylater_url);
+        }
+        if (isset($paymentArr->res->data->paylater_app_url)) {
+            $paymentArr->res->data->paylater_app_url = urlShortener($paymentArr->res->data->paylater_app_url);
+        }
+        if ($trx->payment_method_code === 'QRIS_PAYLATER') {
+            $paymentArr = (object) array();
+            $paymentArr->data = ["payment_method_code" => $trx->payment_method_code];
+            $paymentArr->res = (object) array("data" => (object) array("amount" => $trx->amount, "pembayaran" => "QRIS", "payment_method_code" => $trx->payment_method_code, "qr_link" => getDomain() . '/qris/QRIS-PAYLATER.PNG'));
+        }
+        if ($trx->payment_method_code === 'QRIS') {
+            $paymentArr = (object) array();
+            $paymentArr->data = ["payment_method_code" => $trx->payment_method_code];
+            $paymentArr->res = (object) array("data" => (object) array("amount" => $trx->amount, "pembayaran" => "QRIS", "payment_method_code" => $trx->payment_method_code, "qr_link" => getDomain() . '/qris/QRIS-' . $dataPost['invoice_number'] . '.png'));
+        }
         $paymentJSON = json_encode($paymentArr);
 
-        $code = ((int)$trx->id_payment_method === 0) ? 0 : 1;
+        $code = ($trx->payment_method_code === 'CASH') ? 0 : 1;
 
         // ob_end_clean();
         // // header("Connection: close");
         // ignore_user_abort(true);
         // ob_start();
+
         echo '{
     "code": ' . $code . ',
     "error": "",
@@ -673,6 +982,7 @@ class Orders extends BaseController
     "data": [],
     "payment": ' . $paymentJSON . '
 }';
+
         // session_write_close(); //close session file on server side to avoid blocking other requests
 
         // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
@@ -695,21 +1005,21 @@ class Orders extends BaseController
         // // sleep(30);
 
         // ob_start();
-        if (((int)$trx->id_payment_method < 1)) {
+        if ($trx->payment_method_code === 'CASH') {
             if (isset($dataPost['email_customer']) && ($dataPost['email_customer'] != '')) {
-                sendReceipt('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
+                sendReceipt('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON), $dataPost['nama']);
             }
 
             if (isset($dataPost['wa_customer']) && ($dataPost['wa_customer'] != '')) {
-                sendReceipt('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
+                sendReceipt('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON), $dataPost['nama']);
             }
         } else {
             if (isset($dataPost['email_customer']) && ($dataPost['email_customer'] != '')) {
-                sendBilling('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
+                sendBilling('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON), $dataPost['nama']);
             }
 
             if (isset($dataPost['wa_customer']) && ($dataPost['wa_customer'] != '')) {
-                sendBilling('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
+                sendBilling('whatsapp', $dataPost, $trx, $products, $user, json_decode($paymentJSON), $dataPost['nama']);
             }
         }
         // ob_end_clean();
