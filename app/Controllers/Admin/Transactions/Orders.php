@@ -20,17 +20,18 @@ class Orders extends BaseController
         $user = cekValidation('/admin/transactions/orders/list');
         $request = request();
         $dataPost = $request->getJSON();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
         $db = db_connect();
 
         if ((int)$dataPost->id_merchant > 0) {
-            $builder = $db->table('app_transactions_' . $dataPost->id_merchant);
+            $builder = $db->table('app_transactions_' . $dataPost->id_merchant . ' at')->select('*, (select sum(product_qty) from app_transaction_products_'.$dataPost->id_merchant.' atp where atp.invoice_number = at.invoice_number) as total_qty');
             if (isset($dataPost->start_date)) {
-                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00');
+                $builder->where('time_transaction >=', $dataPost->start_date . ' 00:00:00')->where($where);
             }
             if (isset($dataPost->end_date)) {
-                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59');
+                $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59')->where($where);
             }
-            $result = $builder->orderBy('id_transaction ', 'desc')->get()->getResult();
+            $result = $builder->orderBy('at.id_transaction ', 'desc')->get()->getResult();
 
             $db->close();
             $finalData = json_encode($result);

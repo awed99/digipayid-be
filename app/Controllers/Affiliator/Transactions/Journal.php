@@ -20,13 +20,14 @@ class Journal extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
         $builder = $db->table('app_journal_finance_' . $user->id_user);
         if (isset($dataPost->start_date)) {
-            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00');
+            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00')->where($where);
         }
         if (isset($dataPost->end_date)) {
-            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
+            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59')->where($where);
         }
         $result = $builder->where('status', 2)->orderBy('id', 'desc')->get()->getResult();
 
@@ -46,6 +47,7 @@ class Journal extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
 
         $dataBankUser = $db->table('app_users')->where('id_user', $user->id_user)->get()->getRow();
@@ -58,10 +60,10 @@ class Journal extends BaseController
         // ->groupEnd();
 
         if (isset($dataPost->start_date)) {
-            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00');
+            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00')->where($where);
         }
         if (isset($dataPost->end_date)) {
-            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
+            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59')->where($where);
         }
         $builder->where('NOT (id_payment_method = 0 AND accounting_type = 1)');
 
@@ -146,13 +148,29 @@ class Journal extends BaseController
             return $this->response->setStatusCode(200)->setBody($data);
         }
 
-        $dataPaymentMethod = $db->table('app_payment_method_' . $user->id_user)
-            ->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')
-            ->where('payment_method_id_pg', 1)->where('payment_method_name', $dataPost['payment_method_name'])
-            ->get()->getRowArray();
+        // $dataPaymentMethod = $db->table('app_payment_method_' . $user->id_user)
+        //     ->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')
+        //     ->where('payment_method_id_pg', 1)->where('payment_method_name', $dataPost['payment_method_name'])
+        //     ->get()->getRowArray();
 
         $dataPost['invoice_number'] = isset($dataPost['invoice_number']) ? $dataPost['invoice_number'] : 'WITHDRAW-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
         // $payment = json_encode(tokopay_generate_qris((int)$dataPost['amount'], $dataPost['payment_method'], $dataPost['invoice_number']));
+
+        $headers = [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'Authorization: Basic ' . base64_encode((strtolower(getenv('XENDIT_ENV')) === 'production') ? getenv('XENDIT_API_KEY') . ':' : getenv('XENDIT_SD_API_KEY') . ':'),
+        ];
+
+        $bodyJSON = json_encode([
+            "external_id"           => $dataPost['invoice_number'],
+            "amount"                => (int)$dataPost['amount'],
+            "bank_code"             => $dataPost['payment_method'],
+            "account_holder_name"   => $dataPost['bank_account_name'],
+            "account_number"        => $dataPost['bank_account'],
+            "description"           => $dataPost['invoice_number'] . ' (' . $dataPost['payment_method_name'] . ')',
+        ]);
+        $xendit = curl(getenv('XENDIT_API_DOMAIN') . 'disbursements', true, $bodyJSON, $headers);
 
         $journal_insert = array();
         $journal_insert_admin = array();
@@ -162,7 +180,7 @@ class Journal extends BaseController
         $journal_insert0['amount_debet'] = (int)$dataPost['amount'] - (int)getenv('FEE_AFFILIATOR_WITHDRAW');
         $journal_insert0['accounting_type'] = 8001;
         $journal_insert0['status'] = 0;
-        $journal_insert0['id_payment_method'] = (int)$dataPaymentMethod['id_payment_method'];
+        $journal_insert0['id_payment_method'] = 0;
         $journal_insert0['description'] = '' . $dataPost['invoice_number'] . ' (' . $dataPost['payment_method_name'] . ')';
         array_push($journal_insert, $journal_insert0);
 
@@ -171,7 +189,7 @@ class Journal extends BaseController
         $journal_insert1['amount_debet'] = (int)getenv('FEE_AFFILIATOR_WITHDRAW');
         $journal_insert1['accounting_type'] = 8002;
         $journal_insert1['status'] = 0;
-        $journal_insert1['id_payment_method'] = (int)$dataPaymentMethod['id_payment_method'];
+        $journal_insert1['id_payment_method'] = 0;
         $journal_insert1['description'] = 'Fee ' . $dataPost['invoice_number'] . ' (' . $dataPost['payment_method_name'] . ')';
         array_push($journal_insert, $journal_insert1);
 
@@ -189,7 +207,7 @@ class Journal extends BaseController
         $journal_insert_admin0['amount_debet'] = $dataPost['amount'];
         $journal_insert_admin0['accounting_type'] = 8001;
         $journal_insert_admin0['status'] = 0;
-        $journal_insert_admin0['id_payment_method'] = (int)$dataPaymentMethod['id_payment_method'];
+        $journal_insert_admin0['id_payment_method'] = 0;
         $journal_insert_admin0['description'] = 'User ' . $dataPost['invoice_number'];
         array_push($journal_insert_admin, $journal_insert_admin0);
 
@@ -200,11 +218,11 @@ class Journal extends BaseController
         $journal_insert_admin1['amount_debet'] = 0;
         $journal_insert_admin1['accounting_type'] = 8003;
         $journal_insert_admin1['status'] = 0;
-        $journal_insert_admin1['id_payment_method'] = (int)$dataPaymentMethod['id_payment_method'];
+        $journal_insert_admin1['id_payment_method'] = 0;
         $journal_insert_admin1['description'] = 'Fee ' . $dataPost['invoice_number'] . ' (Keuntungan)';
         array_push($journal_insert_admin, $journal_insert_admin1);
 
-        // if (((int)$dataPaymentMethod['id_payment_method'] > 0)) {
+        // if ((0 > 0)) {
         //     $journal_insert_admin2['invoice_number'] = $dataPost['invoice_number'];
         //     $journal_insert_admin2['id_user'] = $user->id_user;
         //     $journal_insert_admin2['id_user_parent'] = $user->id_user_parent;
@@ -212,7 +230,7 @@ class Journal extends BaseController
         //     $journal_insert_admin2['amount_debet'] = $fee_pg;
         //     $journal_insert_admin2['accounting_type'] = 3002;
         //     $journal_insert_admin2['status'] = 0;
-        //     $journal_insert_admin1['id_payment_method'] = (int)$dataPaymentMethod['id_payment_method'];
+        //     $journal_insert_admin1['id_payment_method'] = 0;
         //     $journal_insert_admin2['description'] = 'Fee PG ' . $dataPost['invoice_number'];
         //     array_push($journal_insert_admin, $journal_insert_admin2);
         // }
@@ -250,6 +268,7 @@ class Journal extends BaseController
             "message": "Withdraw sedang diproses dalam 1x24 jam. Mohon Cek Secara Berkala",
             "data": ' . $finalData . ',
             "data_bank": ' . json_encode($dataBankUser) . ',
+            "response": ' . $xendit . ',
             "saldo": ' . ($user->saldo - (int)$dataPost['amount'] - (int)getenv('FEE_AFFILIATOR_WITHDRAW')) . '
         }';
     }

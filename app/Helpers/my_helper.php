@@ -19,7 +19,7 @@ require '../vendor/autoload.php';
 
 date_default_timezone_set("Asia/Bangkok");
 
-function cekValidation($uri, $_this = false)
+function cekValidation($uri = false, $_this = false)
 {
 
     // $returnErrorSignature = service('returnErrorSignature');
@@ -28,62 +28,84 @@ function cekValidation($uri, $_this = false)
     $request = request();
     $response = response();
 
+    $uriX = $request->getUri();
+    // echo $uriX->getScheme();         // http
+    // echo $uriX->getAuthority();      // snoopy:password@example.com:88
+    // echo $uriX->getUserInfo();       // snoopy:password
+    // echo $uriX->getHost();           // example.com
+    // echo $uriX->getPort();           // 88
+    // echo $uriX->getPath();           // /path/to/page
+    // echo $uriX->getRoutePath();      // path/to/page
+    // echo $uriX->getQuery();          // foo=bar&bar=baz
+    // print_r($uriX->getSegments());   // Array ( [0] => path [1] => to [2] => page )
+    // echo $uriX->getSegment(1);       // path
+    // echo $uriX->getTotalSegments();  // 3
+
+    // print_r($uriX->getPath());
+    // print_r($uriX->getRoutePath());
+    // die();
+
     $secret_key     = trim(getenv("SECRET_KEY"));
-    $http_method    = $_SERVER["REQUEST_METHOD"];
-    $time           = $request->header('X-Timestamp')->getValue() ?? time();
+    $http_method    =  (isset($_SERVER["REQUEST_METHOD"])) ? $_SERVER["REQUEST_METHOD"] : 'POST';
+    $time           = $request->hasHeader('X-Timestamp') ? $request->header('X-Timestamp')->getValue() : time();
     $now            = time();
 
-    $pattern = strtoupper($http_method . ":" . $uri . ":" . $time);
+    $pattern = strtoupper($http_method . ":/" . $uriX->getRoutePath() . ":" . $time);
     $signature = hash_hmac('sha256', $pattern, $secret_key);
+
+    $pattern2 = strtoupper($http_method . ":" . $uriX->getRoutePath() . ":" . $time);
+    $signature2 = hash_hmac('sha256', $pattern2, $secret_key);
 
     // print_r($signature);
     // print_r($request->header('X-Signature')->getValue());
     // exit(1);
 
-    if ($signature !== $request->header('X-Signature')->getValue()) {
-        $data = [
-            "error"    => true,
-            "status"    => "102",
-            "error_message"   => "Invalid Signature.",
-            "message"   => "Invalid Signature.",
-            "data"      => []
-        ];
-        echo json_encode($data);
-        exit(1);
-        die(1);
-        // return ResponseTrait::respond($data);
-        // echo $response->setStatusCode(200)
-        //     ->setHeader('Connection', 'close')
-        //     ->setHeader('content-type', 'application/json')
-        //     ->setHeader('Access-Control-Allow-Origin', '*')
-        //     ->setHeader('Access-Control-Expose-Headers', '*')
-        //     ->setJSON(($data));
-        // throw new \Exception('Some message goes here');
+    if ($request->hasHeader('X-Signature')) {
+        if ($signature !== $request->header('X-Signature')->getValue() && $signature2 !== $request->header('X-Signature')->getValue()) {
+            $data = [
+                "error"    => true,
+                "status"    => "102",
+                "error_message"   => "Invalid Signature.",
+                "message"   => "Invalid Signature.",
+                "data"      => []
+            ];
+            echo json_encode($data);
+            exit(1);
+            die(1);
+            // return ResponseTrait::respond($data);
+            // echo $response->setStatusCode(200)
+            //     ->setHeader('Connection', 'close')
+            //     ->setHeader('content-type', 'application/json')
+            //     ->setHeader('Access-Control-Allow-Origin', '*')
+            //     ->setHeader('Access-Control-Expose-Headers', '*')
+            //     ->setJSON(($data));
+            // throw new \Exception('Some message goes here');
 
-        // ResponseTrait::respond($data, 200);
-        // print_r($res);
-        // return ResponseTrait::fail($res, 200);
-        // dd($res);
-        // exit($data);
-        // die(json_encode($data));
-    } elseif ($now > ((int)$time + getenv('TIMEOUT_SIGNATURE'))) {
-        $data = [
-            "error"    => true,
-            "status"    => "101",
-            "error_message"   => "Expired Signature.",
-            "message"   => "Expired Signature.",
-            "data"      => []
-        ];
-        echo json_encode($data);
-        exit(1);
-        die(1);
-        // return ResponseTrait::respond($data);
-        // return $response->setStatusCode(200)
-        //     ->setHeader('Connection', 'close')
-        //     ->setHeader('content-type', 'application/json')
-        //     ->setHeader('Access-Control-Allow-Origin', '*')
-        //     ->setHeader('access-control-expose-headers', '*')
-        //     ->setJSON(($data));
+            // ResponseTrait::respond($data, 200);
+            // print_r($res);
+            // return ResponseTrait::fail($res, 200);
+            // dd($res);
+            // exit($data);
+            // die(json_encode($data));
+        } elseif ($now > ((int)$time + getenv('TIMEOUT_SIGNATURE'))) {
+            $data = [
+                "error"    => true,
+                "status"    => "101",
+                "error_message"   => "Expired Signature.",
+                "message"   => "Expired Signature.",
+                "data"      => []
+            ];
+            echo json_encode($data);
+            exit(1);
+            die(1);
+            // return ResponseTrait::respond($data);
+            // return $response->setStatusCode(200)
+            //     ->setHeader('Connection', 'close')
+            //     ->setHeader('content-type', 'application/json')
+            //     ->setHeader('Access-Control-Allow-Origin', '*')
+            //     ->setHeader('access-control-expose-headers', '*')
+            //     ->setJSON(($data));
+        }
     }
 
     $db = db_connect();
@@ -118,6 +140,91 @@ function cekValidation($uri, $_this = false)
     return $dataUser;
 }
 
+function cekValidation0($uri = false, $_this = false)
+{
+
+    $request = request();
+    $response = response();
+
+    $uriX = $request->getUri();
+    $dataPost = $request->getPost();
+    if (!isset($dataPost['email'])) {
+        $dataPost = $request->getJSON(true);
+    }
+
+    $secret_key     = trim(getenv("SECRET_KEY"));
+    $http_method    = $_SERVER["REQUEST_METHOD"];
+    $time           = $request->hasHeader('X-Timestamp') ? $request->header('X-Timestamp')->getValue() : time();
+    $now            = time();
+
+    $pattern = strtoupper($http_method . ":/" . $uriX->getRoutePath() . ":" . $time);
+    $signature = hash_hmac('sha256', $pattern, $secret_key);
+
+    $pattern2 = strtoupper($http_method . ":" . $uriX->getRoutePath() . ":" . $time);
+    $signature2 = hash_hmac('sha256', $pattern2, $secret_key);
+
+    if ($request->hasHeader('X-Signature')) {
+        if ($signature !== $request->header('X-Signature')->getValue() && $signature2 !== $request->header('X-Signature')->getValue()) {
+            $data = [
+                "error"    => true,
+                "status"    => "102",
+                "error_message"   => "Invalid Signature.",
+                "message"   => "Invalid Signature.",
+                "data"      => []
+            ];
+            echo json_encode($data);
+            exit(1);
+            die(1);
+        } elseif ($now > ((int)$time + getenv('TIMEOUT_SIGNATURE'))) {
+            $data = [
+                "error"    => true,
+                "status"    => "101",
+                "error_message"   => "Expired Signature.",
+                "message"   => "Expired Signature.",
+                "data"      => []
+            ];
+            echo json_encode($data);
+            exit(1);
+            die(1);
+        }
+    }
+    
+    
+
+    // print_r($dataPost);
+    // // print_r($dataUser);
+    // die;
+
+    $db = db_connect();
+    $builder = $db->table('app_users')->where('email', $dataPost['email']);
+    $dataUser = $builder->get()->getRow();
+
+    if (isset($dataUser->user_role) && (int)$dataUser->user_role > 1) {
+        if ((int)$dataUser->id_user_parent > 0) {
+            $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user_parent . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+        } else {
+
+            $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataUser->id_user . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataUser->id_user . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+        }
+        $realSaldo = 0;
+    } else {
+        $saldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo")->getRow()->saldo;
+        $realSaldo = $db->query("SELECT COALESCE((SELECT SUM(amount_credit) FROM `admin_journal_finance` where status = 2 AND (accounting_type = 1001 OR accounting_type = 2001 OR accounting_type = 3001 OR accounting_type = 8003) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) - COALESCE((SELECT SUM(amount_debet) FROM `admin_journal_finance` where status = 2 AND (accounting_type = 4 OR accounting_type = 4002) AND NOT (id_payment_method = 0 AND accounting_type = 1)), 0) as saldo", 0)->getRow()->saldo;
+    }
+
+    if ($dataUser) {
+        $dataUser->saldo = (int)$saldo;
+        $dataUser->real_saldo = (int)$realSaldo;
+    } else {
+        $dataUser = null;
+    }
+    
+    $db->close();
+    
+        
+    return $dataUser;
+}
+
 function  generate_signature($uri, $service = null)
 {
     $secret_key     = trim(getenv("SECRET_KEY"));
@@ -136,15 +243,31 @@ function  generate_signature($uri, $service = null)
 
 function getDomain()
 {
+    $domain = '';
     if (isset($_SERVER['SERVER_NAME'])) {
-        return 'https://' . $_SERVER['SERVER_NAME'];
+        $domain = $_SERVER['SERVER_NAME'];
     } elseif (isset($_SERVER['HTTP_HOST'])) {
-        return 'https://' . $_SERVER['HTTP_HOST'];
+        $domain = $_SERVER['HTTP_HOST'];
     } elseif (isset($_SERVER['SERVER_ADDR'])) {
-        return 'https://' . $_SERVER['SERVER_ADDR'];
+        $domain = $_SERVER['SERVER_ADDR'];
     } else {
-        return 'https://127.0.0.1';
+        $domain = '127.0.0.1';
     }
+
+
+    if (!in_array($_SERVER['SERVER_PORT'], [80, 443])) {
+        $port = ":$_SERVER[SERVER_PORT]";
+    } else {
+        $port = '';
+    }
+
+    if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on' || $_SERVER['HTTPS'] == '1')) {
+        $scheme = 'https';
+    } else {
+        $scheme = 'http';
+    }
+
+    return $scheme . '://' . $domain . $port;
 }
 
 function get_token_brick()
@@ -294,7 +417,9 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
     // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
     // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
     curl_setopt($ch, CURLOPT_ENCODING, '');
-    if ($isPost) {
+    if ($isPost && $isPost === 'PATCH') {
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    } else if ($isPost) {
         curl_setopt($ch, CURLOPT_POST, $isPost);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
     }
@@ -411,20 +536,21 @@ function upload_file($_request)
                 'rules' => [
                     'uploaded[userfile]',
                     'is_image[userfile]',
-                    'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp]',
-                    'max_size[userfile,100]',
-                    'max_dims[userfile,1024,768]',
+                    'mime_in[userfile,image/jpg,image/jpeg,image/gif,image/png,image/webp,image/svg+xml]',
+                    'max_size[userfile,1900]',
+                    'max_dims[userfile,1900,1900]',
                 ],
             ],
         ];
-        if ($file->getSizeByUnit('mb') > 2) {
-            return ['errors' => "File size must < 2mb!"];
+        if ($file->getSizeByUnit('mb') > 10) {
+            return ['errors' => "File size must < 10mb!"];
         }
         if (
             $file->getMimeType() !== 'image/jpg' &&
             $file->getMimeType() !== 'image/jpeg' &&
             $file->getMimeType() !== 'image/png' &&
-            $file->getMimeType() !== 'image/webp'
+            $file->getMimeType() !== 'image/webp' &&
+            $file->getMimeType() !== 'image/svg+xml'
         ) {
             return ['errors' => "File type must an image!"];
         }
@@ -621,15 +747,14 @@ function sendWA($phone, $message, $imageLink = null)
         // CURLOPT_RESOLVE => ['https://app.wapanels.com/api/create-message'],
         // CURLOPT_TCP_FASTOPEN => true,
         CURLOPT_ENCODING  => '',
-        CURLOPT_RETURNTRANSFER => false,
+        CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
         CURLOPT_TIMEOUT_MS => 200000,
         CURLOPT_NOSIGNAL => 1,
         CURLOPT_FRESH_CONNECT => 1,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => array(
@@ -644,6 +769,8 @@ function sendWA($phone, $message, $imageLink = null)
     ));
     $response = curl_exec($curl);
     curl_close($curl);
+    
+    return $response;
 }
 
 function urlShortener($url)
