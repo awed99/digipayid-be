@@ -126,7 +126,7 @@ class Orders extends BaseController
             $builder = $db->table('app_transaction_products_temp_' . $user->id_user)->get()->getResult();
             $totalTRX = $db->table('app_transactions_' . $user->id_user)->get()->getNumRows();
         }
-        $is_free = (int)$totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
+        $is_free = $totalTRX <= (int)getenv('FREE_TRX_PROMOTION') ? 'true' : 'false';
         // $totalTRX = count($builder);
 
         $db->close();
@@ -285,21 +285,7 @@ class Orders extends BaseController
         $tax_percentage = (int)$user->tax_percentage;
         $request = request();
         $dataPost = $request->getJSON(true);
-        if (isset($dataPost['payment_method_code']) && $dataPost['payment_method_code'] === 'QRIS_PAYLATER') {
-            $dataPost['invoice_number'] = 'DIGIPAYID-SAMPLE-001';
-        } else {
-            $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
-        }
-
-        // print_r($dataPost['invoice_number']);
-        // $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
-        if (isset($dataPost['customer_id'])) {
-            $cust_id = $dataPost['customer_id'];
-            unset($dataPost['customer_id']);
-        } else {
-            $cust_id = '9447e603-0373-4eb7-8a53-e204551c83ec';
-        }
-
+        $dataPost['invoice_number'] = 'DIGIPAYID-' . $user->id_user . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8));
         $dataPost['external_id'] = $dataPost['invoice_number'];
         $dataPost['id_user'] = $user->id_user;
         $dataPost['tax_percentage'] = $tax_percentage;
@@ -308,7 +294,7 @@ class Orders extends BaseController
         $dataPost['amount_to_pay'] = (int)$dataPost['amount_to_pay'];
         $dataPost['amount_to_back'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount'];
         $dataPost['amount_to_receive'] = (int)$dataPost['amount_to_pay'] - (int)$dataPost['amount_to_back'] - (int)$dataPost['fee'] - $dataPost['amount_tax'];
-        if (($dataPost['payment_method_code'] === 'CASH')) {
+        if ((int)$dataPost['id_payment_method'] == 0) {
             $dataPost['status_transaction'] = 1;
             $dataPost['status_payment'] = 1;
             // $dataPost['payment_method_code'] = 'CASH';
@@ -337,42 +323,14 @@ class Orders extends BaseController
             array_push($data, $_data);
         }
 
-        // print_r($dataPost);
+        $payment = ((int)$dataPost['id_payment_method'] === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
+
+        $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
+        $dataPost['payment_response'] = ((int)$dataPost['id_payment_method'] === 0) ? null : $paymentJSON;
 
         $builder->insert($dataPost);
         $builder1->insertBatch($data);
 
-        sleep(1);
-
-        $object = (object) array();
-        $object->req = (object) array("reff_id" => $dataPost['invoice_number'], "amount" => $dataPost['amount_to_pay']);
-        $object->image_src = 'qris/QRIS-PAYLATER.PNG';
-        $object->res = (object) array("data" => (object) array("total_bayar" => $dataPost['amount_to_pay'], "pembayaran" => $dataPost['payment_method_name'], "payment_method_code" => $dataPost['payment_method_code']));
-        $payment = json_encode($object);
-        if (getenv('PG') === 'TOKOPAY') {
-            $payment = ($dataPost['payment_method_code'] === 'CASH') ? '{}' : json_encode(tokopay_generate_qris((int)$dataPost['amount_to_pay'], $dataPost['payment_method_code'], $dataPost['invoice_number'], $user));
-
-            // return response()->setJSON($payment);
-            // die;
-        } elseif (getenv('PG') === 'XENDIT') {
-            $payLater = 'QRIS_PAYLATER';
-            if ($dataPost['payment_method_code'] === 'QRIS' || $dataPost['payment_method_code'] === $payLater) {
-                $payment = json_encode(xendit_generate_qris($dataPost['amount_to_pay'], $dataPost['invoice_number'], $dataPost['payment_method_code'], ($dataPost['payment_method_code'] === $payLater ? true : false)));
-
-                // return response()->setJSON($payment);
-                // die;
-            }
-            if ($dataPost['payment_method_code'] === 'ID_AKULAKU' || $dataPost['payment_method_code'] === 'ID_KREDIVO') {
-                $payment = (xendit_initiate_paylater($cust_id, $builder->where('invoice_number', $dataPost['invoice_number'])->get()->getRow()));
-
-                // return response()->setJSON($payment);
-                // die;
-            }
-        }
-
-        $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
-        $dataPostUpdate['payment_response'] = ($dataPost['payment_method_code'] === 'CASH') ? null : $paymentJSON;
-        $builder->where('invoice_number', $dataPost['invoice_number'])->update($dataPostUpdate);
 
         $journal_insert = array();
         $journal_insert_admin = array();
@@ -383,7 +341,7 @@ class Orders extends BaseController
         $journal_insert0['amount_debet'] = 0;
         $journal_insert0['accounting_type'] = 1;
         $journal_insert0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        $journal_insert0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         $journal_insert0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert0);
 
@@ -392,7 +350,7 @@ class Orders extends BaseController
         $journal_insert1['amount_debet'] = (float)$dataPost['app_fee'] + (float)$dataPost['pg_fee'];
         $journal_insert1['accounting_type'] = 101;
         $journal_insert1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        $journal_insert1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         $journal_insert1['description'] = 'Fee ' . $dataPost['invoice_number'];
         array_push($journal_insert, $journal_insert1);
 
@@ -402,7 +360,7 @@ class Orders extends BaseController
             $journal_insert2['amount_debet'] = (int)$dataPost['amount_tax'];
             $journal_insert2['accounting_type'] = 5;
             $journal_insert2['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert2['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+            $journal_insert2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert2['description'] = 'Tax ' . $dataPost['invoice_number'];
             array_push($journal_insert, $journal_insert2);
         }
@@ -414,11 +372,11 @@ class Orders extends BaseController
         // $journal_insert_admin0['amount_credit'] = (float)$dataPost['app_fee'];
         // $journal_insert_admin0['amount_debet'] = 0;
         // $journal_insert_admin0['accounting_type'] = 101;
-        // $journal_insert_admin0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 1 : 0;
+        // $journal_insert_admin0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 1 : 0;
         // $journal_insert_admin0['description'] = 'Fee App '.$dataPost['invoice_number'].' (Keuntungan)';
         // array_push($journal_insert_admin, $journal_insert_admin0);
 
-        if (($dataPost['payment_method_code'] !== 'CASH')) {
+        if (((int)$dataPost['id_payment_method'] > 0)) {
             $journal_insert_admin0['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin0['id_user'] = $user->id_user;
             $journal_insert_admin0['id_user_parent'] = $user->id_user_parent;
@@ -426,7 +384,7 @@ class Orders extends BaseController
             $journal_insert_admin0['amount_debet'] = 0;
             $journal_insert_admin0['accounting_type'] = 1;
             $journal_insert_admin0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+            $journal_insert_admin0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert_admin0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin0);
         }
@@ -438,7 +396,7 @@ class Orders extends BaseController
         $journal_insert_admin1['amount_debet'] = 0;
         $journal_insert_admin1['accounting_type'] = 1001;
         $journal_insert_admin1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_admin1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        $journal_insert_admin1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         $journal_insert_admin1['description'] = 'Fee App ' . $dataPost['invoice_number'] . ' (Keuntungan)';
         array_push($journal_insert_admin, $journal_insert_admin1);
 
@@ -449,11 +407,11 @@ class Orders extends BaseController
         $journal_insert_admin1['amount_debet'] = (float)$dataPost['app_fee'] * (float)getenv('FEE_AFFILIATOR_PERCENT');
         $journal_insert_admin1['accounting_type'] = 7002;
         $journal_insert_admin1['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_admin1['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        $journal_insert_admin1['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         $journal_insert_admin1['description'] = 'Fee Affiliator ' . $dataPost['invoice_number'];
         array_push($journal_insert_admin, $journal_insert_admin1);
 
-        if (($dataPost['payment_method_code'] !== 'CASH')) {
+        if (((int)$dataPost['id_payment_method'] > 0)) {
             $journal_insert_admin2['invoice_number'] = $dataPost['invoice_number'];
             $journal_insert_admin2['id_user'] = $user->id_user;
             $journal_insert_admin2['id_user_parent'] = $user->id_user_parent;
@@ -461,7 +419,7 @@ class Orders extends BaseController
             $journal_insert_admin2['amount_debet'] = (float)$dataPost['pg_fee'];
             $journal_insert_admin2['accounting_type'] = 1002;
             $journal_insert_admin2['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin2['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+            $journal_insert_admin2['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert_admin2['description'] = 'Fee PG ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin2);
         }
@@ -474,7 +432,7 @@ class Orders extends BaseController
             $journal_insert_admin3['amount_debet'] = (float)$dataPost['amount_tax'];
             $journal_insert_admin3['accounting_type'] = 5;
             $journal_insert_admin3['id_payment_method'] = (int)$dataPost['id_payment_method'];
-            $journal_insert_admin3['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+            $journal_insert_admin3['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
             $journal_insert_admin3['description'] = 'Tax ' . $dataPost['invoice_number'];
             array_push($journal_insert_admin, $journal_insert_admin3);
         }
@@ -484,7 +442,7 @@ class Orders extends BaseController
         // $journal_insert_affiliator0['amount_debet'] = 0;
         // $journal_insert_affiliator0['accounting_type'] = 1;
         // $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        // $journal_insert_affiliator0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        // $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         // $journal_insert_affiliator0['description'] = 'Penjualan ' . $dataPost['invoice_number'];
         // array_push($journal_insert_affiliator, $journal_insert_affiliator0);
 
@@ -493,7 +451,7 @@ class Orders extends BaseController
         $journal_insert_affiliator0['amount_debet'] = 0;
         $journal_insert_affiliator0['accounting_type'] = 7001;
         $journal_insert_affiliator0['id_payment_method'] = (int)$dataPost['id_payment_method'];
-        $journal_insert_affiliator0['status'] = ($dataPost['payment_method_code'] !== 'CASH') ? 0 : 2;
+        $journal_insert_affiliator0['status'] = ((int)$dataPost['id_payment_method'] > 0) ? 0 : 2;
         $journal_insert_affiliator0['description'] = 'Fee Transaksi ' . $dataPost['invoice_number'];
         array_push($journal_insert_affiliator, $journal_insert_affiliator0);
 
@@ -521,6 +479,13 @@ class Orders extends BaseController
         // }
         // }
 
+        if ((int)$user->id_user_parent > 0) {
+            $db->table('app_transaction_products_temp_' . $user->id_user_parent)->truncate();
+        } else {
+            $db->table('app_transaction_products_temp_' . $user->id_user)->truncate();
+            //app_journal_finance_40
+        }
+
 
         $dataFinal = $builder0->get()->getResult();
         $db->close();
@@ -536,32 +501,7 @@ class Orders extends BaseController
         if (isset($paymentArr->res->data->pay_url)) {
             $paymentArr->res->data->pay_url = urlShortener($paymentArr->res->data->pay_url);
         }
-        if (isset($paymentArr->res->data->paylater_url)) {
-            $paymentArr->res->data->paylater_url = urlShortener($paymentArr->res->data->paylater_url);
-        }
         $paymentJSON = json_encode($paymentArr);
-
-
-        if ((int)$user->id_user_parent > 0) {
-            $builder = $db->table('app_transactions_' . $user->id_user_parent);
-            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user_parent);
-            $builder1 = $db->table('app_transaction_products_' . $user->id_user_parent);
-            $builder2 = $db->table('app_journal_finance_' . $user->id_user_parent);
-        } else {
-            $builder = $db->table('app_transactions_' . $user->id_user);
-            $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user);
-            $builder1 = $db->table('app_transaction_products_' . $user->id_user);
-            $builder2 = $db->table('app_journal_finance_' . $user->id_user);
-        }
-        $id_user = (string)((int)$user->id_user_parent > 0) ? $user->id_user_parent : $user->id_user;
-        $insert_queue = array(
-            "id_user" => $id_user,
-            "invoice_number" => $dataPost['invoice_number'],
-            "amount" => $dataPost['amount_to_pay'],
-            "table_name_trx" => 'app_transactions_' . $id_user,
-        );
-        // print_r($insert_queue);
-        $db->table('app_qris_paylater_list')->insert($insert_queue);
 
         // ob_start();
         // header('Content-type: text/html; charset=UTF-8', true);
@@ -592,7 +532,7 @@ class Orders extends BaseController
         // ob_start();
         // ob_flush();
 
-        $code = (isset($dataPost['payment']) && $dataPost['payment'] === 0) ? 0 : 1;
+        $code = ($dataPost['id_payment_method'] === 0) ? 0 : 1;
 
         // ob_end_clean();
         // // header("Connection: close");
@@ -606,13 +546,6 @@ class Orders extends BaseController
     "data": ' . $finalData . ',
     "payment": ' . $paymentJSON . '
 }';
-
-        if ((int)$user->id_user_parent > 0) {
-            $db->table('app_transaction_products_temp_' . $user->id_user_parent)->truncate();
-        } else {
-            $db->table('app_transaction_products_temp_' . $user->id_user)->truncate();
-            //app_journal_finance_40
-        }
         // session_write_close(); //close session file on server side to avoid blocking other requests
 
         // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
@@ -635,7 +568,7 @@ class Orders extends BaseController
         // // sleep(30);
 
         // ob_start();
-        if (($dataPost['payment_method_code'] === 'CASH')) {
+        if (((int)$dataPost['id_payment_method'] < 1)) {
             if (($dataPost['email_customer'] != '')) {
                 sendReceipt('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON));
             }
@@ -669,19 +602,9 @@ class Orders extends BaseController
         $db = db_connect();
 
         if ((int)$user->id_user_parent > 0) {
-            $trx = $db->table('app_transactions_' . $user->id_user_parent);
+            $trx = $db->table('app_transactions_' . $user->id_user_parent)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
         } else {
-            $trx = $db->table('app_transactions_' . $user->id_user);
-        }
-
-        if (isset($dataPost['payment_method_code']) && $dataPost['payment_method_code'] === 'QRIS_PAYLATER') {
-            $res = $trx->where('invoice_number', $dataPost['invoice_number'])
-                ->where('amount_to_pay', $dataPost['amount'])
-                ->where('payment_method_code', $dataPost['payment_method_code'])
-                ->get()->getRow();
-        } else {
-            $res = $trx->where('invoice_number', $dataPost['invoice_number'])
-                ->get()->getRow();
+            $trx = $db->table('app_transactions_' . $user->id_user)->where('invoice_number', $dataPost['invoice_number'])->get()->getRow();
         }
 
         $db->close();
@@ -691,7 +614,7 @@ class Orders extends BaseController
             "error": "",
             "message": "",
             "data": [],
-            "status": ' . (int)$res->status_payment . '
+            "status": ' . (int)$trx->status_payment . '
         }';
     }
 
@@ -720,43 +643,29 @@ class Orders extends BaseController
         $db->close();
 
 
-        if (getenv('PG') === 'TOKOPAY') {
-            $payment = ($trx->payment_method_code === 'CASH') ? '{}' : json_encode(tokopay_generate_qris((int)$trx->amount_to_pay, $trx->payment_method_code, $dataPost['invoice_number'], $user));
-        } else if (getenv('PG') === 'XENDIT') {
-            $payment = ($trx->payment_response);
-        } else {
-            $payment = '{}';
-        }
+
+        $payment = ((int)$trx->id_payment_method === 0) ? '{}' : json_encode(tokopay_generate_qris((int)$trx->amount_to_pay, $trx->payment_method_code, $dataPost['invoice_number'], $user));
 
         $paymentJSON = str_replace('"{', '{', str_replace('}"', '}', str_replace('""', '', str_replace('\\', '', json_encode($payment)))));
 
         $paymentArr = json_decode($paymentJSON);
         if (isset($paymentArr->res->data->ovo_push)) {
             $paymentArr->res->data->ovo_push = urlShortener($paymentArr->res->data->ovo_push);
-        } else if (isset($paymentArr->res->data->checkout_url)) {
+        }
+        if (isset($paymentArr->res->data->checkout_url)) {
             $paymentArr->res->data->checkout_url = urlShortener($paymentArr->res->data->checkout_url);
-        } else if (isset($paymentArr->res->data->pay_url)) {
+        }
+        if (isset($paymentArr->res->data->pay_url)) {
             $paymentArr->res->data->pay_url = urlShortener($paymentArr->res->data->pay_url);
-        } else if (isset($paymentArr->res->data->paylater_url)) {
-            $paymentArr->res->data->paylater_url = urlShortener($paymentArr->res->data->paylater_url);
-        } else if ($trx->payment_method_code === 'QRIS_PAYLATER') {
-            $paymentArr = (object) array();
-            $paymentArr->data = ["payment_method_code" => $trx->payment_method_code];
-            $paymentArr->res = (object) array("data" => (object) array("amount" => $trx->amount, "pembayaran" => "QRIS", "payment_method_code" => $trx->payment_method_code, "qr_link" => getDomain() . '/qris/QRIS-PAYLATER.PNG'));
-        } else if ($trx->payment_method_code === 'QRIS') {
-            $paymentArr = (object) array();
-            $paymentArr->data = ["payment_method_code" => $trx->payment_method_code];
-            $paymentArr->res = (object) array("data" => (object) array("amount" => $trx->amount, "pembayaran" => "QRIS", "payment_method_code" => $trx->payment_method_code, "qr_link" => getDomain() . '/qris/QRIS-' . $dataPost['invoice_number'] . '.png'));
         }
         $paymentJSON = json_encode($paymentArr);
 
-        $code = ($trx->payment_method_code === 'CASH') ? 0 : 1;
+        $code = ((int)$trx->id_payment_method === 0) ? 0 : 1;
 
         // ob_end_clean();
         // // header("Connection: close");
         // ignore_user_abort(true);
         // ob_start();
-
         echo '{
     "code": ' . $code . ',
     "error": "",
@@ -764,7 +673,6 @@ class Orders extends BaseController
     "data": [],
     "payment": ' . $paymentJSON . '
 }';
-
         // session_write_close(); //close session file on server side to avoid blocking other requests
 
         // header("Content-Encoding: none"); //send header to avoid the browser side to take content as gzip format
@@ -787,7 +695,7 @@ class Orders extends BaseController
         // // sleep(30);
 
         // ob_start();
-        if ($trx->payment_method_code === 'CASH') {
+        if (((int)$trx->id_payment_method < 1)) {
             if (isset($dataPost['email_customer']) && ($dataPost['email_customer'] != '')) {
                 sendReceipt('email', $dataPost, $trx, $products, $user, json_decode($paymentJSON));
             }

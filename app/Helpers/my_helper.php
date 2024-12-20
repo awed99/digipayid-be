@@ -136,31 +136,15 @@ function  generate_signature($uri, $service = null)
 
 function getDomain()
 {
-    $domain = '';
     if (isset($_SERVER['SERVER_NAME'])) {
-        $domain = $_SERVER['SERVER_NAME'];
+        return 'https://' . $_SERVER['SERVER_NAME'];
     } elseif (isset($_SERVER['HTTP_HOST'])) {
-        $domain = $_SERVER['HTTP_HOST'];
+        return 'https://' . $_SERVER['HTTP_HOST'];
     } elseif (isset($_SERVER['SERVER_ADDR'])) {
-        $domain = $_SERVER['SERVER_ADDR'];
+        return 'https://' . $_SERVER['SERVER_ADDR'];
     } else {
-        $domain = '127.0.0.1';
+        return 'https://127.0.0.1';
     }
-
-
-    if (!in_array($_SERVER['SERVER_PORT'], [80, 443])) {
-        $port = ":$_SERVER[SERVER_PORT]";
-    } else {
-        $port = '';
-    }
-
-    if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on' || $_SERVER['HTTPS'] == '1')) {
-        $scheme = 'https';
-    } else {
-        $scheme = 'http';
-    }
-
-    return $scheme . '://' . $domain . $port;
 }
 
 function get_token_brick()
@@ -310,9 +294,7 @@ function curl($url, $isPost = false, $postFields = false, $headers = false, $asy
     // curl_setopt($ch, CURLOPT_RESOLVE, [$url]);
     // curl_setopt($ch, CURLOPT_TCP_FASTOPEN, true);
     curl_setopt($ch, CURLOPT_ENCODING, '');
-    if ($isPost && $isPost === 'PATCH') {
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-    } else {
+    if ($isPost) {
         curl_setopt($ch, CURLOPT_POST, $isPost);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
     }

@@ -14,28 +14,48 @@ class Customers extends BaseController
 
     public function postCheck_nik()
     {
-        // cekValidation('customers/check_nik');
+        cekValidation0('customers/check_nik');
         $request = request();
         $req = $request->getJSON(true);
-
-        $db = db_connect();
 
         if (isset($req['nik'])) {
             $db = db_connect();
             $data = $db->table('app_customers')->where('nik', $req['nik'])->get()->getRow();
+            // echo ($db->getLastQuery());
             $db->close();
         }
-        $db->close();
 
-        $res['code'] = 0;
+        $res['code'] = (isset($data) && $data) ? 0 : 1;
         $res['data'] = $data ?? (object)array();
         $res['message'] = (isset($data) && $data) ? 'NIK sudah terdaftar.' : 'NIK belum terdaftar.';
         return response()->setStatusCode(200)->setJSON($res);
     }
 
+    public function postCheck_trx()
+    {
+        cekValidation0('customers/check_trx');
+        $request = request();
+        $req = $request->getJSON(true);
+
+        $idUser = explode('-', $req['invoice_number'])[1] ?? '0';
+
+        if (isset($req['invoice_number'])) {
+            $db = db_connect();
+            $data = $db->table('app_transactions_' . $idUser)->where('invoice_number', $req['invoice_number'])
+                ->where('status_transaction', 0)->where('status_payment', 0)
+                ->get()->getRow();
+            $db->close();
+        }
+
+        $res['code'] = (isset($data) && $data) ? 0 : 1;
+        $res['data'] = $data ?? 'app_transactions_' . $idUser;
+        $res['message'] = (isset($data) && $data) ? 'Halaman transaksi valid.' : 'Halaman transaksi tidak valid !';
+        return response()->setStatusCode(200)->setJSON($res);
+    }
+
     public function postCreate()
     {
-        // cekValidation('customers/create');
+        // cekValidation0('customers/create');
         $request = request();
         $req = $request->getJSON(true);
 
@@ -102,26 +122,26 @@ class Customers extends BaseController
     "surname": "' . $req['nama_belakang'] . '",
     "addresses":[{
         "country":"ID",
-        "street_line1":"' . $req['alamat'] . '",
+        "street_line1":"' . str_replace("\n", ', ', $req['alamat']) . '",
         "city":"' . $req['kota'] . '",
         "postal_code":"' . $req['kode_pos'] . '"
     }]
 }';
 
-        // print_r($bodyJSON);
+        // return response()->setStatusCode(200)->setBody($bodyJSON);
         // die;
 
-        // print_r('https://api.xendit.co/customers/' . $customer_id);
+        // print_r(getenv('XENDIT_API_DOMAIN') . 'customers/' . $customer_id);
         // die;
         if ($customer_id) {
-            $xendit = curl('https://api.xendit.co/customers/' . $customer_id, 'PATCH', $bodyJSON, $headers);
+            $xendit = curl(getenv('XENDIT_API_DOMAIN') . 'customers/' . $customer_id, 'PATCH', $bodyJSON, $headers);
         } else {
-            $xendit = curl('https://api.xendit.co/customers', true, $bodyJSON, $headers);
+            $xendit = curl(getenv('XENDIT_API_DOMAIN') . 'customers', true, $bodyJSON, $headers);
         }
 
-        // print_r($xendit);
+        // return response()->setStatusCode(200)->setJSON($xendit);
         $xenditRes = json_decode($xendit);
-        // print_r($xenditRes);
+        // return response()->setStatusCode(200)->setBody(print_r($xenditRes));
         // die;
         $insert['customer_id'] = $xenditRes->id;
         $db = db_connect();
@@ -139,7 +159,7 @@ class Customers extends BaseController
 
     public function postInitiate_paylater()
     {
-        // cekValidation('customers/initiate_paylater');
+        // cekValidation0('customers/initiate_paylater');
         $request = request();
         $req = $request->getJSON(true);
 

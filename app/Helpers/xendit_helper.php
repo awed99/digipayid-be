@@ -156,8 +156,8 @@ function xendit_initiate_paylater($cust_id, $trx)
     $req['plan_id']         = $res1->id;
     $req['reference_id']    = $trx->invoice_number;
     $req['checkout_method'] = "ONE_TIME_PAYMENT";
-    $req['success_redirect_url'] = 'https://digipayid.com';
-    $req['failure_redirect_url'] = 'https://digipayid.com';
+    $req['success_redirect_url'] = getenv('FE_DOMAIN_BASE_URL');
+    $req['failure_redirect_url'] = getenv('FE_DOMAIN_BASE_URL');
 
     $bodyReq = json_encode($req);
 
@@ -172,7 +172,8 @@ function xendit_initiate_paylater($cust_id, $trx)
     $object->req = (object) array("reff_id" => $trx->invoice_number, "amount" => $trx->amount_to_pay, "payment_method_code" => $trx->payment_method_code);
     $object->res = (object) array("data" => [
         "payment_method_code" => $trx->payment_method_code,
-        "paylater_url" => $_res->actions->mobile_web_checkout_url,
+        "pay_url" => getenv('FE_DOMAIN_BASE_URL') . 'paylater?invoice_number=' . $trx->invoice_number,
+        "paylater_app_url" => $_res->actions->mobile_web_checkout_url,
         "amount" => $trx->amount_to_pay,
     ]);
     $object->data = $_res;
