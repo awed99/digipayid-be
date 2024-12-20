@@ -25,15 +25,15 @@ class Cors extends BaseConfig
      *  }
      */
 
-    // public array $api = [
-    //     'allowedOrigins'         => ['*'],
-    //     'allowedOriginsPatterns' => [],
-    //     'supportsCredentials'    => true,
-    //     'allowedHeaders'         => ['*'],
-    //     'exposedHeaders'         => [],
-    //     'allowedMethods'         => ['GET', 'POST', 'PUT', 'DELETE'],
-    //     'maxAge'                 => 7200,
-    // ];
+    public array $api = [
+        'allowedOrigins'         => ['*'],
+        'allowedOriginsPatterns' => [],
+        'supportsCredentials'    => true,
+        'allowedHeaders'         => ['*'],
+        'exposedHeaders'         => [],
+        'allowedMethods'         => ['GET', 'POST', 'PUT', 'DELETE'],
+        'maxAge'                 => 7200,
+    ];
 
     public array $default = [
         /**
@@ -45,7 +45,7 @@ class Cors extends BaseConfig
          *   - ['http://localhost:8080']
          *   - ['https://www.example.com']
          */
-        // 'allowedOrigins' => ['*'],
+        'allowedOrigins' => ['*'],
 
         /**
          * Origin regex patterns for the `Access-Control-Allow-Origin` header.
@@ -79,7 +79,7 @@ class Cors extends BaseConfig
          *
          * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
          */
-        // 'allowedHeaders' => ['*'],
+        'allowedHeaders' => ['*'],
 
         /**
          * Set headers to expose.
