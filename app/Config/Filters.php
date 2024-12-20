@@ -60,7 +60,7 @@ class Filters extends BaseFilters
         ],
         'after' => [
             'cors',
-            'cors2',
+            // 'cors2',
             // 'pagecache',   // Web Page Caching
             // 'performance', // Performance Metrics
             // 'toolbar',     // Debug Toolbar

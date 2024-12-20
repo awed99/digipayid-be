@@ -41,9 +41,6 @@ Events::on('pre_system', static function () {
     }
 
     Events::on('post_controller_constructor', function () {
-
-        cekValidation();
-        
         // \Sentry\init(['dsn' => 'YOUR_DSN' ]);
         \Sentry\init([
             'dsn' => getenv('DSN_SENTRY'),
