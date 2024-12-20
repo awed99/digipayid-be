@@ -550,6 +550,8 @@ Kode OTP *Login " . $role . " " . $dataFinal->merchant_name . "* Adalah *" . $ot
             $db->query("CREATE TABLE app_transactions_" . $newUser->id_user . " LIKE master_transactions");
             $db->query("CREATE TABLE app_transaction_products_" . $newUser->id_user . " LIKE master_transaction_products");
             $db->query("CREATE TABLE app_transaction_products_temp_" . $newUser->id_user . " LIKE master_transaction_products_temp");
+            $db->query("CREATE TABLE ingredient_" . $newUser->id_user . " LIKE master_ingredient");
+            $db->query("CREATE TABLE racik_" . $newUser->id_user . " LIKE master_racik");
 
 
             $waMessage = "*INFO DIGIPAYID* 
