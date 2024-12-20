@@ -90,7 +90,7 @@ function xendit_generate_qris($amount, $reff_id, $payment_method_code, $payLater
     return $object;
 }
 
-function xendit_initiate_paylater($cust_id, $trx)
+function xendit_initiate_paylater($cust_id, $trx, $nama, $email='', $discount=0)
 {
     $url        = getenv('XENDIT_API_DOMAIN') . 'paylater/plans'; // url
     $urlCharge  = getenv('XENDIT_API_DOMAIN') . 'paylater/charges'; // urlCharge
@@ -98,33 +98,49 @@ function xendit_initiate_paylater($cust_id, $trx)
 
     $db = db_connect();
     $idUser = explode('-', $trx->invoice_number)[1] ?? '0';
-    $trxProducts = $db->table('app_transaction_products_' . $idUser . ' atp')->join('app_product_category_' . $idUser . ' apc', 'atp.product_category_id = apc.id_product_category', 'left')->where('atp.invoice_number', $trx->invoice_number)->get()->getResult();
+    $trxProducts = $db->table('app_transaction_products_temp_' . $idUser . ' atpt')->join('app_product_category_' . $idUser . ' apc', 'atpt.product_category_id = apc.id_product_category', 'left')
+    ->where('atpt.nama', $nama)->get()->getResult();
     $db->close();
 
     $_trxProducts = array();
     foreach ($trxProducts as $trxProduct) {
         // $trxProduct->url = 'https://digipayid.com';
         $__trxProducts = array(
-            'type' => 'DIGITAL_PRODUCT',
-            'reference_id' => $trxProduct->product_code ?? $trxProduct->product_name,
+            'type' => 'PHYSICAL_PRODUCT',
+            'reference_id' => $trxProduct->product_code . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8)) ?? $trxProduct->product_name . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8)),
             'name' => $trxProduct->product_name,
+            'description' => $trxProduct->product_desc,
             'net_unit_amount' => (int)$trxProduct->product_price,
             'quantity' => (int)$trxProduct->product_qty,
-            'url' => 'https://digipayid.com',
+            'url' => 'https://app.digipayid.com/menu?email=' . $email,
             'category' => $trxProduct->product_category ?? 'Produk UMKM',
         );
         array_push($_trxProducts, $__trxProducts);
     }
     $__trxProducts = array(
         'type' => 'FEE',
-        'reference_id' => 'FEE-' . $trx->invoice_number,
+        'reference_id' => 'FEE-' . $trx->invoice_number . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8)),
         'name' => 'FEE-' . $trx->invoice_number,
         'net_unit_amount' => (int)$trx->fee,
         'quantity' => (int)1,
-        'url' => 'https://digipayid.com',
+        'url' => 'https://app.digipayid.com/menu?email=' . $email,
         'category' => 'Fee Transaction',
     );
     array_push($_trxProducts, $__trxProducts);
+    
+    if ($discount > 0) {
+        $__trxProducts2 = array(
+            'type' => 'DISCOUNT',
+            'reference_id' => 'DISCOUNT-' . $trx->invoice_number . '-' . strtoupper(substr(md5(Date('YmdHis')), 5, 8)),
+            'name' => 'DISCOUNT-' . $trx->invoice_number,
+            'net_unit_amount' => (int)$discount * -1,
+            'quantity' => (int)1,
+            'url' => 'https://app.digipayid.com/menu?email=' . $email,
+            'category' => 'Discount Transaction',
+        );
+        array_push($_trxProducts, $__trxProducts2);
+    }
+    // print_r($_trxProducts);
     // die();
 
     $headers = [
@@ -134,7 +150,7 @@ function xendit_initiate_paylater($cust_id, $trx)
     ];
 
     $req1['external_id'] = $trx->invoice_number;
-    $req1['callback_url'] = 'https://digipayid.com';
+    $req1['callback_url'] = 'https://be.digipayid.com/callbacks/xendit_qris';
     $req1['type'] = 'DIGITAL_PRODUCT';
     $req1['currency'] = 'IDR';
     $req1['customer_id'] = $cust_id;
@@ -147,9 +163,12 @@ function xendit_initiate_paylater($cust_id, $trx)
     $bodyReq1 = json_encode($req1);
 
     $_res1 = curl($url, true, $bodyReq1, $headers);
+    // print_r($_res1);
+    // die();
 
     $res1 = json_decode($_res1);
     // print_r($res1);
+    // die();
 
 
 
@@ -164,6 +183,8 @@ function xendit_initiate_paylater($cust_id, $trx)
     $res = curl($urlCharge, true, $bodyReq, $headers);
 
     $_res = json_decode($res);
+    // print_r($_res);
+    // die();
 
     // return ($res);
 
@@ -173,7 +194,7 @@ function xendit_initiate_paylater($cust_id, $trx)
     $object->res = (object) array("data" => [
         "payment_method_code" => $trx->payment_method_code,
         "pay_url" => getenv('FE_DOMAIN_BASE_URL') . 'paylater?invoice_number=' . $trx->invoice_number,
-        "paylater_app_url" => $_res->actions->mobile_web_checkout_url,
+        "paylater_app_url" => (isset($_res->actions->mobile_deeplink_checkout_url)) ? $_res->actions->mobile_deeplink_checkout_url : $_res->actions->mobile_web_checkout_url,
         "amount" => $trx->amount_to_pay,
     ]);
     $object->data = $_res;

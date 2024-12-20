@@ -38,13 +38,14 @@ class Journal extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
         $builder = $db->table('admin_journal_finance');
         if (isset($dataPost->start_date)) {
-            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00');
+            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00')->where($where);
         }
         if (isset($dataPost->end_date)) {
-            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
+            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59')->where($where);
         }
         $result = $builder->orderBy('id', 'desc')->get()->getResult();
 
@@ -175,15 +176,20 @@ class Journal extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
-        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
-        if (isset($dataPost->start_date)) {
-            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00');
+        if ($dataPost->id_merchant != 0) {
+            $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
+            if (isset($dataPost->start_date)) {
+                $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00')->where($where);
+            }
+            if (isset($dataPost->end_date)) {
+                $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59')->where($where);
+            }
+            $result = $builder->orderBy('id', 'desc')->get()->getResult();
+        } else {
+            $result = [];
         }
-        if (isset($dataPost->end_date)) {
-            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
-        }
-        $result = $builder->orderBy('id', 'desc')->get()->getResult();
 
         $db->close();
         $finalData = json_encode($result);
@@ -254,23 +260,29 @@ class Journal extends BaseController
         $request = request();
         $dataPost = $request->getJSON();
         $db = db_connect();
+        $where = (isset($dataPost->where)) ? $dataPost->where : '1=1';
 
-        $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
-        // ->groupStart()
-        // ->where('id_payment_method = 0 AND accounting_type = 101')
-        // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
-        // ->groupEnd();
-
-        if (isset($dataPost->start_date)) {
-            $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00');
+        if ($dataPost->id_merchant != 0) {
+            $builder = $db->table('app_journal_finance_' . $dataPost->id_merchant);
+            // ->groupStart()
+            // ->where('id_payment_method = 0 AND accounting_type = 101')
+            // ->orWhere('id_payment_method > 0 AND accounting_type > 1')
+            // ->groupEnd();
+    
+            if (isset($dataPost->start_date)) {
+                $builder->where('created_at >=', $dataPost->start_date . ' 00:00:00')->where($where);
+            }
+            if (isset($dataPost->end_date)) {
+                $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59')->where($where);
+            }
+            $builder->where('NOT (id_payment_method = 0 AND accounting_type = 1)');
+    
+            $result = $builder->orderBy('id', 'desc')->get()->getResult();
+            $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) as saldo")->getRow()->saldo ?? 0;
+        } else {
+            $result = array();
+            $saldo = 0;
         }
-        if (isset($dataPost->end_date)) {
-            $builder->where('created_at <=', $dataPost->end_date . ' 23:59:59');
-        }
-        $builder->where('NOT (id_payment_method = 0 AND accounting_type = 1)');
-
-        $result = $builder->orderBy('id', 'desc')->get()->getResult();
-        $saldo = $db->query("SELECT (SELECT SUM(amount_credit) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) - (SELECT SUM(amount_debet) FROM `app_journal_finance_" . $dataPost->id_merchant . "` where status = 2 AND NOT (id_payment_method = 0 AND accounting_type = 1)) as saldo")->getRow()->saldo ?? 0;
 
         $db->close();
         $finalData = json_encode($result);

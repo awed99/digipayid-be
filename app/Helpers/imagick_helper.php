@@ -1,4 +1,5 @@
 <?php
+set_time_limit(300);
 
 use Dompdf\Dompdf;
 
@@ -22,14 +23,61 @@ function htmlToImage($html, $invoice_number, $url)
         $contents = fread($fpx, filesize($urlHTML));
         fclose($fpx);
 
+
+
+
+        // define("DOMPDF_ENABLE_HTML5PARSER", true);
+        // define("DOMPDF_ENABLE_FONTSUBSETTING", true);
+        // define("DOMPDF_UNICODE_ENABLED", true);
+        // define("DOMPDF_DPI", 350);
+        // define("DOMPDF_ENABLE_REMOTE", true);
+
+        // $pdf = new Dompdf();
+        // $options = $pdf->getOptions();
+        // $pdf->setPaper(array(0, 0, 700, 800), 'portrait');
+
+        // $options->set(array(
+        //     'isRemoteEnabled' => true,
+        //     'isHtml5ParserEnabled' => true
+        // ));
+        // $pdf->setOptions($options);
+        // $pdf->loadHtml($html);
+
+        // /*
+        // * Workaround to get the body height
+        // */
+        // $GLOBALS['bodyHeight'] = 0;
+        // $pdf->setCallbacks([
+        //     'myCallbacks' => [
+        //         'event' => 'end_frame',
+        //         'f' => function ($frame) {
+        //             $node = $frame->get_node();
+
+        //             if (strtolower($node->nodeName) === "body") {
+        //                 $padding_box = $frame->get_padding_box();
+        //                 $GLOBALS['bodyHeight'] += $padding_box['h'];
+        //             }
+        //         }
+        //     ]
+        // ]);
+        // $pdf->render();
+        // unset($pdf);
+        // $docHeight = $GLOBALS['bodyHeight'];
+
+
+
         $dompdf = new Dompdf();
         $options = $dompdf->getOptions();
-        $dompdf->setPaper(array(0, 0, 500, 1000), 'portrait');
+        $dompdf->setPaper(array(0, 0, 700, 3000), 'portrait');
+        // $dompdf->setPaper(array(0, 0, 700, $docHeight), 'portrait');
+        // $dompdf->setPaper(array(0, 0, 595, 841), 'portrait');
 
         $options->set(array(
             'isRemoteEnabled' => true,
-            'isHtml5ParserEnabled' => true
+            'isHtml5ParserEnabled' => true,
+            // 'dpi' => 2400,
         ));
+        // $dompdf->setDpi(350);
         $dompdf->setOptions($options);
         $dompdf->loadHtml($contents);
 
@@ -55,22 +103,30 @@ function htmlToImage($html, $invoice_number, $url)
 
         $imagick = new imagick(realpath($urlPDF));
         $imagick->setImageFormat('png');
-        $imagick->writeImage($urlIMG);
+        $imagick->setResolution(2100, 9000);
+        // $imagick->resizeImage(2100, 9000, \Imagick::FILTER_LANCZOS, 1, false);
         // unlink($urlHTML);
+
+        $range = $imagick->getQuantumRange();
+        $imagick->trimImage(0 * $range['quantumRangeLong']);
+        // $imagick->trimImage(0 * \Imagick::getQuantum());
+
+        
+        $imagick->writeImage($urlIMG);
 
 
         if (file_exists($urlHTML)) {
-            unlink($urlHTML);
+            // unlink($urlHTML);
         }
 
         if (file_exists($urlPDF)) {
-            unlink($urlPDF);
+            // unlink($urlPDF);
         }
 
         // if (file_exists($urlIMG)) {
         //     unlink($urlIMG);
         // }
 
-        return getenv('API_DOMAIN_BASE_URL') . $urlIMG;
+        return getDomain() . '/' . $urlIMG;
     }
 }

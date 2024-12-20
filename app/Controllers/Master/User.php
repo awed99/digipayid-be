@@ -26,13 +26,24 @@ class User extends ResourceController
         $user = cekValidation('/master/user/setting');
         $db = db_connect();
         $builder = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->orderBy('id_user', 'asc')->limit(1)->get()->getRow();
+        $builder2 = $db->table('app_users au')->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')
+        
+        // ->groupStart()
+        ->where('au.id_user_parent', $user->id_user)
+        ->where('au.is_active', 1)
+        // ->groupEnd()
+        
+        ->where('au.user_privilege', 9)
+        ->orderBy('id_user', 'asc')->get()->getResult();
         $db->close();
         $finalData = json_encode($builder);
+        $finalData2 = json_encode($builder2);
         echo '{
             "code": 0,
             "error": "",
             "message": "",
-            "data": ' . $finalData . '
+            "data": ' . $finalData . ',
+            "cashier": ' . $finalData2 . '
         }';
     }
 
@@ -46,9 +57,21 @@ class User extends ResourceController
         $query = $builder->where('au.id_user', $dataPost['id_user'])->orWhere('au.id_user_parent', $user->id_user);
         $update['merchant_name'] = $dataPost['merchant_name'];
         $update['merchant_address'] = $dataPost['merchant_address'];
-        $update['merchant_wa'] = $dataPost['merchant_wa'];
+        // $update['merchant_wa'] = $dataPost['merchant_wa'];
         $update['tax_percentage'] = $dataPost['tax_percentage'];
+        $update['discount_all_products'] = $dataPost['discount_all_products'];
+        $update['wifi_name'] = $dataPost['wifi_name'];
+        $update['wifi_password'] = $dataPost['wifi_password'];
+        $update['id_kasir'] = $dataPost['id_kasir'];
+        $update['username_kasir'] = $dataPost['username_kasir'];
+        $update['wa_kasir'] = $dataPost['wa_kasir'];
         $query->update($update);
+        
+        // $update2['merchant_name'] = $dataPost['merchant_name'];
+        // $update2['merchant_address'] = $dataPost['merchant_address'];
+        $update2['merchant_wa'] = $dataPost['merchant_wa'];
+        $builder->where('au.id_user', $dataPost['id_user'])->update($update2);
+        
         $dataFinal = $query->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->orderBy('id_user', 'asc')->limit(1)->get()->getRow();
         $db->close();
         $finalData = json_encode($dataFinal);
@@ -93,30 +116,39 @@ class User extends ResourceController
         if (
             $db->table('app_users')->where('telp', $dataPost->telp)->orWhere('email', $dataPost->email)->get()->getRow()
         ) {
+            $dataFinal = $builder->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->get()->getResult();
+            // $dataUser = $db->table('app_users au')->where('id_user', (int)$user->id_user_parent > 0 ? $user->id_user_parent : $user->id_user)->get()->getRow();
+            $finalData = json_encode($dataFinal);
+            $db->close();
             $data = '{
                 "code": 1,
                 "error": "Email or Telp/WA is already exists!",
                 "message": "Email or Telp/WA is already exists!",
-                "data": []
+                "data": '.$finalData.'
             }';
             return $this->response->setStatusCode(200)->setBody($data);
         }
+        // print_r($user);
+        // die();
+        $dataPost->merchant_name = $user->merchant_name;
+        $dataPost->merchant_address = $user->merchant_address;
 
         $query = $builder->insert($dataPost);
         $dataFinal = $builder->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->get()->getResult();
-        $dataUser = $db->table('app_users au')->where('id_user', $dataPost['id_user'])->get()->getRow();
+        // $dataUser = $db->table('app_users au')->where('id_user', (int)$user->id_user_parent > 0 ? $user->id_user_parent : $user->id_user)->get()->getRow();
+        $dataUser = end($dataFinal);
         $db->close();
         $finalData = json_encode($dataFinal);
 
         $waMessage = "*INFO DIGIPAYID* 
 Pemilik Merchant DIGIPAYID menambahkan email anda *" . $dataPost->email . "* ke Merchant (*" . $dataUser->merchant_name . "*).";
-        sendWA($dataPost->merchant_wa, $waMessage);
 
         echo '{
             "code": 0,
             "error": "",
             "message": "Data created successfully!",
-            "data": ' . $finalData . '
+            "data": ' . $finalData . ',
+            "status_wa": ' . sendWA($dataPost->merchant_wa, $waMessage) . '
         }';
     }
 
@@ -133,11 +165,12 @@ Pemilik Merchant DIGIPAYID menambahkan email anda *" . $dataPost->email . "* ke 
         }
         $query->update($dataPost);
         $dataFinal = $query->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.id_user', $user->id_user)->orWhere('au.id_user_parent', $user->id_user)->get()->getResult();
+        $dataFinal2 = $query->join('app_user_privilege aup', 'aup.id_user_privilege = au.user_privilege')->where('au.email', $dataPost['email'])->get()->getRowArray();
         $db->close();
         $finalData = json_encode($dataFinal);
 
         $waMessage = "*INFO DIGIPAYID* 
-Pemilik Merchant *" . $dataPost->merchant_name . "* melakukan perubahan akun anda.";
+Pemilik Merchant *" . $dataFinal2['merchant_name'] . "* melakukan perubahan akun anda.";
         sendWA('0' . $dataPost['telp'], $waMessage);
 
         echo '{
@@ -238,6 +271,23 @@ Pemilik Merchant *" . $dataPost->merchant_name . "* menghapus akun anda (*" . $d
         $dataFinal = $query->get()->getResult();
         $db->close();
         $finalData = json_encode($dataFinal);
+        echo '{
+            "code": 0,
+            "error": "",
+            "message": "",
+            "data": ' . $finalData . '
+        }';
+    }
+
+    public function postMaster_satuan()
+    {
+        $request = request();
+        $dataPost = $request->getJSON();
+        $user = cekValidation('/master/user/master_satuan');
+        $db = db_connect();
+        $builder = $db->table('master_satuan')->where('status', 1)->get()->getResult();
+        $db->close();
+        $finalData = json_encode($builder);
         echo '{
             "code": 0,
             "error": "",

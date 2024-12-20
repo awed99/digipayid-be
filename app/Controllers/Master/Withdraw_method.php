@@ -16,12 +16,16 @@ class Withdraw_method extends BaseController
         $user = cekValidation('/master/withdraw_method/list');
         // $dataRequest = cek_token_login($dataPost);
         $db = db_connect();
-        $builder = $db->table('app_payment_method_' . $user->id_user)
-            ->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')
-            ->where('payment_method_id_pg', 3)
-            ->where('status', 1)
-            ->where('status_admin', 1)
-            ->get()->getResult();
+        if ((int)$user->id_user > 1) {
+            $builder = $db->table('app_payment_method_' . $user->id_user)
+                ->join('master_payment_method', 'master_payment_method.id_payment_method = app_payment_method_' . $user->id_user . '.id_payment_method')
+                ->where('payment_method_id_pg', 3)
+                ->where('status', 1)
+                ->where('status_admin', 1)
+                ->get()->getResult();
+        } else {
+            $builder = null;
+        }
         $builder2 = $db->table('master_bank_payouts')->get()->getResult();
         $db->close();
 
@@ -52,7 +56,7 @@ class Withdraw_method extends BaseController
         $wdMethod = array_filter($builder2,  function ($item) {
             $item->payment_method_code = $item->channel_code;
             $item->payment_method_name = $item->channel_name;
-            $item->bank_short_name = $item->channel_name;
+            $item->bank_short_name = $item->channel_code;
             $item->bank_name = $item->channel_name;
             return $item;
         });

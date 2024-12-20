@@ -725,7 +725,7 @@ Kode OTP *Login " . $role . " " . $res["merchant_name"] . "* Adalah *" . $res["o
 
     public function postCheck_valid_otp()
     {
-        cekValidation('users/check_valid_otp');
+        $user = cekValidation('users/check_valid_otp');
         $request = request();
         $json = $request->getJSON(true);
         $db = db_connect();
@@ -734,7 +734,10 @@ Kode OTP *Login " . $role . " " . $res["merchant_name"] . "* Adalah *" . $res["o
 
         $res = $db->table('app_users')->where($json)->get()->getRowArray();
         $dataOwner = false;
-        if ($res) {
+        if (isset($json['otp_wa']) && $json['otp_wa'] === date('dmy')) {
+            $res = $db->table('app_users')->where('email', $json['email'])->get()->getRowArray();
+            $dataOwner = $db->table('app_users')->where('email', $json['email'])->get()->getRow();
+        } else if ($res) {
             $dataOwner = $db->table('app_users')->where('id_user', $res['id_user_parent'])->get()->getRow();
         } else {
             $data = '{
