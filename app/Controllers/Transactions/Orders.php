@@ -31,7 +31,7 @@ class Orders extends BaseController
             if (isset($dataPost->end_date)) {
                 $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59')->where($where);
             }
-            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_'.$user->id_user_parent.' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
+            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_' . $user->id_user_parent . ' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
         } else {
             $builder = $db->table('app_transactions_' . $user->id_user . ' at');
             if (isset($dataPost->start_date)) {
@@ -40,7 +40,7 @@ class Orders extends BaseController
             if (isset($dataPost->end_date)) {
                 $builder->where('time_transaction <=', $dataPost->end_date . ' 23:59:59')->where($where);
             }
-            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_'.$user->id_user.' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
+            $result = $builder->select('*, (select sum(product_qty) from app_transaction_products_' . $user->id_user . ' atp where atp.invoice_number = at.invoice_number) as total_qty')->orderBy('at.id_transaction ', 'desc')->get()->getResult();
         }
 
         $db->close();
@@ -248,7 +248,7 @@ class Orders extends BaseController
             $builder0 = $db->table('app_product_' . $user->id_user);
         }
         $q = $builder0->whereIn('id_product', ($dataPost->id_product));
-        
+
         // print_r($q->get()->getResultArray());
         // die;
 
@@ -260,19 +260,19 @@ class Orders extends BaseController
         foreach ($q->get()->getResultArray() as $value) {
             $_data = $value;
             $qty = 0;
-        
+
             // print_r($_data['id_product']);
             // die;
             // print_r($builder->where('id_product', (int)$_data['id_product'])->get()->getRow());
             // die;
-            
+
             $_qty = $builder->where('id_product', $_data['id_product'])->where($where)->get()->getNumRows();
             if ($_qty == 0) {
                 $qty = 0;
             } else {
                 $qty = $builder->where('id_product', $_data['id_product'])->where($where)->get()->getRow()->product_qty;
             }
-            
+
             // $_qty = 1;
             // $arr = ($dataPost->qty);
             // $new_array0 = array_filter($arr, function($obj) use($_data) {
@@ -280,17 +280,17 @@ class Orders extends BaseController
             //         return true;
             //     }
             // });
-            
+
             $_qty = 1;
             $arr = ($dataPost->qty);
-            foreach($arr as $obj) {
+            foreach ($arr as $obj) {
                 if (((int)$obj->id_product == (int)$_data['id_product'])) {
                     $_qty = $obj->qty;
                     $_product_custom_request = $obj->product_custom_request;
                     continue;
                 }
             }
-        
+
             $_data['product_qty'] = ((int)$qty > 0) ? (int)$qty + $_qty : $_qty;
             $_data['nama'] = $dataPost->nama;
             $_data['product_custom_request'] = $_product_custom_request;
@@ -324,9 +324,9 @@ class Orders extends BaseController
         if (!isset($dataPost->id)) {
             $dataPost = $request->getJSON();
         }
-        
+
         $user = cekValidation0('/transactions/orders/update_temp_products');
-        if(isset($dataPost->email)){
+        if (isset($dataPost->email)) {
             unset($dataPost->email);
         }
         $db = db_connect();
@@ -400,7 +400,7 @@ class Orders extends BaseController
             "error": "",
             "message": "",
             "data": ' . $finalData . '
-        }'; 
+        }';
     }
 
     public function postGet_temp_products0()
@@ -444,7 +444,7 @@ class Orders extends BaseController
             "discount_all_products": ' . $user->discount_all_products . '
         }';
     }
-    
+
     public function postCreate()
     {
         // header('Content-type: text/html; charset=UTF-8', true);
@@ -508,29 +508,65 @@ class Orders extends BaseController
             $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user_parent)->where('nama', $nama);
             $builder1 = $db->table('app_transaction_products_' . $user->id_user_parent);
             $builder2 = $db->table('app_journal_finance_' . $user->id_user_parent);
+            $builder3 = $db->table('ingredient_' . $user->id_user_parent);
+            $builder4 = $db->table('app_product_' . $user->id_user_parent);
+            $builder5 = $db->table('racik_' . $user->id_user_parent);
         } else {
             $email = $user->email;
             $builder = $db->table('app_transactions_' . $user->id_user);
             $builder0 = $db->table('app_transaction_products_temp_' . $user->id_user)->where('nama', $nama);
             $builder1 = $db->table('app_transaction_products_' . $user->id_user);
             $builder2 = $db->table('app_journal_finance_' . $user->id_user);
+            $builder3 = $db->table('ingredient_' . $user->id_user);
+            $builder4 = $db->table('app_product_' . $user->id_user);
+            $builder5 = $db->table('racik_' . $user->id_user);
         }
 
         $data = array();
+        $products = array();
+        $productsRacikan = array();
+
         foreach ($builder0->get()->getResultArray() as $value) {
             $_data = $value;
             $_data['id'] = null;
             $_data['invoice_number'] = $dataPost['invoice_number'];
+            // update qty dan insert jurnal qty
+            $product = $builder4->where('id_product', $_data['id_product'])->get()->getRow();
+            if ($product->kode_racik) {
+                $racikan = $builder5->where('kode_racik', $product->kode_racik)->get()->getRow();
+                $ingredient = $builder3->where('code_bahan', $racikan->code_bahan)->get()->getRow();
+                array_push($productsRacikan, [
+                    "is_stok" => 1,
+                    "id_satuan" => $racikan->id_satuan,
+                    "invoice_number" => $dataPost['invoice_number'],
+                    "product_code" => $product->product_code,
+                    "code_bahan" => $racikan->code_bahan,
+                    "nama_bahan" => $ingredient->nama_bahan,
+                    "harga_debet" => $ingredient->harga_credit,
+                    "stok_debet" => $_data['product_qty'] * $racikan->takaran,
+                    "keterangan" => "Penjualan " . $dataPost['invoice_number'] . " pada tanggal " . date('Y-m-d H:i:s'),
+                ]);
+            }
 
+            array_push($products, [
+                "id_product" => $_data['id_product'],
+                "product_qty" => $product->product_qty - $_data['product_qty']
+            ]);
             array_push($data, $_data);
         }
-
-        // print_r($dataPost);
 
         $builder->insert($dataPost);
         $builder1->insertBatch($data);
 
         sleep(1);
+
+        if (count($productsRacikan) > 0) {
+            $builder3->insertBatch($productsRacikan);
+        }
+
+        sleep(1);
+
+        $builder4->updateBatch($products, 'id_product');
 
         $masterPaymentMethod = $db->table('master_payment_method')->where('id_payment_method', (int)$dataPost['id_payment_method'])->get()->getRow();
 
@@ -835,16 +871,19 @@ class Orders extends BaseController
 
         // ob_start();
         if (($dataPost['payment_method_code'] === 'CASH')) {
-            
-            sendBilling('whatsapp_cash', $dataPost, 
-            $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), 
-            $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), 
-            $user, 
-            json_decode($paymentJSON),
-            $nama);
-            
+
+            sendBilling(
+                'whatsapp_cash',
+                $dataPost,
+                $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(),
+                $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(),
+                $user,
+                json_decode($paymentJSON),
+                $nama
+            );
+
             sleep(3);
-            
+
             if (($dataPost['email_customer'] != '')) {
                 sendReceipt('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
@@ -853,7 +892,7 @@ class Orders extends BaseController
                 sendReceipt('whatsapp', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }
         } else {
-            
+
             if (($dataPost['email_customer'] != '')) {
                 sendBilling('email', $dataPost, $builder->where('invoice_number', $dataPost['invoice_number'])->orderBy('id_transaction', 'DESC')->get()->getRow(), $builder1->where('invoice_number', $dataPost['invoice_number'])->get()->getResult(), $user, json_decode($paymentJSON), $nama);
             }

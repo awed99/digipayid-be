@@ -54,13 +54,13 @@ class Filters extends BaseFilters
     public array $required = [
         'before' => [
             'cors',
-            // 'cors2',
+            'cors2',
             // 'forcehttps', // Force Global Secure Requests
             'pagecache',  // Web Page Caching
         ],
         'after' => [
             'cors',
-            // 'cors2',
+            'cors2',
             // 'pagecache',   // Web Page Caching
             // 'performance', // Performance Metrics
             // 'toolbar',     // Debug Toolbar
@@ -75,14 +75,14 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            // 'cors',
+            'cors',
             // 'cors2',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
-            // 'cors',
+            'cors',
             // 'cors2',
             //     // 'honeypot',
             //     // 'secureheaders',
@@ -113,5 +113,5 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = ['cors2'];
 }
